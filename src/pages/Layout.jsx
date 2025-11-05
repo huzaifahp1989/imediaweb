@@ -130,6 +130,7 @@ export default function Layout({ children, currentPageName }) {
     },
     { name: "Challenges", icon: Trophy, path: "Challenges" },
     { name: "Parents", icon: Users, path: "ParentZone" },
+    { name: "Signup", icon: UserPlus, path: "Signup" },
     { name: "About", icon: Info, path: "About" },
   ];
 
