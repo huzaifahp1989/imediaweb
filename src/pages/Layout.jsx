@@ -338,7 +338,14 @@ export default function Layout({ children, currentPageName }) {
                       onClick={() => {
                         const subject = encodeURIComponent("Access Request - Islam Kids Zone");
                         const body = encodeURIComponent("Hi, I'd like to request access to Islam Kids Zone. My name is ____ and my contact details are ____.");
-                        window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
+                        const mailto = `mailto:imedia786@gmail.com?subject=${subject}&body=${body}`;
+                        // Prefer window.open for mailto to avoid net::ERR_ABORTED in some dev environments
+                        try {
+                          window.open(mailto);
+                        } catch (e) {
+                          // Fallback
+                          window.location.href = mailto;
+                        }
                       }}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform w-full"
                     >
