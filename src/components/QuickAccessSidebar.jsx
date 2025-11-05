@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Palette, BookOpen, Sparkles, FileText, Trophy, Lightbulb, Headphones, Heart, MessageSquare } from "lucide-react";
+import { Palette, BookOpen, Sparkles, FileText, Trophy, Lightbulb, Headphones, Heart, MessageSquare, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
 
 const quickLinks = [
@@ -36,7 +36,8 @@ const quickLinks = [
     category: "More Features ✨",
     links: [
       { name: "Record & Share", path: "RecordAndShare", icon: MessageSquare },
-      { name: "Contact Us", path: "ContactUs", icon: MessageSquare }
+      { name: "Contact Us", path: "ContactUs", icon: MessageSquare },
+      { name: "Signup", path: "Signup", icon: UserPlus }
     ]
   }
 ];

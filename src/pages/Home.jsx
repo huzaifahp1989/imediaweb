@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Sparkles, Heart, Shield, MessageCircle, ExternalLink, Palette, Mic, Newspaper, Radio, Play, Pause, Volume2, VolumeX, Target, Award, Users } from "lucide-react";
+import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Sparkles, Heart, Shield, MessageCircle, ExternalLink, Palette, Mic, Newspaper, Radio, Play, Pause, Volume2, VolumeX, Target, Award, Users, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // import WordPressFeed from "@/components/WordPressFeed";
 import { useState, useEffect } from "react";
@@ -188,6 +188,12 @@ export default function Home() {
                 <Button size="lg" variant="outline" className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-full">
                   <Target className="mr-2 w-5 h-5 md:w-6 md:h-6" />
                   Browse Learning Paths
+                </Button>
+              </Link>
+              <Link to={createPageUrl("Signup")}>
+                <Button size="lg" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  <UserPlus className="mr-2 w-5 h-5 md:w-6 md:h-6" />
+                  Signup
                 </Button>
               </Link>
             </div>
