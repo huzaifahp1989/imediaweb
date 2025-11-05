@@ -180,7 +180,9 @@ export default function LearningPaths() {
 
   const handleStartPath = async (path) => {
     if (!isAuthenticated) {
-      base44.auth.redirectToLogin(window.location.pathname);
+      const subject = encodeURIComponent("Access Request - Learning Paths");
+      const body = encodeURIComponent("Hi, I'd like to access Learning Paths on Islam Kids Zone. My name is ____ and my contact details are ____.");
+      window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
       return;
     }
 
@@ -198,7 +200,9 @@ export default function LearningPaths() {
 
   const handleMarkModuleComplete = async (module, path) => {
     if (!isAuthenticated) {
-      base44.auth.redirectToLogin(window.location.pathname);
+      const subject = encodeURIComponent("Access Request - Learning Paths");
+      const body = encodeURIComponent("Hi, I'd like to enable progress tracking in Learning Paths. My name is ____ and my contact details are ____.");
+      window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
       return;
     }
     
@@ -277,7 +281,7 @@ export default function LearningPaths() {
           </p>
         </motion.div>
 
-        {/* Login Prompt for Guests */}
+        {/* Access Prompt for Guests */}
         {!isAuthenticated && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -288,17 +292,20 @@ export default function LearningPaths() {
               <CardContent className="p-6 text-center">
                 <LogIn className="w-12 h-12 mx-auto mb-4 text-blue-600" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Track Your Learning Journey
+                  Request Access to Track Your Learning
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Sign in to save your progress, earn badges, and unlock achievements!
+                  Email us to enable progress tracking, earn badges, and unlock achievements!
                 </p>
                 <Button
-                  onClick={() => {}}
+                  onClick={() => {
+                    const subject = encodeURIComponent("Access Request - Learning Paths");
+                    const body = encodeURIComponent("Hi, I'd like to enable Learning Paths tracking on Islam Kids Zone. My name is ____ and my contact details are ____.");
+                    window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
+                  }}
                   className="bg-gradient-to-r from-blue-500 to-purple-500"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Login to Track Progress
+                  Request Access via Email
                 </Button>
               </CardContent>
             </Card>

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Star, Sparkles, ArrowRight } from "lucide-react";
-// import { base44 } from "@/api/base44Client";
+// Authentication via Base44 removed in favor of email-only access
 
 const avatars = ["🌟", "🌙", "⭐", "🎨", "🎮", "📚", "🚀", "🦁", "🐱", "🐼", "🦊", "🐰"];
 
@@ -23,59 +23,25 @@ export default function Welcome() {
     avatar: "🌟"
   });
 
+  // Email-only access: no external auth/onboarding calls
   useEffect(() => {
-    checkOnboarding();
-  }, []);
-
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
+    // Prefill from localStorage if a local user was saved previously
     try {
-      const authenticated = await base44.auth.isAuthenticated();
-      if (authenticated) {
-        const userData = await base44.auth.me();
-        setUser(userData);
-      } else {
-        setUser(null);
+      const saved = localStorage.getItem("ikz_user");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({
+          ...prev,
+          full_name: parsed.full_name || prev.full_name,
+          age: parsed.age || prev.age,
+          city: parsed.city || prev.city,
+          madrasah_maktab: parsed.madrasah_maktab || prev.madrasah_maktab,
+          avatar: parsed.avatar || prev.avatar
+        }));
       }
-    } catch (error) {
-      setUser(null);
-    }
-  };
-
-  const checkOnboarding = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      
-      if (!authenticated) {
-        // Not authenticated - that's fine, they can skip
-        setChecking(false);
-        return;
-      }
-      
-      const userData = await base44.auth.me();
-      
-      // If already completed onboarding, go to Games
-      if (userData.onboarding_completed) {
-        navigate(createPageUrl("Games"));
-        return;
-      }
-      
-      // Pre-fill name if available
-      if (userData.full_name) {
-        setFormData(prev => ({ ...prev, full_name: userData.full_name }));
-      }
-      // Disabled onboarding/user fetch logic due to removed authentication
-      useEffect(() => {
-        setChecking(false);
-      }, []);
-    } catch (error) {
-      console.error("Error checking onboarding:", error);
-      setChecking(false);
-    }
-  };
+    } catch {}
+    setChecking(false);
+  }, []);
 
   const [user, setUser] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -193,6 +159,18 @@ export default function Welcome() {
                 </Button>
                 <Button type="button" variant="outline" onClick={handleSkip} className="w-full">
                   Skip & Explore
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const subject = encodeURIComponent("Access Request - Islam Kids Zone");
+                    const body = encodeURIComponent("Hi, I'd like to create an account for Islam Kids Zone. My name is ____ and my contact details are ____.");
+                    window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
+                  }}
+                  className="w-full"
+                >
+                  Request Access via Email
                 </Button>
               </div>
             </form>

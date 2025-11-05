@@ -2,7 +2,7 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Trophy, Star, Medal, Crown, ArrowLeft, Gamepad2, Users, Gift, LogIn } from "lucide-react";
+import { Sparkles, Trophy, Star, Medal, Crown, ArrowLeft, Gamepad2, Users, Gift, LogIn, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -570,8 +570,10 @@ export default function Games() {
             Islamic Knowledge Games
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Play fun games and test your Islamic knowledge! 
-            {isAuthenticated ? " Each game earns you 10 points." : " Sign up to track your progress and earn points!"}
+            Play fun games and test your Islamic knowledge!
+            {isAuthenticated 
+              ? " Each game earns you 10 points." 
+              : " Email us at imediac786@gmail.com to create your account and track your progress!"}
           </p>
         </motion.div>
 
@@ -589,15 +591,19 @@ export default function Games() {
                   🎉 Playing as Guest
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  You can play all games for free! Sign up to track your progress, earn points, and compete on the leaderboard.
+                  You can play all games for free! Email us to create your account, track your progress, earn points, and compete on the leaderboard.
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button
-                    onClick={() => {}}
+                    onClick={() => {
+                      const subject = encodeURIComponent("Access Request - Islam Kids Zone");
+                      const body = encodeURIComponent("Hi, I'd like to create an account for Islam Kids Zone. My name is ____ and my contact details are ____.");
+                      window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
+                    }}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
                   >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Sign Up / Login
+                    <Mail className="w-4 h-4 mr-2" />
+                    Request Access via Email
                   </Button>
                 </div>
               </CardContent>

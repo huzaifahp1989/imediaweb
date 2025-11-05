@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio } from "lucide-react";
+import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail } from "lucide-react";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion } from "framer-motion";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import PropTypes from 'prop-types';
-import { base44 } from "@/api/base44Client";
+// Base44 auth removed from public UI; email-only access in place
 
 // Create Radio Context
 const RadioContext = createContext();
@@ -52,9 +52,7 @@ export default function Layout({ children, currentPageName }) {
     ];
     console.log("currentPageName:", currentPageName);
     console.log("publicPages:", publicPages);
-    if (!publicPages.includes(currentPageName)) {
-      checkAuth();
-    }
+    // Email-only flow: skip external auth checks entirely
   }, [currentPageName]);
 
   useEffect(() => {
@@ -63,26 +61,13 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [volume]);
 
+  // No-op for email-only access
   const checkAuth = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      if (authenticated) {
-        const userData = await base44.auth.me();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.log("Authentication check failed:", error);
-      // Disabled user fetch logic due to removed authentication
-      useEffect(() => {
-        setIsAuthenticated(false);
-        setUser(null);
-      }, []);
-    }
+    setIsAuthenticated(false);
+    setUser(null);
   };
 
   const handleLogout = () => {
-    base44.auth.logout();
     setIsAuthenticated(false);
     setUser(null);
   };
@@ -350,21 +335,16 @@ export default function Layout({ children, currentPageName }) {
                 ) : (
                   <div className="mb-4 pb-4 border-b border-gray-200 space-y-2">
                     <Button
-                      onClick={() => {}}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                      onClick={() => {
+                        const subject = encodeURIComponent("Access Request - Islam Kids Zone");
+                        const body = encodeURIComponent("Hi, I'd like to request access to Islam Kids Zone. My name is ____ and my contact details are ____.");
+                        window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform w-full"
                     >
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Login
+                      <Mail className="w-4 h-4 mr-2" />
+                      Request Access via Email
                     </Button>
-                    <Link to={createPageUrl("Games") + "#signup"} onClick={handleMobileLinkClick}>
-                      <Button
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Sign Up Free
-                      </Button>
-                    </Link>
                   </div>
                 )}
 
@@ -559,4 +539,4 @@ Layout.propTypes = {
   currentPageName: PropTypes.string
 };
 
-
+

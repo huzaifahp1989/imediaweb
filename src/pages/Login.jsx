@@ -35,8 +35,8 @@ export default function Login() {
         <button type="submit" className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded hover:scale-105 transition-transform">Login</button>
         <div className="mt-4 text-center">
           <span>Don't have an account? </span>
-          <a href="/Welcome" className="text-blue-600 font-semibold">Sign up</a>
+          <a href="/Signin" className="text-blue-600 font-semibold">Sign up</a>
         </div>
       </form>
     </div>
-  
+  

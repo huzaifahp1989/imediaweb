@@ -227,15 +227,16 @@ export default function RecordAndShare() {
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <Mic className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-2xl font-bold mb-2">Login Required</h2>
+            <h2 className="text-2xl font-bold mb-2">Access Required</h2>
             <p className="text-gray-600 mb-4">
-              Please log in to record and share your audio
+              Please email us to enable recording and sharing features.
             </p>
             <Button onClick={() => {
-              const currentPath = window.location.pathname;
-              window.location.href = `https://base44.app/login?from_url=${encodeURIComponent(currentPath)}&app_id=68fcd301afef087bf759dba3`;
+              const subject = encodeURIComponent("Access Request - Record & Share");
+              const body = encodeURIComponent("Hi, I'd like to enable recording features on Islam Kids Zone. My name is ____ and my contact details are ____.");
+              window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
             }}>
-              Login
+              Email Us
             </Button>
           </CardContent>
         </Card>
@@ -500,4 +501,4 @@ export default function RecordAndShare() {
     </div>
   );
 }
-
+

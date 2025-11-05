@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,30 +11,44 @@ export default function Leaderboard() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Email-only access: assume guests, no external auth calls
   useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    // Seed sample leaderboard if none exists
     try {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      
-      if (authenticated) {
-        const userData = await base44.auth.me();
-        setCurrentUser(userData);
+      const stored = localStorage.getItem('ikz_leaderboard');
+      if (!stored) {
+        const sample = [
+          { full_name: 'Aisha Khan', email: 'aisha@example.com', points: 980 },
+          { full_name: 'Yusuf Ahmed', email: 'yusuf@example.com', points: 920 },
+          { full_name: 'Fatima Ali', email: 'fatima@example.com', points: 890 },
+          { full_name: 'Hassan', email: 'hassan@example.com', points: 860 },
+          { full_name: 'Zainab', email: 'zainab@example.com', points: 840 },
+          { full_name: 'Omar', email: 'omar@example.com', points: 810 },
+          { full_name: 'Maryam', email: 'maryam@example.com', points: 780 },
+          { full_name: 'Bilal', email: 'bilal@example.com', points: 760 },
+          { full_name: 'Sumayyah', email: 'sumayyah@example.com', points: 740 },
+          { full_name: 'Imran', email: 'imran@example.com', points: 720 }
+        ];
+        localStorage.setItem('ikz_leaderboard', JSON.stringify(sample));
       }
-    } catch (error) {
-      console.log("User not authenticated - showing public leaderboard");
-      setIsAuthenticated(false);
+    } catch (e) {
+      // ignore storage errors
     }
-  };
+  }, []);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      const allUsers = await base44.entities.User.list('-points', 50);
-      return allUsers.filter(user => user.points > 0);
+      // No external API: return placeholder or locally stored leaderboard
+      try {
+        const stored = localStorage.getItem('ikz_leaderboard');
+        const list = stored ? JSON.parse(stored) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
     },
     initialData: [],
   });
@@ -109,13 +122,14 @@ export default function Leaderboard() {
                 </p>
                 <Button
                   onClick={() => {
-                    const currentPath = window.location.pathname;
-                    window.location.href = `https://base44.app/login?from_url=${encodeURIComponent(currentPath)}&app_id=68fcd301afef087bf759dba3`;
+                    const subject = encodeURIComponent("Access Request - Islam Kids Zone");
+                    const body = encodeURIComponent("Hi, I'd like to create an account to join the leaderboard. My name is ____ and my contact details are ____.");
+                    window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
                   }}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Join Now - It's Free!
+                  Request Access via Email
                 </Button>
               </CardContent>
             </Card>
@@ -175,7 +189,7 @@ export default function Leaderboard() {
               <div className="divide-y divide-gray-100">
                 {users.map((user, index) => (
                   <motion.div
-                    key={user.id}
+                    key={user.id ?? `${user.email || user.full_name || 'user'}-${index}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -198,12 +212,12 @@ export default function Leaderboard() {
                         
                         {/* Name and Details */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-sm sm:text-base text-gray-900 flex items-center gap-2 flex-wrap">
+                          <div className="font-bold text-sm sm:text-base text-gray-900 flex items-center gap-2 flex-wrap">
                             <span className="truncate">{getDisplayName(user)}</span>
                             {currentUser?.id === user.id && (
                               <Badge className="bg-blue-500 text-xs flex-shrink-0">You</Badge>
                             )}
-                          </p>
+                          </div>
                           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
                             {user.city && (
                               <span className="truncate">{user.city}</span>
@@ -240,11 +254,4 @@ export default function Leaderboard() {
     </div>
   );
 }
-
-<button
-  onClick={() => {}}
-  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
->
-  <LogIn className="w-4 h-4 mr-2" />
-  Login
-</button>
+ 
