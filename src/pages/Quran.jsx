@@ -327,7 +327,6 @@ export default function Quran() {
   const recognitionRef = useRef(null);
 
   useEffect(() => {
-    loadUser();
     setupSpeechRecognition();
   }, []);
 

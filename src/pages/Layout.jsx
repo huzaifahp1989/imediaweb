@@ -215,28 +215,7 @@ export default function Layout({ children, currentPageName }) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleLogin}
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                    >
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Login
-                    </Button>
-                    <Link to={createPageUrl("Games") + "#signup"}>
-                      <Button
-                        size="sm"
-                        className="bg-amber-500 hover:bg-amber-600 text-white"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Sign Up
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                ) : null}
               </div>
 
               {/* Mobile Menu Button */}
