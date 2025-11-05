@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Heart, ArrowRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+// Removed import of base44 for local-only app
 
 const mazeScenarios = [
   {
@@ -283,3 +283,4 @@ export default function IslamicMoralsMazeGame({ onComplete }) {
     </Card>
   );
 }
+

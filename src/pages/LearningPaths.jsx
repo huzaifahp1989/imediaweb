@@ -294,10 +294,7 @@ export default function LearningPaths() {
                   Sign in to save your progress, earn badges, and unlock achievements!
                 </p>
                 <Button
-                  onClick={() => {
-                    const currentPath = window.location.pathname;
-                    window.location.href = `https://base44.app/login?from_url=${encodeURIComponent(currentPath)}&app_id=68fcd301afef087bf759dba3`;
-                  }}
+                  onClick={() => {}}
                   className="bg-gradient-to-r from-blue-500 to-purple-500"
                 >
                   <LogIn className="w-4 h-4 mr-2" />

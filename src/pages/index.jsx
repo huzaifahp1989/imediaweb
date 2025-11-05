@@ -20,8 +20,6 @@ import Welcome from "./Welcome";
 
 import ContactUs from "./ContactUs";
 
-import Quran from "./Quran";
-
 import Duas from "./Duas";
 
 import RecordAndShare from "./RecordAndShare";
@@ -123,8 +121,6 @@ const PAGES = {
     Welcome: Welcome,
     
     ContactUs: ContactUs,
-    
-    Quran: Quran,
     
     Duas: Duas,
     
@@ -254,8 +250,6 @@ function PagesContent() {
                 <Route path="/Welcome" element={<Welcome />} />
                 
                 <Route path="/ContactUs" element={<ContactUs />} />
-                
-                <Route path="/Quran" element={<Quran />} />
                 
                 <Route path="/Duas" element={<Duas />} />
                 

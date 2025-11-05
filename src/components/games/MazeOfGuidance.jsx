@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, RotateCcw, Navigation, CheckCircle2, XCircle } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import PropTypes from 'prop-types';
 
 const mazes = {

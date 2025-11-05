@@ -240,3 +240,11 @@ export default function Leaderboard() {
     </div>
   );
 }
+
+<button
+  onClick={() => {}}
+  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
+>
+  <LogIn className="w-4 h-4 mr-2" />
+  Login
+</button>

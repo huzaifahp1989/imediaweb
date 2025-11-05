@@ -73,8 +73,11 @@ export default function Layout({ children, currentPageName }) {
       }
     } catch (error) {
       console.log("Authentication check failed:", error);
-      setIsAuthenticated(false);
-      setUser(null);
+      // Disabled user fetch logic due to removed authentication
+      useEffect(() => {
+        setIsAuthenticated(false);
+        setUser(null);
+      }, []);
     }
   };
 
@@ -85,8 +88,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = () => {
-    const currentPath = window.location.pathname;
-    window.location.href = `https://base44.app/login?from_url=${encodeURIComponent(currentPath)}&app_id=68fcd301afef087bf759dba3`;
+    // Login functionality removed
   };
 
   const togglePlay = () => {
@@ -348,10 +350,8 @@ export default function Layout({ children, currentPageName }) {
                 ) : (
                   <div className="mb-4 pb-4 border-b border-gray-200 space-y-2">
                     <Button
-                      onClick={handleLogin}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
+                      onClick={() => {}}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
                     >
                       <LogIn className="w-4 h-4 mr-2" />
                       Login

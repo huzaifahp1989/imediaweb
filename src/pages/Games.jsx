@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Trophy, Star, Medal, Crown, ArrowLeft, Gamepad2, Users, Gift, LogIn } from "lucide-react";
@@ -346,11 +345,8 @@ export default function Games() {
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button
-                    onClick={() => {
-                      const currentPath = window.location.pathname;
-                      window.location.href = `https://base44.app/login?from_url=${encodeURIComponent(currentPath)}&app_id=68fcd301afef087bf759dba3`;
-                    }}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500"
+                    onClick={() => {}}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform"
                   >
                     <LogIn className="w-4 h-4 mr-2" />
                     Sign Up / Login
