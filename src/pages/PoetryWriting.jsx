@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { FileText, Send, CheckCircle, Sparkles } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+// Removed import of base44 for public page
 
 export default function PoetryWriting() {
   const [formData, setFormData] = useState({
