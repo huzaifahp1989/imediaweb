@@ -4,13 +4,14 @@ import React, { useState } from "react";
 // 1) Prefills an email to imedia786@gmail.com with all submitted details
 // 2) Optionally posts the submission to a Google Sheet via an Apps Script Web App endpoint
 //    - Configure: VITE_GOOGLE_APPS_SCRIPT_URL in your .env (e.g., https://script.google.com/macros/s/AKfycb.../exec)
-//    - Payload: { fullName, age, city, email, submittedAt }
+//    - Payload: { fullName, age, city, madrasah, email, submittedAt }
 
 export default function Signup() {
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
+  const [madrasah, setMadrasah] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [sheetsStatus, setSheetsStatus] = useState("idle"); // idle | success | error | skipped
@@ -26,6 +27,7 @@ export default function Signup() {
     if (!city.trim()) errs.city = "City is required";
     if (!email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = "Invalid email format";
+    if (!madrasah.trim()) errs.madrasah = "Madrasah name is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -40,6 +42,7 @@ export default function Signup() {
       age: age.trim(),
       city: city.trim(),
       email: email.trim(),
+      madrasah: madrasah.trim(),
       submittedAt: new Date().toISOString(),
     };
 
@@ -67,7 +70,7 @@ export default function Signup() {
     // 2) Prefill an email to imedia786@gmail.com
     const subject = encodeURIComponent(`New Sign Up: ${payload.fullName}`);
     const body = encodeURIComponent(
-      `Full Name: ${payload.fullName}\nAge: ${payload.age}\nCity: ${payload.city}\nEmail: ${payload.email}\nSubmitted At: ${new Date().toLocaleString()}`
+      `Full Name: ${payload.fullName}\nAge: ${payload.age}\nCity: ${payload.city}\nMadrasah: ${payload.madrasah}\nEmail: ${payload.email}\nSubmitted At: ${new Date().toLocaleString()}`
     );
     const mailtoHref = `mailto:imedia786@gmail.com?subject=${subject}&body=${body}`;
 
@@ -116,6 +119,19 @@ export default function Signup() {
             placeholder="e.g., 10"
           />
           {errors.age && <div className="text-red-600 text-xs mt-1">{errors.age}</div>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="madrasah">Madrasah Name</label>
+          <input
+            id="madrasah"
+            type="text"
+            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+            value={madrasah}
+            onChange={(e) => setMadrasah(e.target.value)}
+            placeholder="e.g., Darul Uloom Karachi"
+          />
+          {errors.madrasah && <div className="text-red-600 text-xs mt-1">{errors.madrasah}</div>}
         </div>
 
         <div>
@@ -178,7 +194,7 @@ export default function Signup() {
           <span className="font-semibold">Manual email:</span>{" "}
           <a
             className="text-blue-700 underline"
-            href={`mailto:imedia786@gmail.com?subject=${encodeURIComponent(`New Sign Up: ${fullName || "(Name)"}`)}&body=${encodeURIComponent(`Full Name: ${fullName}\nAge: ${age}\nCity: ${city}\nEmail: ${email}`)}`}
+            href={`mailto:imedia786@gmail.com?subject=${encodeURIComponent(`New Sign Up: ${fullName || "(Name)"}`)}&body=${encodeURIComponent(`Full Name: ${fullName}\nAge: ${age}\nCity: ${city}\nMadrasah: ${madrasah}\nEmail: ${email}`)}`}
           >
             Click here to email us your signup
           </a>
@@ -199,4 +215,3 @@ export default function Signup() {
     </div>
   );
 }
-

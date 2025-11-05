@@ -236,6 +236,7 @@ function PagesContent() {
                 <Route path="/Home" element={<Home />} />
                 
                 <Route path="/Games" element={<Games />} />
+                <Route path="/games" element={<Games />} />
                 
                 <Route path="/Leaderboard" element={<Leaderboard />} />
                 
@@ -330,6 +331,8 @@ function PagesContent() {
                 <Route path="/Quizzes" element={<Quizzes />} />
                 
                 <Route path="/AdminQuizManager" element={<AdminQuizManager />} />
+                {/* Lowercase alias for direct navigation */}
+                <Route path="/signup" element={<Signup />} />
                 <Route path="/Signup" element={<Signup />} />
                 <Route path="*" element={<Home />} />
             </Routes>
