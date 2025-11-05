@@ -23,6 +23,18 @@ const MatchingPairsOfIman = lazy(() => import("../components/games/MatchingPairs
 const SahabahArena = lazy(() => import("../components/games/SahabahArena"));
 const MazeOfGuidance = lazy(() => import("../components/games/MazeOfGuidance"));
 const AyatExplorer = lazy(() => import("../components/games/AyatExplorer"));
+const AkhlaqChallengeGame = lazy(() => import("../components/games/AkhlaqChallengeGame"));
+const DailySunnahGame = lazy(() => import("../components/games/DailySunnahGame"));
+const IslamKnowledgeRaceGame = lazy(() => import("../components/games/IslamKnowledgeRaceGame"));
+const IslamicCrosswordGame = lazy(() => import("../components/games/IslamicCrosswordGame"));
+const IslamicMoralsMazeGame = lazy(() => import("../components/games/IslamicMoralsMazeGame"));
+const ProphetStoriesGame = lazy(() => import("../components/games/ProphetStoriesGame"));
+const QuranMemoryMatchGame = lazy(() => import("../components/games/QuranMemoryMatchGame"));
+const QuranQuestGame = lazy(() => import("../components/games/QuranQuestGame"));
+const SacredSitesJigsaw = lazy(() => import("../components/games/SacredSitesJigsaw"));
+const SahabahStoriesGame = lazy(() => import("../components/games/SahabahStoriesGame"));
+const SeerahAdventureGame = lazy(() => import("../components/games/SeerahAdventureGame"));
+const SpinToWinWheel = lazy(() => import("../components/games/SpinToWinWheel"));
 
 const gamesList = [
   {
@@ -32,6 +44,8 @@ const gamesList = [
     emoji: "🔤",
     difficulty: "All Levels",
     points: "10 pts per game",
+    allowPoints: true,
+    allowPrizes: false,
     component: WordScrambleGame
   },
   {
@@ -40,7 +54,9 @@ const gamesList = [
     description: "Adventure through different lands of Islamic knowledge!",
     emoji: "🗺️",
     difficulty: "All Levels",
-    points: "10 pts per game",
+    points: "",
+    allowPoints: false,
+    allowPrizes: false,
     component: QuestForIlm
   },
   {
@@ -49,7 +65,9 @@ const gamesList = [
     description: "Compete against AI in fast-paced companion quiz!",
     emoji: "⚔️",
     difficulty: "Medium-Hard",
-    points: "10 pts per game",
+    points: "",
+    allowPoints: false,
+    allowPrizes: false,
     component: SahabahArena
   },
   {
@@ -59,6 +77,8 @@ const gamesList = [
     emoji: "🧩",
     difficulty: "All Levels",
     points: "10 pts per game",
+    allowPoints: true,
+    allowPrizes: false,
     component: MatchingPairsOfIman
   },
   {
@@ -78,6 +98,114 @@ const gamesList = [
     difficulty: "Medium",
     points: "10 pts per game",
     component: AyatExplorer
+  },
+  {
+    id: "akhlaq_challenge",
+    title: "🌙 Akhlaq Challenge Game",
+    description: "Test your Islamic manners and character!",
+    emoji: "🌙",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: AkhlaqChallengeGame
+  },
+  {
+    id: "daily_sunnah",
+    title: "☀️ Daily Sunnah Game",
+    description: "Practice daily Sunnah actions and earn points!",
+    emoji: "☀️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: DailySunnahGame
+  },
+  {
+    id: "islam_knowledge_race",
+    title: "🏁 Islam Knowledge Race",
+    description: "Race to answer tough Islamic questions!",
+    emoji: "🏁",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: IslamKnowledgeRaceGame
+  },
+  {
+    id: "islamic_crossword",
+    title: "✏️ Islamic Crossword Game",
+    description: "Solve challenging Islamic crosswords!",
+    emoji: "✏️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: IslamicCrosswordGame
+  },
+  {
+    id: "islamic_morals_maze",
+    title: "🧠 Islamic Morals Maze Game",
+    description: "Navigate moral dilemmas in Islam!",
+    emoji: "🧠",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: IslamicMoralsMazeGame
+  },
+  {
+    id: "prophet_stories",
+    title: "📖 Prophet Stories Game",
+    description: "Learn and play with stories of the Prophets!",
+    emoji: "📖",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: ProphetStoriesGame
+  },
+  {
+    id: "quran_memory_match",
+    title: "🧩 Quran Memory Match Game",
+    description: "Match Quranic verses and concepts!",
+    emoji: "🧩",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: QuranMemoryMatchGame
+  },
+  {
+    id: "quran_quest",
+    title: "🚀 Quran Quest Game",
+    description: "Embark on a quest through the Quran!",
+    emoji: "🚀",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: QuranQuestGame
+  },
+  {
+    id: "sacred_sites_jigsaw",
+    title: "🕌 Sacred Sites Jigsaw",
+    description: "Piece together Islamic sacred sites!",
+    emoji: "🕌",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SacredSitesJigsaw
+  },
+  {
+    id: "sahabah_stories",
+    title: "🌟 Sahabah Stories Game",
+    description: "Discover and play with stories of the Sahabah!",
+    emoji: "🌟",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SahabahStoriesGame
+  },
+  {
+    id: "seerah_adventure",
+    title: "🗺️ Seerah Adventure Game",
+    description: "Go on an adventure through the Seerah!",
+    emoji: "🗺️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SeerahAdventureGame
+  },
+  {
+    id: "spin_to_win",
+    title: "🎡 Spin To Win Wheel",
+    description: "Spin the wheel and win Islamic prizes!",
+    emoji: "🎡",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SpinToWinWheel
   },
   {
     id: "islamic_quiz",
@@ -141,6 +269,141 @@ const gamesList = [
     difficulty: "All Levels",
     points: "10 pts per game",
     component: MemoryMatchGame
+  },
+  {
+    id: "islamic_puzzle",
+    title: "🧩 Islamic Puzzle Challenge",
+    description: "Solve Islamic-themed puzzles!",
+    emoji: "🧩",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: AkhlaqChallengeGame
+  },
+  {
+    id: "sunnah_memory",
+    title: "🧠 Sunnah Memory Game",
+    description: "Test your memory with Sunnah actions!",
+    emoji: "🧠",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: DailySunnahGame
+  },
+  {
+    id: "prophets_maze",
+    title: "🗺️ Prophets Maze",
+    description: "Navigate mazes themed around Prophets!",
+    emoji: "🗺️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: ProphetStoriesGame
+  },
+  {
+    id: "quran_trivia",
+    title: "📚 Quran Trivia",
+    description: "Answer challenging Quran questions!",
+    emoji: "📚",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: QuranGame
+  },
+  {
+    id: "hadith_puzzle",
+    title: "📜 Hadith Puzzle",
+    description: "Piece together Hadiths!",
+    emoji: "📜",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: HadithGame
+  },
+  {
+    id: "fiqh_maze",
+    title: "🕌 Fiqh Maze",
+    description: "Navigate Islamic rulings in a maze!",
+    emoji: "🕌",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: FiqhGame
+  },
+  {
+    id: "iman_match",
+    title: "🧩 Iman Match",
+    description: "Match concepts of Iman!",
+    emoji: "🧩",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: MatchingPairsOfIman
+  },
+  {
+    id: "sahabah_trivia",
+    title: "🌟 Sahabah Trivia",
+    description: "Test your knowledge of the Sahabah!",
+    emoji: "🌟",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SahabahArena
+  },
+  {
+    id: "maze_guidance_hard",
+    title: "🧭 Maze of Guidance (Hard)",
+    description: "Navigate tough mazes by answering hard questions!",
+    emoji: "🧭",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: MazeOfGuidance
+  },
+  {
+    id: "ayat_explorer_hard",
+    title: "📚 Ayat Explorer (Hard)",
+    description: "Explore Quranic knowledge with hard puzzles!",
+    emoji: "📚",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: AyatExplorer
+  },
+  {
+    id: "crossword_hard",
+    title: "✏️ Crossword Challenge (Hard)",
+    description: "Solve tough Islamic crosswords!",
+    emoji: "✏️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: IslamicCrosswordGame
+  },
+  {
+    id: "morals_maze_hard",
+    title: "🧠 Morals Maze (Hard)",
+    description: "Navigate hard moral dilemmas in Islam!",
+    emoji: "🧠",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: IslamicMoralsMazeGame
+  },
+  {
+    id: "seerah_adventure_hard",
+    title: "🗺️ Seerah Adventure (Hard)",
+    description: "Go on a hard adventure through the Seerah!",
+    emoji: "🗺️",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SeerahAdventureGame
+  },
+  {
+    id: "spin_to_win_hard",
+    title: "🎡 Spin To Win (Hard)",
+    description: "Spin the wheel for hard Islamic prizes!",
+    emoji: "🎡",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: SpinToWinWheel
+  },
+  {
+    id: "memory_match_hard",
+    title: "🎴 Memory Match (Hard)",
+    description: "Match hard pairs of Islamic terms!",
+    emoji: "🎴",
+    difficulty: "Hard",
+    points: "10 pts per game",
+    component: MemoryMatchGame
   }
 ];
 
@@ -162,39 +425,27 @@ export default function Games() {
   const [showMonthlyLeaderboard, setShowMonthlyLeaderboard] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const authenticated = await base44.auth.isAuthenticated();
-        setIsAuthenticated(authenticated);
-        
-        if (authenticated) {
-          const userData = await base44.auth.me();
-          setUser(userData);
-          // Removed the onboarding_completed check and navigation
-        }
-      } catch (error) {
-        console.error("Authentication check failed:", error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkAuth();
+    // Local-only authentication logic
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(storedUser));
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+    setIsLoading(false);
   }, [navigate]);
 
   const { data: monthlyLeaderboard = [] } = useQuery({
     queryKey: ['monthly-leaderboard'],
     queryFn: async () => {
+      // Local-only leaderboard logic
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      const allScores = await base44.entities.GameScore.filter({}, '-created_date', 1000); 
-      
-      const monthlyScores = allScores.filter(score => 
-        new Date(score.created_date) >= firstDayOfMonth
-      );
-      
+      // Get scores from localStorage
+      const scores = JSON.parse(localStorage.getItem('gameScores') || '[]');
+      const monthlyScores = scores.filter(score => new Date(score.created_date) >= firstDayOfMonth);
       const userScores = {};
       monthlyScores.forEach(score => {
         if (!userScores[score.user_id]) {
@@ -203,29 +454,19 @@ export default function Games() {
         userScores[score.user_id].total_score += score.score || 0;
         userScores[score.user_id].games_played += 1;
       });
-      
+      // Get user info from localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
       const userIds = Object.keys(userScores);
-      const usersWithMonthlyScores = await Promise.all(
-        userIds.map(async (userId) => {
-          try {
-            const userList = await base44.entities.User.filter({ id: userId });
-            if (userList.length > 0) {
-              return { 
-                ...userList[0], 
-                monthly_score: userScores[userId].total_score, 
-                monthly_games: userScores[userId].games_played 
-              };
-            }
-          } catch (e) {
-            console.error(`Error fetching user ${userId}:`, e);
-            return null;
-          }
-          return null;
-        })
-      );
-      
+      const usersWithMonthlyScores = userIds.map(userId => {
+        const userInfo = users.find(u => u.id === userId) || { id: userId, name: 'Guest' };
+        return {
+          ...userInfo,
+          monthly_score: userScores[userId].total_score,
+          monthly_games: userScores[userId].games_played
+        };
+      });
       return usersWithMonthlyScores
-        .filter(u => u !== null && u.monthly_score > 0)
+        .filter(u => u.monthly_score > 0)
         .sort((a, b) => b.monthly_score - a.monthly_score)
         .slice(0, 10);
     },
@@ -236,8 +477,9 @@ export default function Games() {
   const { data: leaderboardUsers = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      const users = await base44.entities.User.list('-points', 10); 
-      return users.filter(u => u.points > 0);
+      // Local-only leaderboard logic
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      return users.filter(u => u.points > 0).sort((a, b) => b.points - a.points).slice(0, 10);
     },
     enabled: isAuthenticated,
     initialData: [],
@@ -250,17 +492,23 @@ export default function Games() {
   const handleGameComplete = async (score) => {
     if (isAuthenticated && user && selectedGame) {
       try {
-        await base44.entities.GameScore.create({
+        // Save score to localStorage
+        const gameScores = JSON.parse(localStorage.getItem('gameScores') || '[]');
+        gameScores.push({
           user_id: user.id,
           game_type: selectedGame.id,
           score: score,
+          created_date: new Date().toISOString()
         });
-
-        const newTotalPoints = Math.min((user.points || 0) + score, 1500);
-        
-        await base44.auth.updateMe({
-          points: newTotalPoints
-        });
+        localStorage.setItem('gameScores', JSON.stringify(gameScores));
+        // Update user points
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const idx = users.findIndex(u => u.id === user.id);
+        let newTotalPoints = Math.min((user.points || 0) + score, 1500);
+        if (idx !== -1) {
+          users[idx].points = newTotalPoints;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
         setUser(prevUser => ({ ...prevUser, points: newTotalPoints }));
       } catch (error) {
         console.error("Error saving game score:", error);

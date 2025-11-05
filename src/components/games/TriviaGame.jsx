@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Star, Heart, Zap } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+// import { base44 } from "@/api/base44Client";
 
 // Expanded question bank with MORE questions
 const allQuestions = {

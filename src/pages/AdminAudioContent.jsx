@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+// import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,98 +67,93 @@ export default function AdminAudioContent() {
     featured: false
   });
 
-  const { data: audioContent = [], isLoading } = useQuery({
-    queryKey: ['audio-content'],
-    queryFn: () => base44.entities.AudioContent.list('-created_date'),
-    initialData: [],
-  });
-
-  const createAudioMutation = useMutation({
-    mutationFn: (data) => base44.entities.AudioContent.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audio-content'] });
-      setShowCreateDialog(false);
-      resetForm();
-      alert('Audio content created successfully!');
-    },
-    onError: (error) => {
-      console.error("Error creating audio:", error);
-      alert('Failed to create audio content. Please try again.');
-    }
-  });
-
-  const updateAudioMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.AudioContent.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audio-content'] });
-      setShowEditDialog(false);
-      setEditingAudio(null);
-      resetForm();
-      alert('Audio content updated successfully!');
-    },
-    onError: (error) => {
-      console.error("Error updating audio:", error);
-      alert('Failed to update audio content. Please try again.');
-    }
-  });
-
-  const deleteAudioMutation = useMutation({
-    mutationFn: (id) => base44.entities.AudioContent.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audio-content'] });
-      alert('Audio content deleted successfully!');
-    },
-    onError: (error) => {
-      console.error("Error deleting audio:", error);
-      alert('Failed to delete audio content. Please try again.');
-    }
-  });
-
-  const handleAudioUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('audio/')) {
-      alert('Please upload an audio file (MP3, WAV, etc.)');
-      return;
-    }
-
-    setUploadProgress({ ...uploadProgress, audio: true });
-    
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, mp3_url: result.file_url });
-      alert('Audio file uploaded successfully!');
-    } catch (error) {
-      console.error("Error uploading audio:", error);
-      alert('Failed to upload audio file. Please try again.');
-    } finally {
-      setUploadProgress({ ...uploadProgress, audio: false });
-    }
-  };
-
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
-      return;
-    }
-
-    setUploadProgress({ ...uploadProgress, image: true });
-    
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, cover_image: result.file_url });
-      alert('Cover image uploaded successfully!');
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      alert('Failed to upload image. Please try again.');
-    } finally {
-      setUploadProgress({ ...uploadProgress, image: false });
-    }
-  };
+  // All usages of base44 logic below should be commented out or replaced with local-only logic
+  // const { data: audioContent = [], isLoading } = useQuery({
+  //   queryKey: ['audio-content'],
+  //   queryFn: () => base44.entities.AudioContent.list('-created_date'),
+  //   initialData: [],
+  // });
+  
+  // const createAudioMutation = useMutation({
+  //   mutationFn: (data) => base44.entities.AudioContent.create(data),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['audio-content'] });
+  //     setShowCreateDialog(false);
+  //     resetForm();
+  //     alert('Audio content created successfully!');
+  //   },
+  //   onError: (error) => {
+  //     console.error("Error creating audio:", error);
+  //     alert('Failed to create audio content. Please try again.');
+  //   }
+  // });
+  
+  // const updateAudioMutation = useMutation({
+  //   mutationFn: ({ id, data }) => base44.entities.AudioContent.update(id, data),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['audio-content'] });
+  //     setShowEditDialog(false);
+  //     setEditingAudio(null);
+  //     resetForm();
+  //     alert('Audio content updated successfully!');
+  //   },
+  //   onError: (error) => {
+  //     console.error("Error updating audio:", error);
+  //     alert('Failed to update audio content. Please try again.');
+  //   }
+  // });
+  
+  // const deleteAudioMutation = useMutation({
+  //   mutationFn: (id) => base44.entities.AudioContent.delete(id),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['audio-content'] });
+  //     alert('Audio content deleted successfully!');
+  //   },
+  //   onError: (error) => {
+  //     console.error("Error deleting audio:", error);
+  //     alert('Failed to delete audio content. Please try again.');
+  //   }
+  // });
+  
+  // const handleAudioUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
+  //   if (!file.type.startsWith('audio/')) {
+  //     alert('Please upload an audio file (MP3, WAV, etc.)');
+  //     return;
+  //   }
+  //   setUploadProgress({ ...uploadProgress, audio: true });
+  //   try {
+  //     const result = await base44.integrations.Core.UploadFile({ file });
+  //     setFormData({ ...formData, mp3_url: result.file_url });
+  //     alert('Audio file uploaded successfully!');
+  //   } catch (error) {
+  //     console.error("Error uploading audio:", error);
+  //     alert('Failed to upload audio file. Please try again.');
+  //   } finally {
+  //     setUploadProgress({ ...uploadProgress, audio: false });
+  //   }
+  // };
+  
+  // const handleImageUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
+  //   if (!file.type.startsWith('image/')) {
+  //     alert('Please upload an image file');
+  //     return;
+  //   }
+  //   setUploadProgress({ ...uploadProgress, image: true });
+  //   try {
+  //     const result = await base44.integrations.Core.UploadFile({ file });
+  //     setFormData({ ...formData, cover_image: result.file_url });
+  //     alert('Cover image uploaded successfully!');
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     alert('Failed to upload image. Please try again.');
+  //   } finally {
+  //     setUploadProgress({ ...uploadProgress, image: false });
+  //   }
+  // };
 
   const handleCreate = () => {
     if (!formData.title || !formData.category) {

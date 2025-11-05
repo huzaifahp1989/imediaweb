@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Sparkles, Heart, Shield, MessageCircle, ExternalLink, Palette, Mic, Newspaper, Radio, Play, Pause, Volume2, VolumeX, Target, Award, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import WordPressFeed from "@/components/WordPressFeed";
+// import WordPressFeed from "@/components/WordPressFeed";
 import { useState, useEffect } from "react";
 import { useRadio } from "@/pages/Layout";
 
@@ -565,7 +565,6 @@ export default function Home() {
               Educational resources and parenting tips for Muslim families
             </p>
           </div>
-          <WordPressFeed />
           <div className="text-center mt-8">
             <a
               href="https://islamkidszone.com"

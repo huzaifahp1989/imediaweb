@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Trophy, Star, Lightbulb, CheckCircle2 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+// import { base44 } from "@/api/base44Client";
 
 const crosswordClues = [
   { word: "ALLAH", clue: "The one and only God in Islam", hint: "5 letters", points: 2 },

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 // Input component is no longer used with the new puzzle types, so it's removed
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, RotateCcw, BookOpen, CheckCircle2, XCircle } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+// import { base44 } from "@/api/base44Client";
 import PropTypes from 'prop-types';
 
 // Utility function to shuffle an array (for scrambling words)
