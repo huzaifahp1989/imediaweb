@@ -97,6 +97,7 @@ import AdminGameSettings from "./AdminGameSettings";
 import Quizzes from "./Quizzes";
 
 import AdminQuizManager from "./AdminQuizManager";
+import Signup from "./Signup";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -199,7 +200,8 @@ const PAGES = {
     Quizzes: Quizzes,
     
     AdminQuizManager: AdminQuizManager,
-    
+    Signup: Signup,
+
 }
 
 function _getCurrentPage(url) {
@@ -328,6 +330,7 @@ function PagesContent() {
                 <Route path="/Quizzes" element={<Quizzes />} />
                 
                 <Route path="/AdminQuizManager" element={<AdminQuizManager />} />
+                <Route path="/Signup" element={<Signup />} />
                 <Route path="*" element={<Home />} />
             </Routes>
         </Layout>
