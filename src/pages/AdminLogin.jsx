@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shield, Lock, CheckCircle2, AlertTriangle } from "lucide-react";
 import { adminSignIn, adminSignOut, watchAuth, isAdminUser, getFirebase } from "@/api/firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { createPageUrl } from "@/utils";
 
 export default function AdminLogin() {
@@ -64,7 +65,15 @@ export default function AdminLogin() {
       }
       navigate(createPageUrl("AdminDashboard"));
     } catch (err) {
-      setError(err.message || "Login failed");
+      // Map common Firebase auth errors to friendly messages
+      const code = err?.code || "";
+      let msg = err?.message || "Login failed";
+      if (code === "auth/invalid-credential") msg = "Invalid email or password. Please try again or reset your password.";
+      if (code === "auth/user-not-found") msg = "No account found for this email. Please sign up or ask an admin to create one.";
+      if (code === "auth/wrong-password") msg = "Incorrect password. Try again or reset your password.";
+      if (code === "auth/too-many-requests") msg = "Too many attempts. Please wait a minute, then try again.";
+      if (code === "auth/operation-not-allowed") msg = "Email/password sign-in is disabled. Enable it in Firebase Auth → Sign-in method.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -152,8 +161,30 @@ export default function AdminLogin() {
                     <span className="inline-flex items-center gap-2"><Lock className="w-4 h-4" />Sign In</span>
                   )}
                 </Button>
-                <div className="text-xs text-gray-500 mt-3 flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" /> Access available to any signed-in user
+                <div className="flex items-center justify-between text-xs mt-2">
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:underline"
+                    onClick={async () => {
+                      setError("");
+                      try {
+                        const { auth } = getFirebase();
+                        if (!auth) throw new Error("Firebase not configured");
+                        if (!email) throw new Error("Enter your email above, then click reset.");
+                        await sendPasswordResetEmail(auth, email);
+                        setError("Password reset email sent. Check your inbox.");
+                      } catch (err) {
+                        const code = err?.code || "";
+                        let msg = err?.message || "Failed to send reset email.";
+                        if (code === "auth/invalid-email") msg = "Please enter a valid email address.";
+                        if (code === "auth/user-not-found") msg = "No account found for this email.";
+                        setError(msg);
+                      }
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                  <span className="text-gray-500 flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-600" /> Access available to any signed-in user</span>
                 </div>
               </form>
               </>
