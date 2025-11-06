@@ -9,8 +9,14 @@ export async function handler(event) {
     if (!token) return { statusCode: 401, body: 'Missing auth token' };
 
     const decoded = await admin.auth().verifyIdToken(token);
+    const email = (decoded.email || '').toLowerCase();
     const adminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase();
-    if (adminEmail && (decoded.email || '').toLowerCase() !== adminEmail) {
+    const adminDomain = (process.env.ADMIN_EMAIL_DOMAIN || '').toLowerCase().replace(/^@/, '');
+
+    let allowed = true;
+    if (adminEmail) allowed = email === adminEmail;
+    if (adminDomain) allowed = allowed || email.endsWith(`@${adminDomain}`);
+    if (!allowed) {
       return { statusCode: 403, body: 'Forbidden' };
     }
 
@@ -45,4 +51,3 @@ export async function handler(event) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
   }
 }
-

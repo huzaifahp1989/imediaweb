@@ -19,7 +19,14 @@ import {
   orderBy,
   updateDoc,
   doc,
+  deleteDoc,
 } from 'firebase/firestore';
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage';
 
 let app;
 let auth;
@@ -137,11 +144,106 @@ export const messagesApi = {
   },
 };
 
+// Sponsors/Ads helpers (Firestore-backed with localStorage fallback, no backend calls)
+function readLocalSponsors() {
+  try {
+    const raw = localStorage.getItem('local_sponsors');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalSponsors(items) {
+  try {
+    localStorage.setItem('local_sponsors', JSON.stringify(items));
+  } catch {}
+}
+
+const genLocalId = () => (globalThis.crypto?.randomUUID?.() || `local_${Date.now()}`);
+
+export const sponsorsApi = {
+  async add(sponsor) {
+    const { db } = getFirebase();
+    if (!db) {
+      const items = readLocalSponsors();
+      const id = genLocalId();
+      const next = [...items, { ...sponsor, _localId: id }];
+      writeLocalSponsors(next);
+      return { id };
+    }
+    const col = collection(db, 'sponsors');
+    const ref = await addDoc(col, sponsor);
+    return { id: ref.id };
+  },
+  async list() {
+    const { db } = getFirebase();
+    if (!db) {
+      return readLocalSponsors();
+    }
+    const col = collection(db, 'sponsors');
+    let snap;
+    try {
+      const q = query(col, orderBy('order', 'asc'));
+      snap = await getDocs(q);
+    } catch {
+      snap = await getDocs(col);
+    }
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+  async update(id, patch) {
+    const { db } = getFirebase();
+    if (!db) {
+      const items = readLocalSponsors();
+      const next = items.map(it => {
+        const match = it.id === id || it._localId === id;
+        return match ? { ...it, ...patch } : it;
+      });
+      writeLocalSponsors(next);
+      return { ok: true };
+    }
+    const ref = doc(db, 'sponsors', id);
+    await updateDoc(ref, patch);
+  },
+  async remove(id) {
+    const { db } = getFirebase();
+    if (!db) {
+      const items = readLocalSponsors().filter(it => (it.id !== id && it._localId !== id));
+      writeLocalSponsors(items);
+      return { ok: true };
+    }
+    const ref = doc(db, 'sponsors', id);
+    await deleteDoc(ref);
+  },
+};
+
+// Upload an image file to Firebase Storage and return a public download URL
+export async function uploadSponsorImage(file, name = '') {
+  const { app } = getFirebase();
+  if (!app) throw new Error('Firebase not configured');
+  if (!file) throw new Error('No file provided');
+
+  const storage = getStorage(app);
+  const safeName = String(name || file.name || 'image').replace(/[^a-z0-9._-]+/gi, '-').toLowerCase();
+  const path = `sponsors/${Date.now()}_${safeName}`;
+  const ref = storageRef(storage, path);
+  await uploadBytes(ref, file);
+  const url = await getDownloadURL(ref);
+  return { url, path };
+}
+
 // Utility: check if current user is the admin email in env
 export async function isAdminUser() {
   const { auth } = getFirebase();
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL?.toLowerCase();
-  const user = auth?.currentUser;
-  if (!user || !adminEmail) return false;
-  return user.email?.toLowerCase() === adminEmail;
+  const userEmail = auth?.currentUser?.email?.toLowerCase();
+  if (!userEmail) return false;
+
+  const adminEmail = (import.meta.env.VITE_ADMIN_EMAIL || "").toLowerCase().trim();
+  const adminDomain = (import.meta.env.VITE_ADMIN_EMAIL_DOMAIN || "").toLowerCase().trim().replace(/^@/, "");
+
+  const emailMatch = adminEmail ? userEmail === adminEmail : false;
+  const domainMatch = adminDomain ? userEmail.endsWith(`@${adminDomain}`) : false;
+
+  // Allow if either exact email or domain matches. If neither env is set, deny.
+  return emailMatch || domainMatch;
 }

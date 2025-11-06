@@ -7,6 +7,8 @@ import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Spa
 import { motion, AnimatePresence } from "framer-motion";
 // import WordPressFeed from "@/components/WordPressFeed";
 import { useState, useEffect } from "react";
+import { sponsorsApi } from "@/api/firebase";
+import React from "react";
 import { useRadio } from "@/pages/Layout";
 
 const features = [
@@ -92,6 +94,7 @@ const islamicValues = [
 export default function Home() {
   const { isPlaying, isMuted, volume, togglePlay, toggleMute, setVolume } = useRadio();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [sponsors, setSponsors] = useState([]);
 
   // Banner slides data
   const bannerSlides = [
@@ -130,10 +133,55 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Load sponsors/ads for home placement
+  useEffect(() => {
+    const loadSponsors = async () => {
+      try {
+        const list = await sponsorsApi.list();
+        const filtered = (list || []).filter(it => (it.active ?? true) && (it.placement || 'home') === 'home');
+        filtered.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setSponsors(filtered);
+      } catch (e) {
+        try {
+          const raw = localStorage.getItem('homepage_sponsors');
+          const list = raw ? JSON.parse(raw) : [];
+          const filtered = (Array.isArray(list) ? list : []).filter(it => (it.active ?? true) && (it.placement || 'home') === 'home');
+          filtered.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          setSponsors(filtered);
+        } catch {
+          setSponsors([]);
+        }
+      }
+    };
+    loadSponsors();
+  }, []);
+
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
   };
+
+  function SponsorTile({ item }) {
+    const [imgError, setImgError] = React.useState(false);
+    const hasImg = item.imageUrl && !imgError;
+    return (
+      <a href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="group block">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200 shadow hover:shadow-lg transition">
+          {hasImg ? (
+            <img
+              src={item.imageUrl}
+              alt={item.name || 'Sponsor'}
+              className="w-full h-24 md:h-28 object-contain p-4"
+              referrerPolicy="no-referrer"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="p-6 text-center text-gray-700 font-semibold">{item.name || 'Sponsor'}</div>
+          )}
+        </div>
+      </a>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -248,7 +296,7 @@ export default function Home() {
       {/* Animated Text Slider Banner */}
       <section className="py-8 md:py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="relative h-32 md:h-40 overflow-hidden rounded-2xl shadow-2xl">
+          <div className="relative overflow-hidden rounded-2xl shadow-2xl">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -256,7 +304,7 @@ export default function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.5 }}
-                className={`absolute inset-0 bg-gradient-to-r ${bannerSlides[currentSlide].gradient} flex items-center justify-center p-6`}
+                className={`bg-gradient-to-r ${bannerSlides[currentSlide].gradient} flex items-center justify-center p-8 md:p-12`}
               >
                 <div className="text-center text-white">
                   <h2 className="text-2xl md:text-4xl font-bold mb-2">
@@ -327,6 +375,20 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Sponsors & Ads */}
+      {sponsors.length > 0 && (
+        <section className="py-8 md:py-12 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Our Sponsors</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {sponsors.map((s) => (
+                <SponsorTile key={s.id || s._localId} item={s} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Islamic Radio Player Section */}
       <section className="py-8 md:py-12 px-4 bg-gradient-to-br from-purple-50 to-blue-50">

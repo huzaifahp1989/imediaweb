@@ -82,7 +82,7 @@ export default function AdminLogin() {
                   <span>Firebase is not configured.</span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Please set Firebase env vars in <code>.env</code>: <code>VITE_FIREBASE_API_KEY</code>, <code>VITE_FIREBASE_AUTH_DOMAIN</code>, <code>VITE_FIREBASE_PROJECT_ID</code>, <code>VITE_FIREBASE_APP_ID</code>. Optional: <code>VITE_ADMIN_EMAIL</code>, <code>VITE_ADMIN_2FA_CODE</code>.
+                  Please set Firebase env vars in <code>.env</code>: <code>VITE_FIREBASE_API_KEY</code>, <code>VITE_FIREBASE_AUTH_DOMAIN</code>, <code>VITE_FIREBASE_PROJECT_ID</code>, <code>VITE_FIREBASE_APP_ID</code>. Optional: <code>VITE_ADMIN_EMAIL</code> (exact match), <code>VITE_ADMIN_EMAIL_DOMAIN</code> (e.g. <code>imediackids.com</code>), <code>VITE_ADMIN_2FA_CODE</code>.
                 </p>
                 <div className="text-xs text-gray-500 bg-gray-50 border rounded p-2">
                   <div className="font-semibold mb-1">Detected env flags (no secrets):</div>

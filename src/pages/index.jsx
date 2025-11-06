@@ -92,6 +92,7 @@ import DeleteAccount from "./DeleteAccount";
 import LearningPaths from "./LearningPaths";
 
 import AdminBanners from "./AdminBanners";
+import AdminSponsors from "./AdminSponsors";
 
 import AdminStoryBuilder from "./AdminStoryBuilder";
 
@@ -331,6 +332,7 @@ function PagesContent() {
                 <Route path="/LearningPaths" element={<LearningPaths />} />
                 
                 <Route path="/AdminBanners" element={<AdminGuard><AdminBanners /></AdminGuard>} />
+                <Route path="/AdminSponsors" element={<AdminGuard><AdminSponsors /></AdminGuard>} />
                 
                 <Route path="/AdminStoryBuilder" element={<AdminGuard><AdminStoryBuilder /></AdminGuard>} />
                 

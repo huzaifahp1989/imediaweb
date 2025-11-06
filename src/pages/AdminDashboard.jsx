@@ -105,6 +105,14 @@ export default function AdminDashboard() {
       stats: "Edit slides"
     },
     {
+      title: "Sponsors & Ads",
+      description: "Manage sponsors and advertising tiles",
+      icon: Newspaper,
+      path: "AdminSponsors",
+      color: "from-amber-500 to-orange-500",
+      stats: "Configure placements"
+    },
+    {
       title: "Media Library",
       description: "Upload and manage images",
       icon: Image,
