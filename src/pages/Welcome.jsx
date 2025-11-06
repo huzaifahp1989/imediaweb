@@ -160,18 +160,7 @@ export default function Welcome() {
                 <Button type="button" variant="outline" onClick={handleSkip} className="w-full">
                   Skip & Explore
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const subject = encodeURIComponent("Access Request - Islam Kids Zone");
-                    const body = encodeURIComponent("Hi, I'd like to create an account for Islam Kids Zone. My name is ____ and my contact details are ____.");
-                    window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-                  }}
-                  className="w-full"
-                >
-                  Request Access via Email
-                </Button>
+                {/* Removed email request shortcut; encourage self-signup via Signup page */}
               </div>
             </form>
           </CardContent>

@@ -122,15 +122,9 @@ export default function AdminLogin() {
                   </ul>
                   <div className="mt-2">If values show as <code>(empty)</code>, ensure your <code>.env</code> exists at the project root and variables start with <code>VITE_</code>.</div>
                 </div>
-                <Button
-                  onClick={() => {
-                    const subject = encodeURIComponent("Admin Access - Islam Media Central");
-                    const body = encodeURIComponent("Please enable admin access. My email is: " + adminEmail);
-                    window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-                  }}
-                >
-                  Request Access via Email
-                </Button>
+                <div className="text-sm text-gray-600">
+                  Admin login requires Firebase configuration. Once configured, use your email/password to sign in.
+                </div>
               </div>
             ) : (
               <>

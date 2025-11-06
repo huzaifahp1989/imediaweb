@@ -19,6 +19,7 @@ import {
   query,
   orderBy,
   updateDoc,
+  setDoc,
   doc,
   deleteDoc,
 } from 'firebase/firestore';
@@ -90,14 +91,8 @@ export async function saveUserProfile(uid, profile) {
   const { db } = getFirebase();
   if (!db) throw new Error('Firebase not configured');
   const ref = doc(db, 'users', uid);
-  await updateDoc(ref, { ...(profile || {}), updatedAt: new Date() }).catch(async (err) => {
-    // If doc does not exist, create it
-    if (String(err?.message || '').toLowerCase().includes('no document to update')) {
-      await addDoc(collection(db, 'users'), { uid, ...(profile || {}), createdAt: new Date() });
-    } else {
-      throw err;
-    }
-  });
+  // Ensure the document id equals uid; merge to preserve existing fields
+  await setDoc(ref, { uid, ...(profile || {}), updatedAt: new Date() }, { merge: true });
 }
 
 export function watchAuth(callback) {

@@ -347,9 +347,11 @@ function PagesContent() {
                 <Route path="/Quizzes" element={<Quizzes />} />
                 
                 <Route path="/AdminQuizManager" element={<AdminQuizManager />} />
-                {/* Lowercase alias for direct navigation */}
+                {/* Signup routes and legacy Signin redirects */}
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/Signup" element={<Signup />} />
+                <Route path="/Signin" element={<Signup />} />
+                <Route path="/signin" element={<Signup />} />
                 <Route path="*" element={<Home />} />
             </Routes>
         </Layout>

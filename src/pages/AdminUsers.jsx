@@ -1,15 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Edit, Trash2, Search } from "lucide-react";
+import { getFirebase } from "@/api/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function AdminUsers() {
   // Unlocked: rely on AdminGuard for access
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { db } = getFirebase();
+        if (!db) return;
+        const col = collection(db, 'users');
+        const snap = await getDocs(col);
+        const list = snap.docs.map(d => {
+          const data = d.data() || {};
+          return {
+            id: d.id,
+            name: data.fullName || data.name || "",
+            email: data.email || "",
+            role: data.role || "user",
+            age: data.age || "",
+            city: data.city || "",
+            madrasah: data.madrasah || "",
+          };
+        });
+        setUsers(list);
+      } catch (e) {
+        console.warn('Failed to load users from Firestore:', e?.message || e);
+      }
+    };
+    load();
+  }, []);
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase();
@@ -44,7 +73,7 @@ export default function AdminUsers() {
           <CardContent className="p-6">
             {filtered.length === 0 ? (
               <div className="text-center text-gray-600 py-10">
-                No users yet. Use “Add User” to create real accounts.
+                No users yet. Ask users to sign up via the Signup page.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -56,7 +85,10 @@ export default function AdminUsers() {
                         {u.role}
                       </Badge>
                     </div>
-                    <div className="text-sm text-gray-600 mb-4">{u.email}</div>
+                    <div className="text-sm text-gray-600 mb-1">{u.email}</div>
+                    <div className="text-xs text-gray-500">Age: {u.age || '-'}</div>
+                    <div className="text-xs text-gray-500">City: {u.city || '-'}</div>
+                    <div className="text-xs text-gray-500 mb-4">Madrasah: {u.madrasah || '-'}</div>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" onClick={() => setEditingUser(u)}>
                         <Edit className="w-4 h-4 mr-1" /> Edit
@@ -107,7 +139,7 @@ export default function AdminUsers() {
                   </Button>
                   <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Note: This is a local mock UI. Wire to Firebase/Base44 for real user management.</p>
+                <p className="text-xs text-gray-500 mt-2">Users are loaded from Firestore `users` collection. Editing/deleting here is local-only.</p>
               </div>
             )}
           </CardContent>

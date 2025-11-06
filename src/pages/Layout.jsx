@@ -371,24 +371,18 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                 ) : (
                   <div className="mb-4 pb-4 border-b border-gray-200 space-y-2">
-                    <Button
-                      onClick={() => {
-                        const subject = encodeURIComponent("Access Request - Islam Kids Zone");
-                        const body = encodeURIComponent("Hi, I'd like to request access to Islam Kids Zone. My name is ____ and my contact details are ____.");
-                        const mailto = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-                        // Prefer window.open for mailto to avoid net::ERR_ABORTED in some dev environments
-                        try {
-                          window.open(mailto);
-                        } catch (e) {
-                          // Fallback
-                          window.location.href = mailto;
-                        }
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform w-full"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Request Access via Email
-                    </Button>
+                    <Link to={createPageUrl("Signup")} onClick={handleMobileLinkClick}>
+                      <Button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:scale-105 transition-transform w-full">
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Sign up
+                      </Button>
+                    </Link>
+                    <Link to={createPageUrl("Login")} onClick={handleMobileLinkClick}>
+                      <Button variant="outline" className="flex items-center gap-2 px-4 py-2 rounded-lg w-full">
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Login
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
