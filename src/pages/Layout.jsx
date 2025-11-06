@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail } from "lucide-react";
+import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain } from "lucide-react";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion } from "framer-motion";
 import {
@@ -139,7 +139,7 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
-  const navItems = [
+  const baseNavItems = [
     { name: "Home", icon: Home, path: "Home" },
     { name: "Games", icon: Gamepad2, path: "Games" },
     { name: "Learning Paths", icon: GraduationCap, path: "LearningPaths" },
@@ -169,6 +169,12 @@ export default function Layout({ children, currentPageName }) {
     { name: "Signup", icon: UserPlus, path: "Signup" },
     { name: "About", icon: Info, path: "About" },
   ];
+
+  const isAdminSection = String(currentPageName || '').toLowerCase().startsWith('admin');
+  const showAssistantNav = isAdminSection || currentPageName === 'Assistant';
+  const navItems = showAssistantNav
+    ? [...baseNavItems, { name: "AI Agent / ChatGPT", icon: Brain, path: "Assistant" }]
+    : baseNavItems;
 
   const handleMobileLinkClick = () => {
     setMobileMenuOpen(false);

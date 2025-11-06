@@ -20,3 +20,5 @@
   VITE_FIREBASE_MESSAGING_SENDER_ID = "947105835283"
   VITE_FIREBASE_APP_ID = "1:947105835283:web:95e9cb6011c599093f12e6"
   VITE_ADMIN_EMAIL = "huzaify786@gmail.com"
+  # Also provide server-side variable for functions
+  ADMIN_EMAIL = "huzaify786@gmail.com"

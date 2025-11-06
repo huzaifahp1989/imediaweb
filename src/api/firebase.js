@@ -262,6 +262,10 @@ export async function uploadSponsorImage(file, name = '') {
 // Utility: check if current user is the admin email in env
 export async function isAdminUser() {
   const { auth } = getFirebase();
-  // Relax gating: allow any authenticated user
-  return Boolean(auth?.currentUser);
+  const user = auth?.currentUser;
+  if (!user) return false;
+  const adminEmail = String(import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase();
+  const email = String(user.email || '').toLowerCase();
+  // If admin email is configured, require exact match; otherwise allow any authenticated user
+  return adminEmail ? email === adminEmail : true;
 }

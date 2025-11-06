@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, BookOpen, Search, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, BookOpen, Search, Image as ImageIcon, Brain } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -144,6 +144,12 @@ export default function AdminStories() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Link to={createPageUrl("Assistant")}>
+              <Button variant="outline">
+                <Brain className="w-4 h-4 mr-2" />
+                Open AI Agent
+              </Button>
+            </Link>
             <Link to={createPageUrl("AdminMedia")}>
               <Button variant="outline">
                 <ImageIcon className="w-4 h-4 mr-2" />

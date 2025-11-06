@@ -102,7 +102,9 @@ import Quizzes from "./Quizzes";
 
 import AdminQuizManager from "./AdminQuizManager";
 import Signup from "./Signup";
+import Login from "./Login";
 import AdminMessages from "./AdminMessages";
+import Assistant from "./Assistant";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -207,6 +209,8 @@ const PAGES = {
     
     AdminQuizManager: AdminQuizManager,
     Signup: Signup,
+    Login: Login,
+    Assistant: Assistant,
 
 }
 
@@ -352,6 +356,12 @@ function PagesContent() {
                 <Route path="/Signup" element={<Signup />} />
                 <Route path="/Signin" element={<Signup />} />
                 <Route path="/signin" element={<Signup />} />
+                {/* Login routes */}
+                <Route path="/Login" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                {/* Assistant routes (admin-only) */}
+                <Route path="/Assistant" element={<AdminGuard><Assistant /></AdminGuard>} />
+                <Route path="/assistant" element={<AdminGuard><Assistant /></AdminGuard>} />
                 <Route path="*" element={<Home />} />
             </Routes>
         </Layout>

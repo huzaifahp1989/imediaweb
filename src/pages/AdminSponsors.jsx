@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Plus, Save, Trash2, Edit, X, ExternalLink, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Save, Trash2, Edit, X, ExternalLink, Image as ImageIcon, Brain } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { sponsorsApi, uploadSponsorImage, getFirebase } from "@/api/firebase";
@@ -156,9 +156,14 @@ export default function AdminSponsors() {
           <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2"><ExternalLink className="w-5 h-5"/> Manage Sponsors & Ads</span>
-              <Link to={createPageUrl("AdminDashboard")} className="text-white/90 hover:text-white">
-                <Button variant="ghost" className="text-white"><ArrowLeft className="w-4 h-4 mr-2"/> Back to Dashboard</Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link to={createPageUrl("Assistant")} className="text-white/90 hover:text-white">
+                  <Button variant="ghost" className="text-white"><Brain className="w-4 h-4 mr-2"/> Open AI Agent</Button>
+                </Link>
+                <Link to={createPageUrl("AdminDashboard")} className="text-white/90 hover:text-white">
+                  <Button variant="ghost" className="text-white"><ArrowLeft className="w-4 h-4 mr-2"/> Back to Dashboard</Button>
+                </Link>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
