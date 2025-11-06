@@ -5,8 +5,55 @@ export async function handler(event) {
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: 'Method Not Allowed' };
     }
+    // Initialize Firebase Admin. If credentials are missing, attempt OpenAI reply in local dev
+    let admin;
+    try {
+      ({ admin } = getAdmin());
+    } catch (initErr) {
+      const apiKey = process.env.OPENAI_API_KEY || '';
+      const body = JSON.parse(event.body || '{}');
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      const mode = String(body.mode || 'chat');
 
-    const { admin } = getAdmin();
+      if (!apiKey) {
+        const reply = 'AI not configured. Set OPENAI_API_KEY to enable chat. For full auth, also set FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY.';
+        return { statusCode: 200, body: JSON.stringify({ reply }) };
+      }
+
+      if (!messages.length) {
+        const reply = 'No messages provided.';
+        return { statusCode: 200, body: JSON.stringify({ reply }) };
+      }
+
+      try {
+        const system = mode === 'admin'
+          ? 'You are an admin assistant for the Islam Kids Zone website. Answer conversationally and when the user asks to edit site content, suggest the specific admin page to use (e.g., AdminBanners, AdminStories, AdminQuizManager, AdminUsers) and outline steps. Do not perform destructive actions. Keep responses short and mobile-friendly.'
+          : 'You are a helpful assistant for Islam Kids Zone. Keep responses concise and friendly.';
+
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: system },
+              ...messages,
+            ],
+            temperature: 0.7,
+          }),
+        });
+        if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content || '';
+        return { statusCode: 200, body: JSON.stringify({ reply }) };
+      } catch (err) {
+        const reply = 'Assistant is temporarily unavailable due to server configuration. Please try again later or use the admin pages directly.';
+        return { statusCode: 200, body: JSON.stringify({ reply }) };
+      }
+    }
     const authHeader = event.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return { statusCode: 401, body: 'Missing auth token' };
