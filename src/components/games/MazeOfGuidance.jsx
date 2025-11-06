@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -224,19 +226,11 @@ export default function MazeOfGuidance({ onComplete }) {
 
   const completeGame = async () => {
     setGameComplete(true);
-    const score = selectedMaze.points;
+    const fallbackScore = selectedMaze.points;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "maze_of_guidance",
-          score: score,
-          completed: true
-        });
-        
-        const newTotalPoints = Math.min((user.points || 0) + score, 1500);
-        await base44.auth.updateMe({ points: newTotalPoints });
+        await awardPointsForGame(user, "maze_of_guidance", { fallbackScore });
       } catch (error) {
         console.error("Error saving score:", error);
       }

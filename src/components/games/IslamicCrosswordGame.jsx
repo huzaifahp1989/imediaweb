@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Trophy, Star, Lightbulb, CheckCircle2 } from "lucide-react";
-// import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const crosswordClues = [
   { word: "ALLAH", clue: "The one and only God in Islam", hint: "5 letters", points: 2 },
@@ -75,16 +76,7 @@ export default function IslamicCrosswordGame({ onComplete }) {
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "crossword",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        await awardPointsForGame(user, "crossword", { fallbackScore: score });
       } catch (error) {
         console.error("Error saving game score:", error);
       }

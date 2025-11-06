@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Heart, ArrowRight } from "lucide-react";
-// Removed import of base44 for local-only app
+import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const mazeScenarios = [
   {
@@ -154,16 +155,7 @@ export default function IslamicMoralsMazeGame({ onComplete }) {
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "morals_maze",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        await awardPointsForGame(user, "morals_maze", { fallbackScore: score });
       } catch (error) {
         console.error("Error saving game score:", error);
       }
@@ -283,4 +275,4 @@ export default function IslamicMoralsMazeGame({ onComplete }) {
     </Card>
   );
 }
-
+

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Trophy, Star, CheckCircle2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const words = ["SALAH", "HAJJ", "ZAKAT", "QURAN", "ISLAM"];
 const gridSize = 10;
@@ -79,26 +80,18 @@ export default function WordSearchGame({ onComplete }) {
   }, [found]);
 
   const completeGame = async () => {
-    const score = 20; // Changed from 70 to 20
+    const fallbackScore = 20; // previous fixed score
+    let awarded = fallbackScore;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "word_search",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        awarded = await awardPointsForGame(user, "word_search", { fallbackScore });
       } catch (error) {
-        console.error("Error saving game score:", error);
+        console.error("Error awarding points:", error);
       }
     }
     
-    setTimeout(() => onComplete(score), 2000);
+    setTimeout(() => onComplete(awarded), 2000);
   };
 
   const startSelection = (row, col) => {

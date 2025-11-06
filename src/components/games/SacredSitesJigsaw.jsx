@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Trophy, RotateCcw, Puzzle, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 const mosques = [
@@ -136,19 +137,11 @@ export default function SacredSitesJigsaw({ onComplete }) {
   const completePuzzle = async () => {
     setGameComplete(true);
     const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-    const score = difficulties[difficulty].points;
+    const fallbackScore = difficulties[difficulty].points;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "sacred_sites_jigsaw",
-          score: score,
-          completed: true
-        });
-        
-        const newTotalPoints = Math.min((user.points || 0) + score, 1500);
-        await base44.auth.updateMe({ points: newTotalPoints });
+        await awardPointsForGame(user, "sacred_sites_jigsaw", { fallbackScore });
       } catch (error) {
         console.error("Error saving score:", error);
       }

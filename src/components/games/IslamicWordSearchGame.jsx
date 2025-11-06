@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Trophy, CheckCircle2, RotateCcw, AlertCircle, Info, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 const wordBanks = {
@@ -214,40 +215,23 @@ export default function IslamicWordSearchGame({ onComplete }) {
   useEffect(() => {
     if (level && category && words.length > 0 && found.length === words.length && !gameCompleted) {
       const completeGameAsync = async () => {
-        const baseScore = 15; // Fixed 15 points for word search
-        const isPerfect = found.length === words.length; // Will always be true if game is completed
-        const bonusPoints = isPerfect ? 5 : 0; // Perfect score bonus
-        const finalScore = Math.min(baseScore, 15); // Capped at 15
-        
-        setScore(finalScore); // This sets the base score for the component state
+        const fallbackScore = 15; // previous fixed base score
+        const isPerfect = true; // completing means perfect here
         setGameCompleted(true);
         
         if (user) {
           try {
-            await base44.entities.GameScore.create({
-              user_id: user.id,
-              game_type: "word_search",
-              score: finalScore,
-              bonus_points: bonusPoints, // Store bonus points
-              completed: true
-            });
-            
-            // Check for daily completion bonus
+            const awarded = await awardPointsForGame(user, "word_search", { isPerfect, fallbackScore });
+            setScore(awarded);
+            // Check for daily completion bonus separate from game awarding
             await checkDailyCompletionBonus(user.id);
-            
-            const totalWithBonus = finalScore + bonusPoints;
-            const newTotalPoints = Math.min((user.points || 0) + totalWithBonus, 1500); // Updated cap
-            
-            await base44.auth.updateMe({
-              points: newTotalPoints
-            });
           } catch (err) {
             console.error("Error saving game score:", err);
           }
         }
         
         setTimeout(() => {
-          if (onComplete) onComplete(finalScore + bonusPoints); // Pass total score including bonus
+          if (onComplete) onComplete(score || fallbackScore);
         }, 2000);
       };
       

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, RotateCcw, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 const levels = {
@@ -116,20 +117,14 @@ export default function MatchingPairsOfIman({ onComplete }) {
 
   const completeLevel = async () => {
     const levelScores = { easy: 100, medium: 150, hard: 200 };
-    const finalScore = levelScores[currentLevel];
+    const fallbackScore = levelScores[currentLevel];
     setGameOver(true);
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "matching_pairs",
-          score: finalScore,
-          completed: true
-        });
-        
-        const newTotalPoints = Math.min((user.points || 0) + finalScore, 1500);
-        await base44.auth.updateMe({ points: newTotalPoints });
+        const awarded = await awardPointsForGame(user, "matching_pairs", { fallbackScore });
+        // Optionally reflect awarded
+        // set some local display if needed
       } catch (error) {
         console.error("Error saving score:", error);
       }

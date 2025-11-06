@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const emojis = ["🕌", "📿", "📖", "🌙", "⭐", "🤲", "☪️", "🕋"];
 
@@ -70,26 +71,18 @@ export default function MemoryGame({ onComplete }) {
 
   const completeGame = async () => {
     setGameCompleted(true);
-    const score = Math.max(20 - moves * 2, 10);
+    const fallbackScore = Math.max(20 - moves * 2, 10);
+    let awarded = fallbackScore;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "memory",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        awarded = await awardPointsForGame(user, "memory", { fallbackScore });
       } catch (error) {
         console.error("Error saving game score:", error);
       }
     }
     
-    onComplete(score);
+    onComplete(awarded);
   };
 
   if (gameCompleted) {

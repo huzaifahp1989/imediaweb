@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Star, Sparkles, Brain } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types'; // Import PropTypes
 
 // Placeholder for createPageUrl if it's not globally available.
@@ -590,14 +591,9 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "islamic_quiz",
-          score: finalAwardedPoints, // Use finalAwardedPoints here
-          bonus_points: 0, // No bonus points specific to game performance anymore
-          completed: true
-        });
-        
+        // Award points via centralized helper using backend settings with 10-point fallback
+        await awardPointsForGame(user, "islamic_quiz", { fallbackScore: finalAwardedPoints });
+
         // Update user progress with used questions
         const existingProgress = await base44.entities.UserGameProgress.filter({ 
           user_id: user.id, 
@@ -657,12 +653,6 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
         // Check for daily completion bonus
         await checkDailyCompletionBonus(user.id);
         
-        // Update user total points (capped at 1500)
-        const newTotalPointsForUser = Math.min((user.points || 0) + finalAwardedPoints, 1500);
-        await base44.auth.updateMe({
-          points: newTotalPointsForUser
-        });
-
         // Set the component's score state to the final score for display
         setScore(finalAwardedPoints);
       } catch (error) {

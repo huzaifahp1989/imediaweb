@@ -11,12 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit, Trash2, Save, X, Star, Calendar, TrendingUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { getFirebase } from "@/api/firebase";
 
 export default function AdminQuizManager() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState(5);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiSuccess, setAiSuccess] = useState("");
   
   const [formData, setFormData] = useState({
     title: "",
@@ -142,6 +148,11 @@ export default function AdminQuizManager() {
     setSelectedQuestions([]);
     setEditingQuiz(null);
     setShowForm(false);
+    setAiTopic("");
+    setAiCount(5);
+    setAiLoading(false);
+    setAiError("");
+    setAiSuccess("");
   };
 
   const toggleQuestionSelection = (questionId) => {
@@ -155,6 +166,73 @@ export default function AdminQuizManager() {
   const filteredQuestions = allQuestions.filter(q => 
     formData.subject === "Mixed" || q.category === formData.subject
   );
+
+  const normalizeDifficulty = (d) => {
+    const v = String(d || '').toLowerCase();
+    if (['easy','medium','hard'].includes(v)) return v;
+    if (v === 'mixed') return 'easy';
+    return 'easy';
+  };
+
+  const generateWithAI = async () => {
+    setAiError("");
+    setAiSuccess("");
+    if (!aiTopic.trim()) {
+      setAiError("Enter a topic for AI generation");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { auth } = getFirebase();
+      if (!auth?.currentUser) throw new Error("Please login to use AI agent");
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/quizAgent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          topic: aiTopic,
+          subject: formData.subject,
+          difficulty: formData.difficulty,
+          count: aiCount,
+        }),
+      });
+      if (!res.ok) throw new Error(`Agent error: ${res.status}`);
+      const data = await res.json();
+      const list = Array.isArray(data.questions) ? data.questions : [];
+
+      const createdIds = [];
+      for (const q of list) {
+        try {
+          const options = Array.isArray(q.options) && q.options.length >= 2 ? q.options.slice(0,4) : ['A','B','C','D'];
+          const idx = Math.max(0, options.findIndex(opt => String(opt).trim() === String(q.answer || '').trim()));
+          const payload = {
+            category: q.category || formData.subject,
+            difficulty: normalizeDifficulty(q.difficulty || formData.difficulty),
+            question: q.question || `Question about ${aiTopic}`,
+            options,
+            correct_answer_index: idx >= 0 ? idx : 0,
+            explanation: "",
+            source: "AI",
+            age_group: formData.age_group || "all",
+            is_active: true,
+          };
+          const created = await base44.entities.QuizQuestion.create(payload);
+          if (created?.id) createdIds.push(created.id);
+        } catch (e) {
+          // continue on errors per question
+        }
+      }
+      if (createdIds.length) {
+        setSelectedQuestions(prev => [...prev, ...createdIds]);
+        queryClient.invalidateQueries({ queryKey: ['all-quiz-questions'] });
+      }
+      setAiSuccess(`Generated ${list.length} and added ${createdIds.length} questions.`);
+    } catch (err) {
+      setAiError(err?.message || 'Failed to generate with AI');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const stats = {
     total: quizzes.length,
@@ -222,6 +300,27 @@ export default function AdminQuizManager() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>AI Topic</Label>
+                        <Input value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} placeholder="e.g., Ramadan, Salah, Wudu" />
+                      </div>
+                      <div>
+                        <Label>AI Count</Label>
+                        <Input type="number" value={aiCount} onChange={(e) => setAiCount(parseInt(e.target.value || '5'))} />
+                      </div>
+                      <div className="flex items-end">
+                        <Button type="button" className="bg-purple-600 hover:bg-purple-700" onClick={generateWithAI} disabled={aiLoading}>
+                          {aiLoading ? 'Generating…' : 'Generate via AI'}
+                        </Button>
+                      </div>
+                    </div>
+                    {(aiError || aiSuccess) && (
+                      <div className="text-sm">
+                        {aiError && <div className="text-red-600">{aiError}</div>}
+                        {aiSuccess && <div className="text-green-600">{aiSuccess}</div>}
+                      </div>
+                    )}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label>Quiz Title</Label>

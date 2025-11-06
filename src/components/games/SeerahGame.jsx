@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Star, BookOpen } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 const seerahQuestions = [
@@ -611,22 +612,8 @@ export default function SeerahGame({ onComplete }) {
       
       if (user) {
         try {
-          // Always award 10 points regardless of score
-          const finalScore = 10;
-          
-          await base44.entities.GameScore.create({
-            user_id: user.id,
-            game_type: "seerah_quiz",
-            score: finalScore,
-            completed: true
-          });
-          
-          // Cap total points at 1500
-          const newTotalPoints = Math.min((user.points || 0) + finalScore, 1500);
-          
-          await base44.auth.updateMe({
-            points: newTotalPoints
-          });
+          const fallbackScore = 10;
+          await awardPointsForGame(user, "seerah_quiz", { fallbackScore });
         } catch (error) {
           console.error("Error saving score:", error);
         }

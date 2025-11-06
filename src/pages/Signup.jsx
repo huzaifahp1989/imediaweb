@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signUp, saveUserProfile } from "@/api/firebase";
 
 // Simple, dependency-free signup form that:
 // 1) Prefills an email to imedia786@gmail.com with all submitted details
@@ -11,13 +13,13 @@ export default function Signup() {
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [madrasah, setMadrasah] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [sheetsStatus, setSheetsStatus] = useState("idle"); // idle | success | error | skipped
-  const [emailStatus, setEmailStatus] = useState("idle"); // idle | opened | error
-
-  const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || "";
+  const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
 
   function validate() {
     const errs = {};
@@ -28,70 +30,44 @@ export default function Signup() {
     if (!email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = "Invalid email format";
     if (!madrasah.trim()) errs.madrasah = "Madrasah name is required";
+    if (!password.trim() || password.length < 6) errs.password = "Password must be at least 6 characters";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setErrorMsg("");
     if (!validate()) return;
     setSubmitting(true);
-
-    const payload = {
-      fullName: fullName.trim(),
-      age: age.trim(),
-      city: city.trim(),
-      email: email.trim(),
-      madrasah: madrasah.trim(),
-      submittedAt: new Date().toISOString(),
-    };
-
-    // 1) Try to send to Google Sheets via Apps Script Web App (if configured)
-    if (GOOGLE_SCRIPT_URL) {
-      try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (res.ok) {
-          setSheetsStatus("success");
-        } else {
-          setSheetsStatus("error");
-        }
-      } catch (err) {
-        console.error("Google Sheets submission failed:", err);
-        setSheetsStatus("error");
-      }
-    } else {
-      setSheetsStatus("skipped");
-    }
-
-    // 2) Prefill an email to imedia786@gmail.com
-    const subject = encodeURIComponent(`New Sign Up: ${payload.fullName}`);
-    const body = encodeURIComponent(
-      `Full Name: ${payload.fullName}\nAge: ${payload.age}\nCity: ${payload.city}\nMadrasah: ${payload.madrasah}\nEmail: ${payload.email}\nSubmitted At: ${new Date().toLocaleString()}`
-    );
-    const mailtoHref = `mailto:imedia786@gmail.com?subject=${subject}&body=${body}`;
-
     try {
-      // Attempt to open the user's default mail client
-      // Some browsers may block automatic mailto. We'll also render a fallback clickable link below.
-      window.location.href = mailtoHref;
-      setEmailStatus("opened");
+      const user = await signUp(email.trim(), password.trim());
+      await saveUserProfile(user.uid, {
+        fullName: fullName.trim(),
+        age: age.trim(),
+        city: city.trim(),
+        madrasah: madrasah.trim(),
+        email: email.trim(),
+      });
+      setSuccess(true);
+      setTimeout(() => navigate("/Login"), 1500);
     } catch (err) {
-      console.error("Failed to open mail client:", err);
-      setEmailStatus("error");
+      const code = err?.code || "";
+      let msg = err?.message || "Signup failed";
+      if (code === "auth/email-already-in-use") msg = "Email already in use. Try logging in.";
+      if (code === "auth/invalid-email") msg = "Invalid email address.";
+      if (code === "auth/operation-not-allowed") msg = "Email/password sign-up is disabled. Enable it in Firebase.";
+      setErrorMsg(msg);
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   }
 
   return (
     <div className="container mx-auto max-w-xl px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">Sign Up</h1>
       <p className="text-sm text-gray-600 mb-6">
-        Please fill in your details. On submit, we will prefill an email to <span className="font-semibold">imedia786@gmail.com</span> and, if configured, also record your submission to Google Sheets.
+        Create your account and we’ll register you in our backend. You can log in immediately after signing up.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4 bg-white/50 rounded-lg p-6 shadow">
@@ -160,58 +136,35 @@ export default function Signup() {
           {errors.email && <div className="text-red-600 text-xs mt-1">{errors.email}</div>}
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="At least 6 characters"
+          />
+          {errors.password && <div className="text-red-600 text-xs mt-1">{errors.password}</div>}
+        </div>
+
+        {errorMsg && <div className="text-red-600 text-sm">{errorMsg}</div>}
+        {success && <div className="text-green-600 text-sm">Account created! Redirecting to login…</div>}
+
         <button
           type="submit"
           className="inline-flex items-center justify-center rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-60"
           disabled={submitting}
         >
-          {submitting ? "Submitting..." : "Submit"}
+          {submitting ? "Creating…" : "Create Account"}
         </button>
+        <div className="mt-4 text-center">
+          <span>Already have an account? </span>
+          <a href="/Login" className="text-blue-700 font-semibold">Login</a>
+        </div>
       </form>
 
-      <div className="mt-6 space-y-2">
-        <div className="text-sm">
-          <span className="font-semibold">Google Sheets status:</span>{" "}
-          {sheetsStatus === "idle" && <span>Idle</span>}
-          {sheetsStatus === "success" && <span className="text-green-700">Submitted</span>}
-          {sheetsStatus === "error" && (
-            <span className="text-red-700">Failed. Please ensure your Apps Script Web App is deployed with CORS enabled and set VITE_GOOGLE_APPS_SCRIPT_URL in your .env</span>
-          )}
-          {sheetsStatus === "skipped" && (
-            <span className="text-gray-700">Skipped (no Google Apps Script URL configured)</span>
-          )}
-        </div>
-        <div className="text-sm">
-          <span className="font-semibold">Email status:</span>{" "}
-          {emailStatus === "idle" && <span>Idle</span>}
-          {emailStatus === "opened" && <span className="text-green-700">Mail client opened</span>}
-          {emailStatus === "error" && (
-            <span className="text-red-700">Could not auto-open mail client. Use the link below to send manually.</span>
-          )}
-        </div>
-        {/* Fallback manual email link */}
-        <div className="text-sm">
-          <span className="font-semibold">Manual email:</span>{" "}
-          <a
-            className="text-blue-700 underline"
-            href={`mailto:imedia786@gmail.com?subject=${encodeURIComponent(`New Sign Up: ${fullName || "(Name)"}`)}&body=${encodeURIComponent(`Full Name: ${fullName}\nAge: ${age}\nCity: ${city}\nMadrasah: ${madrasah}\nEmail: ${email}`)}`}
-          >
-            Click here to email us your signup
-          </a>
-        </div>
-      </div>
-
-      {!GOOGLE_SCRIPT_URL && (
-        <div className="mt-8 text-xs text-gray-600">
-          <p className="font-semibold mb-1">Configure Google Sheets (optional):</p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>Create a new Google Sheet and Apps Script project (Extensions → Apps Script).</li>
-            <li>Add a doPost(e) handler to write JSON payload to the sheet and return a 200 response with appropriate CORS headers.</li>
-            <li>Deploy the Apps Script as a Web App and copy the URL.</li>
-            <li>Set VITE_GOOGLE_APPS_SCRIPT_URL in your .env to that URL, then restart the dev server.</li>
-          </ol>
-        </div>
-      )}
     </div>
   );
 }

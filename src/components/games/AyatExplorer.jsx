@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 // Input component is no longer used with the new puzzle types, so it's removed
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, RotateCcw, BookOpen, CheckCircle2, XCircle } from "lucide-react";
-// import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 // Utility function to shuffle an array (for scrambling words)
@@ -175,20 +176,12 @@ export default function AyatExplorer({ onComplete }) {
 
   const completeGame = async () => {
     setGameComplete(true);
-    const finalScore = score;
+    const fallbackScore = score;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "ayat_explorer",
-          score: finalScore,
-          completed: true
-        });
-        
-        // Update user's total points, capped at 1500 as in original logic
-        const newTotalPoints = Math.min((user.points || 0) + finalScore, 1500);
-        await base44.auth.updateMe({ points: newTotalPoints });
+        const awarded = await awardPointsForGame(user, "ayat_explorer", { fallbackScore });
+        setScore(awarded);
       } catch (error) {
         console.error("Error saving score:", error);
       }

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const originalSahabahStories = [
   {
@@ -293,16 +294,7 @@ export default function SahabahStoriesGame({ onComplete }) {
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "sahabah_stories",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        await awardPointsForGame(user, "sahabah_stories", { fallbackScore: score });
       } catch (error) {
         console.error("Error saving game score:", error);
       }

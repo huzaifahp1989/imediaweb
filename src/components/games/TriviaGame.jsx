@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Star, Heart, Zap } from "lucide-react";
-// import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 // Expanded question bank with MORE questions
 const allQuestions = {
@@ -492,18 +493,8 @@ export default function TriviaGame({ onComplete }) {
           best_score: Math.max(score, userProgress.best_score || 0)
         });
 
-        // Save game score
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "trivia",
-          score: score,
-          completed: true
-        });
-        
-        // Update user points
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        // Award points via centralized helper with fallback to local score
+        await awardPointsForGame(user, "trivia", { fallbackScore: score });
       } catch (error) {
         console.error("Error saving game score:", error);
       }

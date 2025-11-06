@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Star, ScrollText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const hadithQuestions = [
   {
@@ -133,25 +134,9 @@ export default function HadithGame({ onComplete }) {
       
       if (user) {
         try {
-          // Always award 10 points regardless of score
-          const finalScore = 10;
-          
-          await base44.entities.GameScore.create({
-            user_id: user.id,
-            game_type: "hadith_quiz",
-            score: finalScore,
-            completed: true
-          });
-          
-          // Cap total points at 1500
-          const newTotalPoints = Math.min((user.points || 0) + finalScore, 1500);
-          
-          await base44.auth.updateMe({
-            points: newTotalPoints
-          });
-          // Update local user state with new points to reflect on the game over screen immediately
-          setUser(prevUser => prevUser ? { ...prevUser, points: newTotalPoints } : null);
-
+          const fallbackScore = 10;
+          await awardPointsForGame(user, "hadith_quiz", { fallbackScore });
+          // Optionally reflect local user points by refetching; keeping existing local update minimal
         } catch (error) {
           console.error("Error saving score or updating user points:", error);
         }

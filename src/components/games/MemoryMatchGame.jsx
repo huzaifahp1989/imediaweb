@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const islamicPairs = [
   { id: 1, text: "Allah", emoji: "✨" },
@@ -84,30 +85,19 @@ export default function MemoryMatchGame({ onComplete }) {
 
   const completeGame = async () => {
     setGameOver(true);
-    const score = Math.max(100 - moves * 2, 20);
+    const fallbackScore = Math.max(100 - moves * 2, 20);
+    let awarded = fallbackScore;
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "memory_match",
-          score: score,
-          completed: true
-        });
-        
-        // Cap total points at 1500
-        const newTotalPoints = Math.min((user.points || 0) + score, 1500);
-        
-        await base44.auth.updateMe({
-          points: newTotalPoints
-        });
+        awarded = await awardPointsForGame(user, "memory_match", { fallbackScore });
       } catch (error) {
         console.error("Error saving score:", error);
       }
     }
 
     if (onComplete) {
-      setTimeout(() => onComplete(score), 2000);
+      setTimeout(() => onComplete(awarded), 2000);
     }
   };
 

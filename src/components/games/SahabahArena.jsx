@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, Zap, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import PropTypes from 'prop-types';
 
 const questions = [
@@ -136,15 +137,7 @@ export default function SahabahArena({ onComplete }) {
       
       if (user && gameWinner === "player") {
         try {
-          await base44.entities.GameScore.create({
-            user_id: user.id,
-            game_type: "sahabah_arena",
-            score: playerScore,
-            completed: true
-          });
-          
-          const newTotalPoints = Math.min((user.points || 0) + playerScore, 1500);
-          await base44.auth.updateMe({ points: newTotalPoints });
+          await awardPointsForGame(user, "sahabah_arena", { fallbackScore: playerScore });
         } catch (error) {
           console.error("Error saving score:", error);
         }

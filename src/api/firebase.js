@@ -7,6 +7,7 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -62,10 +63,41 @@ export async function adminSignIn(email, password) {
   return cred.user;
 }
 
+// Generic user sign-in (email/password)
+export async function signIn(email, password) {
+  const { auth } = getFirebase();
+  if (!auth) throw new Error('Firebase not configured');
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  return cred.user;
+}
+
 export async function adminSignOut() {
   const { auth } = getFirebase();
   if (!auth) return;
   await signOut(auth);
+}
+
+// Generic user sign-up (email/password)
+export async function signUp(email, password) {
+  const { auth } = getFirebase();
+  if (!auth) throw new Error('Firebase not configured');
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  return cred.user;
+}
+
+// Save user profile details to Firestore under `users/{uid}`
+export async function saveUserProfile(uid, profile) {
+  const { db } = getFirebase();
+  if (!db) throw new Error('Firebase not configured');
+  const ref = doc(db, 'users', uid);
+  await updateDoc(ref, { ...(profile || {}), updatedAt: new Date() }).catch(async (err) => {
+    // If doc does not exist, create it
+    if (String(err?.message || '').toLowerCase().includes('no document to update')) {
+      await addDoc(collection(db, 'users'), { uid, ...(profile || {}), createdAt: new Date() });
+    } else {
+      throw err;
+    }
+  });
 }
 
 export function watchAuth(callback) {

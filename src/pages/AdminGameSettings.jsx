@@ -12,19 +12,29 @@ import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
 
 const defaultGames = [
+  // Aligned with actual game_type values used in components
+  { game_id: "ayat_explorer", game_name: "Ayat Explorer", emoji: "📚" },
+  { game_id: "word_search", game_name: "Islamic Word Search", emoji: "🔍" },
+  { game_id: "memory_match", game_name: "Islamic Memory Match", emoji: "🎴" },
+  { game_id: "memory", game_name: "Memory Game", emoji: "🧠" },
+  { game_id: "matching_pairs", game_name: "Matching Pairs of Iman", emoji: "🧩" },
+  { game_id: "islamic_quiz", game_name: "Islamic Knowledge Quiz", emoji: "🧠" },
+  { game_id: "sahabah_arena", game_name: "Sahabah Arena", emoji: "⚔️" },
+  { game_id: "knowledge_race", game_name: "Islam Knowledge Race", emoji: "🏁" },
+  { game_id: "sahabah_stories", game_name: "Sahabah Stories", emoji: "📖" },
+  { game_id: "maze_of_guidance", game_name: "Maze of Guidance", emoji: "🧭" },
+  { game_id: "trivia", game_name: "Trivia", emoji: "❓" },
+  { game_id: "quran_quest", game_name: "Quran Quest", emoji: "📚" },
+  { game_id: "crossword", game_name: "Islamic Crossword", emoji: "✍️" },
+  { game_id: "hadith_match", game_name: "Hadith Match", emoji: "📜" },
+  { game_id: "prophet_stories", game_name: "Prophet Stories", emoji: "📖" },
+  { game_id: "quran_memory", game_name: "Quran Memory Match", emoji: "🧠" },
+  { game_id: "morals_maze", game_name: "Islamic Morals Maze", emoji: "🧭" },
+  { game_id: "seerah_quiz", game_name: "Seerah Quiz", emoji: "📖" },
+  // Keep planned/legacy IDs so admins can configure them too
   { game_id: "word_scramble", game_name: "Word Scramble Challenge", emoji: "🔤" },
   { game_id: "quest_for_ilm", game_name: "The Quest for Ilm", emoji: "🗺️" },
-  { game_id: "sahabah_arena", game_name: "Sahabah Arena", emoji: "⚔️" },
-  { game_id: "matching_pairs_iman", game_name: "Matching Pairs of Iman", emoji: "🧩" },
-  { game_id: "maze_of_guidance", game_name: "Maze of Guidance", emoji: "🧭" },
-  { game_id: "ayat_explorer", game_name: "Ayat Explorer", emoji: "📚" },
-  { game_id: "islamic_quiz", game_name: "Islamic Knowledge Quiz", emoji: "🧠" },
-  { game_id: "word_search", game_name: "Islamic Word Search", emoji: "🔍" },
-  { game_id: "seerah_game", game_name: "Seerah Quiz", emoji: "📖" },
-  { game_id: "quran_game", game_name: "Quran Quiz", emoji: "📚" },
-  { game_id: "hadith_game", game_name: "Hadith Match", emoji: "📜" },
-  { game_id: "fiqh_game", game_name: "Fiqh Challenge", emoji: "🕌" },
-  { game_id: "memory_match", game_name: "Islamic Memory Match", emoji: "🎴" }
+  { game_id: "fiqh_game", game_name: "Fiqh Challenge", emoji: "🕌" }
 ];
 
 export default function AdminGameSettings() {

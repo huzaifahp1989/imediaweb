@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Zap } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 
 const raceQuestions = [
   {
@@ -156,16 +157,7 @@ export default function IslamKnowledgeRaceGame({ onComplete }) {
     
     if (user) {
       try {
-        await base44.entities.GameScore.create({
-          user_id: user.id,
-          game_type: "knowledge_race",
-          score: score,
-          completed: true
-        });
-        
-        await base44.auth.updateMe({
-          points: (user.points || 0) + score
-        });
+        await awardPointsForGame(user, "knowledge_race", { fallbackScore: score });
       } catch (error) {
         console.error("Error saving game score:", error);
       }
