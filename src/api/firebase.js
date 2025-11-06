@@ -108,7 +108,8 @@ export const messagesApi = {
       try {
         const { auth } = getFirebase();
         const token = await auth?.currentUser?.getIdToken?.();
-        const res = await fetch('/api/messages', {
+        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: JSON.stringify({ message }),
@@ -130,7 +131,8 @@ export const messagesApi = {
       try {
         const { auth } = getFirebase();
         const token = await auth?.currentUser?.getIdToken?.();
-        const res = await fetch('/api/messages', {
+        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const res = await fetch(endpoint, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         });
         if (!res.ok) throw new Error(`Backend error: ${res.status}`);
@@ -152,7 +154,8 @@ export const messagesApi = {
       try {
         const { auth } = getFirebase();
         const token = await auth?.currentUser?.getIdToken?.();
-        const res = await fetch('/api/messages', {
+        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const res = await fetch(endpoint, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: JSON.stringify({ id, read }),

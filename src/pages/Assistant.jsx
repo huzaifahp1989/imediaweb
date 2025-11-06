@@ -33,19 +33,26 @@ export default function Assistant() {
     setLoading(true);
     try {
       const { auth } = getFirebase();
-      if (!auth?.currentUser) {
+      let token = null;
+      if (auth?.currentUser) {
+        token = await auth.currentUser.getIdToken();
+      } else if (!import.meta.env?.DEV) {
+        // In production, require login. In dev, allow unauthenticated requests to functions fallback.
         navigate(createPageUrl("Login"));
         return;
       }
-      const token = await auth.currentUser.getIdToken();
-      // Try both Netlify routes: production uses /api/* via redirects, local dev uses /.netlify/functions/*
-      const endpoints = ['/api/assistant', '/.netlify/functions/assistant'];
+      // Prefer functions endpoint in local dev to avoid proxy issues
+      const endpoints = import.meta.env?.DEV
+        ? ['/.netlify/functions/assistant', '/api/assistant']
+        : ['/api/assistant', '/.netlify/functions/assistant'];
       let res;
       for (const url of endpoints) {
         try {
           res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            headers: token
+              ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+              : { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               mode,
               messages: [...messages, { role: 'user', content: text }],

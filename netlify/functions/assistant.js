@@ -45,12 +45,20 @@ export async function handler(event) {
             temperature: 0.7,
           }),
         });
-        if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
+        if (!res.ok) {
+          let msg = `OpenAI error: ${res.status}`;
+          try {
+            const errData = await res.json();
+            if (errData?.error?.message) msg = `OpenAI ${res.status}: ${errData.error.message}`;
+          } catch {}
+          throw new Error(msg);
+        }
         const data = await res.json();
         const reply = data?.choices?.[0]?.message?.content || '';
         return { statusCode: 200, body: JSON.stringify({ reply }) };
       } catch (err) {
-        const reply = 'Assistant is temporarily unavailable due to server configuration. Please try again later or use the admin pages directly.';
+        console.error('Assistant OpenAI (dev fallback) error:', err?.message || err);
+        const reply = `Assistant error: ${err?.message || 'unknown error'}`;
         return { statusCode: 200, body: JSON.stringify({ reply }) };
       }
     }
@@ -94,11 +102,19 @@ export async function handler(event) {
             temperature: 0.7,
           }),
         });
-        if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
+        if (!res.ok) {
+          let msg = `OpenAI error: ${res.status}`;
+          try {
+            const errData = await res.json();
+            if (errData?.error?.message) msg = `OpenAI ${res.status}: ${errData.error.message}`;
+          } catch {}
+          throw new Error(msg);
+        }
         const data = await res.json();
         reply = data?.choices?.[0]?.message?.content || '';
       } catch (err) {
-        reply = 'Assistant is temporarily unavailable. Please try again or use the admin pages directly.';
+        console.error('Assistant OpenAI (admin path) error:', err?.message || err);
+        reply = `Assistant error: ${err?.message || 'unknown error'}`;
       }
     } else {
       reply = 'AI not configured. Set OPENAI_API_KEY to enable chat. In the meantime, use Admin pages like AdminStories, AdminBanners, and AdminQuizManager to edit content.';

@@ -235,6 +235,10 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
+    // Allow Assistant page without AdminGuard during local development
+    const assistantElement = import.meta.env?.DEV
+      ? <Assistant />
+      : <AdminGuard><Assistant /></AdminGuard>;
     
     return (
         <Layout currentPageName={currentPage}>
@@ -359,9 +363,9 @@ function PagesContent() {
                 {/* Login routes */}
                 <Route path="/Login" element={<Login />} />
                 <Route path="/login" element={<Login />} />
-                {/* Assistant routes (admin-only) */}
-                <Route path="/Assistant" element={<AdminGuard><Assistant /></AdminGuard>} />
-                <Route path="/assistant" element={<AdminGuard><Assistant /></AdminGuard>} />
+                {/* Assistant routes: bypass guard in local dev for faster testing */}
+                <Route path="/Assistant" element={assistantElement} />
+                <Route path="/assistant" element={assistantElement} />
                 <Route path="*" element={<Home />} />
             </Routes>
         </Layout>
