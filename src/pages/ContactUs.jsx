@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { messagesApi } from "@/api/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,21 @@ export default function ContactUs() {
           </div>
         `
       });
+
+      // Persist message to Firestore if Firebase is configured
+      try {
+        await messagesApi.add({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          createdAt: new Date().toISOString(),
+          read: false,
+        });
+      } catch (persistErr) {
+        // Silently ignore if Firebase is not configured
+        console.warn("Message not persisted (Firebase not configured or error)", persistErr?.message || persistErr);
+      }
 
       setSuccess(true);
       setFormData({

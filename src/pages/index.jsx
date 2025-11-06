@@ -63,6 +63,8 @@ import FullQuran from "./FullQuran";
 import ResetPointsAdmin from "./ResetPointsAdmin";
 
 import AdminDashboard from "./AdminDashboard";
+import AdminLogin from "./AdminLogin";
+import AdminGuard from "./AdminGuard";
 
 import AdminStories from "./AdminStories";
 
@@ -98,6 +100,7 @@ import Quizzes from "./Quizzes";
 
 import AdminQuizManager from "./AdminQuizManager";
 import Signup from "./Signup";
+import AdminMessages from "./AdminMessages";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -296,37 +299,41 @@ function PagesContent() {
                 
                 <Route path="/ResetPointsAdmin" element={<ResetPointsAdmin />} />
                 
-                <Route path="/AdminDashboard" element={<AdminDashboard />} />
+                <Route path="/AdminLogin" element={<AdminLogin />} />
                 
-                <Route path="/AdminStories" element={<AdminStories />} />
+                <Route path="/AdminDashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
                 
-                <Route path="/AdminAudio" element={<AdminAudio />} />
+                <Route path="/AdminStories" element={<AdminGuard><AdminStories /></AdminGuard>} />
                 
-                <Route path="/AdminMedia" element={<AdminMedia />} />
+                <Route path="/AdminAudio" element={<AdminGuard><AdminAudio /></AdminGuard>} />
+                
+                <Route path="/AdminMedia" element={<AdminGuard><AdminMedia /></AdminGuard>} />
                 
                 <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
                 
                 <Route path="/Challenges" element={<Challenges />} />
                 
-                <Route path="/AdminQuestions" element={<AdminQuestions />} />
+                <Route path="/AdminQuestions" element={<AdminGuard><AdminQuestions /></AdminGuard>} />
                 
                 <Route path="/Videos" element={<Videos />} />
                 
-                <Route path="/AdminVideos" element={<AdminVideos />} />
+                <Route path="/AdminVideos" element={<AdminGuard><AdminVideos /></AdminGuard>} />
                 
-                <Route path="/AdminAudioContent" element={<AdminAudioContent />} />
+                <Route path="/AdminAudioContent" element={<AdminGuard><AdminAudioContent /></AdminGuard>} />
                 
-                <Route path="/AdminUsers" element={<AdminUsers />} />
+                <Route path="/AdminUsers" element={<AdminGuard><AdminUsers /></AdminGuard>} />
                 
                 <Route path="/DeleteAccount" element={<DeleteAccount />} />
                 
                 <Route path="/LearningPaths" element={<LearningPaths />} />
                 
-                <Route path="/AdminBanners" element={<AdminBanners />} />
+                <Route path="/AdminBanners" element={<AdminGuard><AdminBanners /></AdminGuard>} />
                 
-                <Route path="/AdminStoryBuilder" element={<AdminStoryBuilder />} />
+                <Route path="/AdminStoryBuilder" element={<AdminGuard><AdminStoryBuilder /></AdminGuard>} />
                 
-                <Route path="/AdminGameSettings" element={<AdminGameSettings />} />
+                <Route path="/AdminGameSettings" element={<AdminGuard><AdminGameSettings /></AdminGuard>} />
+                
+                <Route path="/AdminMessages" element={<AdminGuard><AdminMessages /></AdminGuard>} />
                 
                 <Route path="/Quizzes" element={<Quizzes />} />
                 
