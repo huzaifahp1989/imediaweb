@@ -23,6 +23,21 @@ export default function AdminLogin() {
     appId: Boolean(import.meta.env.VITE_FIREBASE_APP_ID),
   };
 
+  // Debug: capture raw env values (masked in UI)
+  const debugConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  };
+  const mask = (s, start = 4, end = 4) => {
+    if (!s) return "(empty)";
+    if (s.length <= start + end) return s;
+    return `${s.slice(0, start)}…${s.slice(-end)}`;
+  };
+
   useEffect(() => {
     const { app } = getFirebase();
     setConfigured(Boolean(app));
@@ -94,6 +109,18 @@ export default function AdminLogin() {
                   </ul>
                   <div className="mt-2">After editing <code>.env</code>, fully restart the dev server (<code>Ctrl+C</code> then <code>npm run dev</code>).</div>
                 </div>
+                <div className="text-xs text-gray-500 bg-gray-50 border rounded p-2">
+                  <div className="font-semibold mb-1">Debug config (masked)</div>
+                  <ul className="list-disc ml-4">
+                    <li>apiKey: {mask(debugConfig.apiKey)}</li>
+                    <li>authDomain: {debugConfig.authDomain || '(empty)'}</li>
+                    <li>projectId: {debugConfig.projectId || '(empty)'}</li>
+                    <li>appId: {mask(debugConfig.appId, 3, 6)}</li>
+                    <li>storageBucket: {debugConfig.storageBucket || '(empty)'}</li>
+                    <li>messagingSenderId: {debugConfig.messagingSenderId || '(empty)'}</li>
+                  </ul>
+                  <div className="mt-2">If values show as <code>(empty)</code>, ensure your <code>.env</code> exists at the project root and variables start with <code>VITE_</code>.</div>
+                </div>
                 <Button
                   onClick={() => {
                     const subject = encodeURIComponent("Admin Access - Islam Media Central");
@@ -105,6 +132,16 @@ export default function AdminLogin() {
                 </Button>
               </div>
             ) : (
+              <>
+              <div className="text-xs text-gray-500 bg-gray-50 border rounded p-2 mb-4">
+                <div className="font-semibold mb-1">Debug config (masked)</div>
+                <ul className="list-disc ml-4">
+                  <li>apiKey: {mask(debugConfig.apiKey)}</li>
+                  <li>authDomain: {debugConfig.authDomain || '(empty)'}</li>
+                  <li>projectId: {debugConfig.projectId || '(empty)'}</li>
+                  <li>appId: {mask(debugConfig.appId, 3, 6)}</li>
+                </ul>
+              </div>
               <form onSubmit={handleLogin} className="space-y-4">
                 {error && (
                   <div className="p-2 rounded bg-red-50 text-red-700 text-sm">{error}</div>
@@ -133,6 +170,7 @@ export default function AdminLogin() {
                   <CheckCircle2 className="w-4 h-4 text-green-600" /> Access restricted to admin only
                 </div>
               </form>
+              </>
             )}
           </CardContent>
         </Card>
