@@ -15,27 +15,6 @@ export default function Leaderboard() {
   useEffect(() => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    // Seed sample leaderboard if none exists
-    try {
-      const stored = localStorage.getItem('ikz_leaderboard');
-      if (!stored) {
-        const sample = [
-          { full_name: 'Aisha Khan', email: 'aisha@example.com', points: 980 },
-          { full_name: 'Yusuf Ahmed', email: 'yusuf@example.com', points: 920 },
-          { full_name: 'Fatima Ali', email: 'fatima@example.com', points: 890 },
-          { full_name: 'Hassan', email: 'hassan@example.com', points: 860 },
-          { full_name: 'Zainab', email: 'zainab@example.com', points: 840 },
-          { full_name: 'Omar', email: 'omar@example.com', points: 810 },
-          { full_name: 'Maryam', email: 'maryam@example.com', points: 780 },
-          { full_name: 'Bilal', email: 'bilal@example.com', points: 760 },
-          { full_name: 'Sumayyah', email: 'sumayyah@example.com', points: 740 },
-          { full_name: 'Imran', email: 'imran@example.com', points: 720 }
-        ];
-        localStorage.setItem('ikz_leaderboard', JSON.stringify(sample));
-      }
-    } catch (e) {
-      // ignore storage errors
-    }
   }, []);
 
   const { data: users = [], isLoading } = useQuery({

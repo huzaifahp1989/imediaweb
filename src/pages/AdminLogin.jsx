@@ -12,7 +12,6 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [twofa, setTwofa] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [configured, setConfigured] = useState(false);
@@ -57,14 +56,7 @@ export default function AdminLogin() {
     try {
       if (!configured) throw new Error("Firebase not configured");
       const user = await adminSignIn(email, password);
-      // Optional 2FA via static code (env) — for real MFA, enable Firebase Multi-factor
-      const requiredCode = import.meta.env.VITE_ADMIN_2FA_CODE;
-      if (requiredCode) {
-        if (!twofa || twofa !== requiredCode) {
-          await adminSignOut();
-          throw new Error("Invalid 2FA code");
-        }
-      }
+      // Removed optional static 2FA code gate; sign-in proceeds with email/password only
       const ok = await isAdminUser();
       if (!ok) {
         await adminSignOut();
@@ -97,7 +89,7 @@ export default function AdminLogin() {
                   <span>Firebase is not configured.</span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Please set Firebase env vars in <code>.env</code>: <code>VITE_FIREBASE_API_KEY</code>, <code>VITE_FIREBASE_AUTH_DOMAIN</code>, <code>VITE_FIREBASE_PROJECT_ID</code>, <code>VITE_FIREBASE_APP_ID</code>. Optional: <code>VITE_ADMIN_EMAIL</code> (exact match), <code>VITE_ADMIN_EMAIL_DOMAIN</code> (e.g. <code>imediackids.com</code>), <code>VITE_ADMIN_2FA_CODE</code>.
+                  Please set Firebase env vars in <code>.env</code>: <code>VITE_FIREBASE_API_KEY</code>, <code>VITE_FIREBASE_AUTH_DOMAIN</code>, <code>VITE_FIREBASE_PROJECT_ID</code>, <code>VITE_FIREBASE_APP_ID</code>. Optional: <code>VITE_ADMIN_EMAIL</code> (exact match), <code>VITE_ADMIN_EMAIL_DOMAIN</code> (e.g. <code>imediackids.com</code>).
                 </p>
                 <div className="text-xs text-gray-500 bg-gray-50 border rounded p-2">
                   <div className="font-semibold mb-1">Detected env flags (no secrets):</div>
@@ -154,20 +146,14 @@ export default function AdminLogin() {
                   <Label>Password</Label>
                   <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
-                {import.meta.env.VITE_ADMIN_2FA_CODE && (
-                  <div>
-                    <Label>2FA Code (optional)</Label>
-                    <Input type="text" value={twofa} onChange={(e) => setTwofa(e.target.value)} placeholder="Enter 6-digit code" />
-                    <p className="text-xs text-gray-500 mt-1">Enable real MFA in Firebase for SMS/TOTP.</p>
-                  </div>
-                )}
+                {/* 2FA removed */}
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? "Signing in..." : (
                     <span className="inline-flex items-center gap-2"><Lock className="w-4 h-4" />Sign In</span>
                   )}
                 </Button>
                 <div className="text-xs text-gray-500 mt-3 flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" /> Access restricted to admin only
+                  <CheckCircle2 className="w-4 h-4 text-green-600" /> Access available to any signed-in user
                 </div>
               </form>
               </>

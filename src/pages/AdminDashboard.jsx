@@ -57,6 +57,14 @@ export default function AdminDashboard() {
       stats: `${stats.totalUsers} users`
     },
     {
+      title: "Points Tools",
+      description: "Reset or add points for learners",
+      icon: Trophy,
+      path: "ResetPointsAdmin",
+      color: "from-amber-500 to-orange-500",
+      stats: "Adjust points"
+    },
+    {
       title: "Stories Management",
       description: "Add, edit, delete stories with images",
       icon: BookOpen,

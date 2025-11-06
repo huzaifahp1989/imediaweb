@@ -6,3 +6,17 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# Ensure Netlify builds the Vite app and publishes from the correct directory
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Provide Firebase env vars during Netlify build so Vite picks them up
+[build.environment]
+  VITE_FIREBASE_API_KEY = "AIzaSyDLi7mVwWnHp_jFlo6KfIXMZEu1iGpA-YE"
+  VITE_FIREBASE_AUTH_DOMAIN = "studio-1726517794-3d5f0.firebaseapp.com"
+  VITE_FIREBASE_PROJECT_ID = "studio-1726517794-3d5f0"
+  VITE_FIREBASE_STORAGE_BUCKET = "studio-1726517794-3d5f0.appspot.com"
+  VITE_FIREBASE_MESSAGING_SENDER_ID = "947105835283"
+  VITE_FIREBASE_APP_ID = "1:947105835283:web:b06706b15af28b4c3f12e6"
+  VITE_ADMIN_EMAIL = "huzaify786@gmail.com"

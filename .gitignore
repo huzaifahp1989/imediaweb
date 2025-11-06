@@ -24,5 +24,7 @@ dist-ssr
 *.sw?
 
 .env
+# Do not commit production secrets
+.env.production
 # Local Netlify folder
 .netlify

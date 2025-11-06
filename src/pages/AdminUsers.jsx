@@ -8,11 +8,7 @@ import { Users, Plus, Edit, Trash2, Search } from "lucide-react";
 export default function AdminUsers() {
   // Unlocked: rely on AdminGuard for access
   const [search, setSearch] = useState("");
-  const [users, setUsers] = useState([
-    { id: "u1", name: "Aisha", email: "aisha@example.com", role: "user" },
-    { id: "u2", name: "Omar", email: "omar@example.com", role: "user" },
-    { id: "u3", name: "Admin", email: "admin@example.com", role: "admin" },
-  ]);
+  const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
 
   const filtered = users.filter(u => {
@@ -46,27 +42,33 @@ export default function AdminUsers() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map((u) => (
-                <div key={u.id} className="border rounded-lg p-4 bg-white">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-semibold text-gray-900">{u.name}</div>
-                    <Badge variant={u.role === "admin" ? "default" : "outline"} className={u.role === "admin" ? "bg-purple-600 text-white" : ""}>
-                      {u.role}
-                    </Badge>
+            {filtered.length === 0 ? (
+              <div className="text-center text-gray-600 py-10">
+                No users yet. Use “Add User” to create real accounts.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filtered.map((u) => (
+                  <div key={u.id} className="border rounded-lg p-4 bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold text-gray-900">{u.name}</div>
+                      <Badge variant={u.role === "admin" ? "default" : "outline"} className={u.role === "admin" ? "bg-purple-600 text-white" : ""}>
+                        {u.role}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-4">{u.email}</div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setEditingUser(u)}>
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => setUsers(users.filter(x => x.id !== u.id))}>
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600 mb-4">{u.email}</div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditingUser(u)}>
-                      <Edit className="w-4 h-4 mr-1" /> Edit
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => setUsers(users.filter(x => x.id !== u.id))}>
-                      <Trash2 className="w-4 h-4 mr-1" /> Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {editingUser && (
               <div className="mt-6 border-t pt-4">
