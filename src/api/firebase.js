@@ -24,6 +24,7 @@ import {
 let app;
 let auth;
 let db;
+const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() === 'true' || String(import.meta.env.VITE_USE_BACKEND || '') === '1';
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -69,12 +70,42 @@ export function watchAuth(callback) {
 // Messages helpers
 export const messagesApi = {
   async add(message) {
+    if (useBackend) {
+      try {
+        const { auth } = getFirebase();
+        const token = await auth?.currentUser?.getIdToken?.();
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ message }),
+        });
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.warn('Backend add failed, falling back to Firestore:', e?.message || e);
+      }
+    }
     const { db } = getFirebase();
     if (!db) throw new Error('Firebase not configured');
     const col = collection(db, 'messages');
     return addDoc(col, message);
   },
   async list() {
+    if (useBackend) {
+      try {
+        const { auth } = getFirebase();
+        const token = await auth?.currentUser?.getIdToken?.();
+        const res = await fetch('/api/messages', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.warn('Backend list failed, falling back to Firestore:', e?.message || e);
+      }
+    }
     const { db } = getFirebase();
     if (!db) throw new Error('Firebase not configured');
     const col = collection(db, 'messages');
@@ -83,6 +114,22 @@ export const messagesApi = {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   },
   async markRead(id, read = true) {
+    if (useBackend) {
+      try {
+        const { auth } = getFirebase();
+        const token = await auth?.currentUser?.getIdToken?.();
+        const res = await fetch('/api/messages', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ id, read }),
+        });
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.warn('Backend markRead failed, falling back to Firestore:', e?.message || e);
+      }
+    }
     const { db } = getFirebase();
     if (!db) throw new Error('Firebase not configured');
     const ref = doc(db, 'messages', id);
@@ -98,4 +145,3 @@ export async function isAdminUser() {
   if (!user || !adminEmail) return false;
   return user.email?.toLowerCase() === adminEmail;
 }
-

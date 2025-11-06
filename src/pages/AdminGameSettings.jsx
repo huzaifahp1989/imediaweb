@@ -28,62 +28,13 @@ const defaultGames = [
 ];
 
 export default function AdminGameSettings() {
-  // Email-only mode: disable admin panel and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Game Settings");
-  const body = encodeURIComponent("Hi, I'd like admin access to manage game settings on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
-  return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-blue-300 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Admin Access Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-700 mb-4">
-              The Game Settings admin panel is disabled in this email-only mode. Please request admin access.
-            </p>
-            <Button
-              onClick={() => {
-                window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500"
-            >
-              Request Admin Access
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  // Removed email-only banner; rely on AdminGuard
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null);
+  // Removed local user gating
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [editingSettings, setEditingSettings] = useState({});
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      if (!authenticated) {
-        navigate("/");
-        return;
-      }
-      const userData = await base44.auth.me();
-      if (userData.role !== 'admin') {
-        navigate("/");
-        return;
-      }
-      setUser(userData);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      navigate("/");
-    }
-  };
+  // No local Base44 admin check; AdminGuard enforces access
 
   const { data: gameSettings = [], isLoading } = useQuery({
     queryKey: ['game-settings'],
@@ -113,7 +64,8 @@ export default function AdminGameSettings() {
       
       return settings;
     },
-    enabled: !!user
+    // Always enabled; AdminGuard handles access
+    enabled: true
   });
 
   const updateSettingMutation = useMutation({

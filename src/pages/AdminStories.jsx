@@ -7,41 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, BookOpen, Search, Image as ImageIcon, Mail } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, BookOpen, Search, Image as ImageIcon } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 export default function AdminStories() {
-  // Email-only mode: disable admin panel and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Stories Management");
-  const body = encodeURIComponent("Hi, I'd like admin access to manage stories on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
-  return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-blue-300 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Admin Access Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-700 mb-4">
-              The Stories management panel is disabled in this email-only mode. Please request admin access.
-            </p>
-            <Button
-              onClick={() => {
-                window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              Request Admin Access
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-  const [user, setUser] = useState(null);
+  // Removed Base44 admin gating; AdminGuard handles access
   const [editingStory, setEditingStory] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,31 +30,7 @@ export default function AdminStories() {
     category: "prophets"
   });
 
-  useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      if (!authenticated) {
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      const userData = await base44.auth.me();
-      if (userData.role !== 'admin') {
-        alert("Access Denied: Admin privileges required");
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      setUser(userData);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      navigate(createPageUrl("Home"));
-    }
-  };
+  // No local auth check; rely on AdminGuard
 
   const { data: stories = [], isLoading } = useQuery({
     queryKey: ['admin-stories'],
@@ -177,7 +124,7 @@ export default function AdminStories() {
     return matchesSearch && matchesCategory;
   });
 
-  if (!user) return null;
+  // Page renders after AdminGuard; no extra gating
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-slate-50 to-blue-50">

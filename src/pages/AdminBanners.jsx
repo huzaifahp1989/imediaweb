@@ -11,34 +11,7 @@ import { ArrowLeft, Plus, Edit, Trash2, Save, X, Eye, EyeOff } from "lucide-reac
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminBanners() {
-  // Email-only mode: disable admin panel and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Homepage Banners");
-  const body = encodeURIComponent("Hi, I'd like admin access to manage homepage banners on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
-  return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-blue-300 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Admin Access Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-700 mb-4">
-              The Homepage Banners admin panel is disabled in this email-only mode. Please request admin access.
-            </p>
-            <Button
-              onClick={() => {
-                window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500"
-            >
-              Request Admin Access
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  // Removed email-only banner; rely on AdminGuard
   const [user, setUser] = useState(null);
   const [banners, setBanners] = useState([]);
   const [editingBanner, setEditingBanner] = useState(null);
@@ -54,29 +27,10 @@ export default function AdminBanners() {
   });
 
   useEffect(() => {
-    checkAdmin();
     loadBanners();
   }, []);
 
-  const checkAdmin = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      if (!authenticated) {
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      const userData = await base44.auth.me();
-      if (userData.role !== 'admin') {
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      setUser(userData);
-    } catch (error) {
-      navigate(createPageUrl("Home"));
-    }
-  };
+  // No local Base44 admin check; AdminGuard enforces access
 
   const loadBanners = () => {
     const stored = localStorage.getItem('homepage_banners');
@@ -163,7 +117,7 @@ export default function AdminBanners() {
     { name: "Indigo Blue", value: "from-indigo-600 via-blue-600 to-cyan-600" }
   ];
 
-  if (!user) return null;
+  // Render UI without additional gating
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-slate-50 to-blue-50">

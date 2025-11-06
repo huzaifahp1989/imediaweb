@@ -5,10 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Users } from "lucide-react";
 
 export default function ResetPointsAdmin() {
-  // Email-only mode: disable admin panel actions and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Reset Points");
-  const body = encodeURIComponent("Hi, I'd like admin access to reset user points to 400 on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
+  // Removed email-only banner; rely on AdminGuard
   return (
     <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="max-w-4xl mx-auto">
@@ -23,20 +20,11 @@ export default function ResetPointsAdmin() {
             <Alert className="mb-6 bg-blue-50 border-blue-200">
               <AlertCircle className="w-4 h-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
-                The Reset Points admin tool is disabled in this email-only mode.
+                Tool not yet implemented. Please add reset logic.
               </AlertDescription>
             </Alert>
-
-            <div className="text-center">
-              <Button
-                onClick={() => {
-                  window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-                }}
-                className="bg-gradient-to-r from-blue-500 to-purple-500"
-                size="lg"
-              >
-                Request Admin Access
-              </Button>
+            <div className="text-sm text-gray-600">
+              This page is now accessible; wire up points reset actions as needed.
             </div>
           </CardContent>
         </Card>

@@ -13,34 +13,7 @@ import { Plus, Edit, Trash2, Save, X, CheckCircle, Search, Filter } from "lucide
 import { Switch } from "@/components/ui/switch";
 
 export default function AdminQuestions() {
-  // Email-only mode: disable admin panel and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Quiz Questions");
-  const body = encodeURIComponent("Hi, I'd like admin access to manage quiz questions on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
-  return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-blue-300 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Admin Access Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-700 mb-4">
-              The Quiz Questions panel is disabled in this email-only mode. Please request admin access.
-            </p>
-            <Button
-              onClick={() => {
-                window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500"
-            >
-              Request Admin Access
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  // Removed email-only banner; rely on AdminGuard
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);

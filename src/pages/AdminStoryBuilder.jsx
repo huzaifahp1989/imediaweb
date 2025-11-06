@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,35 +12,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 export default function AdminStoryBuilder() {
-  // Email-only mode: disable admin panel and show CTA
-  const subject = encodeURIComponent("Admin Access Request - Story Builder");
-  const body = encodeURIComponent("Hi, I'd like admin access to the story builder on Islam Kids Zone. My name is ____ and my contact details are ____.");
-
-  return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-blue-300 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Admin Access Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-700 mb-4">
-              The Story Builder admin panel is disabled in this email-only mode. Please request admin access.
-            </p>
-            <Button
-              onClick={() => {
-                window.location.href = `mailto:imediac786@gmail.com?subject=${subject}&body=${body}`;
-              }}
-              className="bg-gradient-to-r from-blue-500 to-purple-500"
-            >
-              Request Admin Access
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-  const [user, setUser] = useState(null);
+  // Removed email-only banner; rely on AdminGuard
   const [editingStory, setEditingStory] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingNodeIndex, setEditingNodeIndex] = useState(null);
@@ -69,31 +41,7 @@ export default function AdminStoryBuilder() {
     choices: []
   });
 
-  useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
-    try {
-      const authenticated = await base44.auth.isAuthenticated();
-      if (!authenticated) {
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      const userData = await base44.auth.me();
-      if (userData.role !== 'admin') {
-        alert("Access Denied: Admin privileges required");
-        navigate(createPageUrl("Home"));
-        return;
-      }
-
-      setUser(userData);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      navigate(createPageUrl("Home"));
-    }
-  };
+  // No local Base44 admin check; AdminGuard enforces access
 
   const { data: stories = [], isLoading } = useQuery({
     queryKey: ['admin-interactive-stories'],
@@ -243,7 +191,7 @@ export default function AdminStoryBuilder() {
     setFormData({ ...formData, story_nodes: newNodes });
   };
 
-  if (!user) return null;
+  // Render directly under AdminGuard (no local user gating)
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-slate-50 to-blue-50">

@@ -45,6 +45,42 @@ export default function Layout({ children, currentPageName }) {
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
 
+  // Site settings (localStorage-driven)
+  const [siteSettings, setSiteSettings] = useState({
+    siteTitle: "Islam Kids Zone",
+    tagline: "Learn, Play & Grow",
+    logoEmoji: "🌙",
+    headerGradient: "from-blue-600 to-purple-600",
+    navActiveGradient: "from-blue-500 to-purple-500",
+    backgroundGradient: "from-blue-50 via-purple-50 to-pink-50",
+    darkModeDefault: false,
+    showTestBanner: true,
+    showRadioBar: true,
+  });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("siteSettings");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setSiteSettings((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (siteSettings.darkModeDefault) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [siteSettings.darkModeDefault]);
+
+  const bgClass = `min-h-screen bg-gradient-to-br ${siteSettings.backgroundGradient}`;
+  const headerClass = `bg-gradient-to-r ${siteSettings.headerGradient} text-white shadow-lg sticky top-0 z-50`;
+  const supportEmail = siteSettings.supportEmail || "imedia786@gmail.com";
+  const radioSrc = siteSettings.radioUrl || "https://a4.asurahosting.com:7820/radio.mp3";
+
   useEffect(() => {
     // Define public pages that do NOT require authentication
     const publicPages = [
@@ -154,23 +190,23 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <RadioContext.Provider value={radioContextValue}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className={bgClass}>
         {/* Hidden Audio Element */}
         <audio
           ref={audioRef}
-          src="https://a4.asurahosting.com:7820/radio.mp3"
+          src={radioSrc}
           preload="none"
         />
 
         {/* Header */}
-        <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg sticky top-0 z-50">
+        <header className={headerClass}>
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
             <div className="flex items-center justify-between">
               <Link to={createPageUrl("Home")} className="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity">
-                <div className="text-3xl md:text-4xl">🌙</div>
+                <div className="text-3xl md:text-4xl">{siteSettings.logoEmoji}</div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold">Islam Kids Zone</h1>
-                  <p className="text-xs md:text-sm text-blue-100">Learn, Play & Grow</p>
+                  <h1 className="text-xl md:text-2xl font-bold">{siteSettings.siteTitle}</h1>
+                  <p className="text-xs md:text-sm text-blue-100">{siteSettings.tagline}</p>
                 </div>
               </Link>
 
@@ -235,7 +271,7 @@ export default function Layout({ children, currentPageName }) {
                       <DropdownMenuTrigger asChild>
                         <button type="button" className={`flex items-center gap-1.5 px-3 py-2 rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
                             isDropdownActive
-                              ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                              ? `bg-gradient-to-r ${siteSettings.navActiveGradient} text-white shadow-md`
                               : "text-gray-700 hover:bg-gray-100"
                           }`}>
                           <Icon className="w-4 h-4" />
@@ -262,7 +298,7 @@ export default function Layout({ children, currentPageName }) {
                     to={createPageUrl(item.path)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                        ? `bg-gradient-to-r ${siteSettings.navActiveGradient} text-white shadow-md`
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
@@ -339,7 +375,7 @@ export default function Layout({ children, currentPageName }) {
                       onClick={() => {
                         const subject = encodeURIComponent("Access Request - Islam Kids Zone");
                         const body = encodeURIComponent("Hi, I'd like to request access to Islam Kids Zone. My name is ____ and my contact details are ____.");
-                        const mailto = `mailto:imedia786@gmail.com?subject=${subject}&body=${body}`;
+                        const mailto = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
                         // Prefer window.open for mailto to avoid net::ERR_ABORTED in some dev environments
                         try {
                           window.open(mailto);
@@ -428,8 +464,25 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6" style={{ paddingBottom: isPlaying ? '100px' : '24px' }}>
+          {siteSettings.maintenanceMode && (
+            <div className="mb-4">
+              <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 text-sm text-gray-800">
+                    <strong className="text-yellow-700">Maintenance Mode:</strong> Some features may be temporarily unavailable.
+                    For support, email <span className="font-medium">{supportEmail}</span>
+                    {siteSettings.supportWhatsappNumber && (
+                      <> or WhatsApp <span className="font-medium">{siteSettings.supportWhatsappNumber}</span></>
+                    )}.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {children}
           
+          {siteSettings.showTestBanner && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -451,10 +504,11 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
           </motion.div>
+          )}
         </main>
 
         {/* Persistent Radio Player Bar */}
-        {isPlaying && (
+        {siteSettings.showRadioBar && isPlaying && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

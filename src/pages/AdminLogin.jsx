@@ -16,6 +16,12 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [configured, setConfigured] = useState(false);
+  const envFlags = {
+    apiKey: Boolean(import.meta.env.VITE_FIREBASE_API_KEY),
+    authDomain: Boolean(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+    projectId: Boolean(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+    appId: Boolean(import.meta.env.VITE_FIREBASE_APP_ID),
+  };
 
   useEffect(() => {
     const { app } = getFirebase();
@@ -78,6 +84,16 @@ export default function AdminLogin() {
                 <p className="text-sm text-gray-600">
                   Please set Firebase env vars in <code>.env</code>: <code>VITE_FIREBASE_API_KEY</code>, <code>VITE_FIREBASE_AUTH_DOMAIN</code>, <code>VITE_FIREBASE_PROJECT_ID</code>, <code>VITE_FIREBASE_APP_ID</code>. Optional: <code>VITE_ADMIN_EMAIL</code>, <code>VITE_ADMIN_2FA_CODE</code>.
                 </p>
+                <div className="text-xs text-gray-500 bg-gray-50 border rounded p-2">
+                  <div className="font-semibold mb-1">Detected env flags (no secrets):</div>
+                  <ul className="list-disc ml-4">
+                    <li>VITE_FIREBASE_API_KEY: {envFlags.apiKey ? '✓' : '✗'}</li>
+                    <li>VITE_FIREBASE_AUTH_DOMAIN: {envFlags.authDomain ? '✓' : '✗'}</li>
+                    <li>VITE_FIREBASE_PROJECT_ID: {envFlags.projectId ? '✓' : '✗'}</li>
+                    <li>VITE_FIREBASE_APP_ID: {envFlags.appId ? '✓' : '✗'}</li>
+                  </ul>
+                  <div className="mt-2">After editing <code>.env</code>, fully restart the dev server (<code>Ctrl+C</code> then <code>npm run dev</code>).</div>
+                </div>
                 <Button
                   onClick={() => {
                     const subject = encodeURIComponent("Admin Access - Islam Media Central");
@@ -124,4 +140,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-

@@ -1,0 +1,17 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == "huzaify786@gmail.com";
+    }
+
+    match /messages/{docId} {
+      // Allow anyone to submit a message
+      allow create: if true;
+
+      // Only admin can read/update/delete
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
+

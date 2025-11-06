@@ -65,6 +65,7 @@ import ResetPointsAdmin from "./ResetPointsAdmin";
 import AdminDashboard from "./AdminDashboard";
 import AdminLogin from "./AdminLogin";
 import AdminGuard from "./AdminGuard";
+import AdminSettings from "./AdminSettings";
 
 import AdminStories from "./AdminStories";
 
@@ -169,6 +170,7 @@ const PAGES = {
     ResetPointsAdmin: ResetPointsAdmin,
     
     AdminDashboard: AdminDashboard,
+    AdminSettings: AdminSettings,
     
     AdminStories: AdminStories,
     
@@ -302,6 +304,7 @@ function PagesContent() {
                 <Route path="/AdminLogin" element={<AdminLogin />} />
                 
                 <Route path="/AdminDashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+                <Route path="/AdminSettings" element={<AdminGuard><AdminSettings /></AdminGuard>} />
                 
                 <Route path="/AdminStories" element={<AdminGuard><AdminStories /></AdminGuard>} />
                 
