@@ -303,8 +303,11 @@ function PagesContent() {
                 <Route path="/ResetPointsAdmin" element={<ResetPointsAdmin />} />
                 
                 <Route path="/AdminLogin" element={<AdminLogin />} />
+                {/* Lowercase aliases for convenience */}
+                <Route path="/adminlogin" element={<AdminLogin />} />
                 
                 <Route path="/AdminDashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+                <Route path="/admindashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
                 <Route path="/AdminSettings" element={<AdminGuard><AdminSettings /></AdminGuard>} />
                 
                 <Route path="/AdminStories" element={<AdminGuard><AdminStories /></AdminGuard>} />
@@ -333,6 +336,7 @@ function PagesContent() {
                 
                 <Route path="/AdminBanners" element={<AdminGuard><AdminBanners /></AdminGuard>} />
                 <Route path="/AdminSponsors" element={<AdminGuard><AdminSponsors /></AdminGuard>} />
+                <Route path="/adminsponsors" element={<AdminGuard><AdminSponsors /></AdminGuard>} />
                 
                 <Route path="/AdminStoryBuilder" element={<AdminGuard><AdminStoryBuilder /></AdminGuard>} />
                 
