@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Edit, Trash2, Search } from "lucide-react";
+import { Users, Plus, Edit, Trash2, Search, RefreshCw, Star } from "lucide-react";
 import { getFirebase, usersApi } from "@/api/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -12,53 +12,60 @@ export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
+  const [status, setStatus] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        // Prefer backend listing when available (requires admin auth)
-        const backend = await usersApi.list();
-        if (Array.isArray(backend) && backend.length >= 0) {
-          const list = backend.map((u) => ({
-            id: u.id || u.uid,
-            name: u.fullName || u.name || "",
-            email: u.email || "",
-            role: u.role || "user",
-            age: u.age || "",
-            city: u.city || "",
-            madrasah: u.madrasah || "",
-          }));
-          setUsers(list);
-          return;
-        }
-      } catch (e) {
-        console.warn('Backend users list failed:', e?.message || e);
-      }
-      try {
-        // Fallback to direct Firestore read
-        const { db } = getFirebase();
-        if (!db) return;
-        const col = collection(db, 'users');
-        const snap = await getDocs(col);
-        const list = snap.docs.map(d => {
-          const data = d.data() || {};
-          return {
-            id: d.id,
-            name: data.fullName || data.name || "",
-            email: data.email || "",
-            role: data.role || "user",
-            age: data.age || "",
-            city: data.city || "",
-            madrasah: data.madrasah || "",
-          };
-        });
+  const load = async () => {
+    setStatus("");
+    try {
+      // Prefer backend listing when available (requires admin auth)
+      const backend = await usersApi.list();
+      if (Array.isArray(backend) && backend.length >= 0) {
+        const list = backend.map((u) => ({
+          id: u.id || u.uid,
+          uid: u.uid || u.id,
+          name: u.fullName || u.name || "",
+          email: u.email || "",
+          role: u.role || "user",
+          age: u.age || "",
+          city: u.city || "",
+          madrasah: u.madrasah || u.madrasah_maktab || "",
+          points: Number(u.points || 0),
+          lastAward: u.lastAward || null,
+        }));
         setUsers(list);
-      } catch (e) {
-        console.warn('Failed to load users from Firestore:', e?.message || e);
+        return;
       }
-    };
-    load();
-  }, []);
+    } catch (e) {
+      console.warn('Backend users list failed:', e?.message || e);
+    }
+    try {
+      // Fallback to direct Firestore read
+      const { db } = getFirebase();
+      if (!db) return;
+      const col = collection(db, 'users');
+      const snap = await getDocs(col);
+      const list = snap.docs.map(d => {
+        const data = d.data() || {};
+        return {
+          id: d.id,
+          uid: d.id,
+          name: data.fullName || data.name || "",
+          email: data.email || "",
+          role: data.role || "user",
+          age: data.age || "",
+          city: data.city || "",
+          madrasah: data.madrasah || data.madrasah_maktab || "",
+          points: Number(data.points || 0),
+          lastAward: data.lastAward || null,
+        };
+      });
+      setUsers(list);
+    } catch (e) {
+      console.warn('Failed to load users from Firestore:', e?.message || e);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase();
@@ -81,8 +88,11 @@ export default function AdminUsers() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="bg-white text-gray-900 w-56"
                 />
-                <Button variant="secondary" className="bg-white/20 text-white hover:bg-white/30">
+                <Button variant="secondary" className="bg-white/20 text-white hover:bg-white/30" onClick={load}>
                   <Search className="w-4 h-4 mr-2" /> Find
+                </Button>
+                <Button variant="secondary" className="bg-white/20 text-white hover:bg-white/30" onClick={load}>
+                  <RefreshCw className="w-4 h-4 mr-2" /> Refresh
                 </Button>
                 <Button onClick={() => setEditingUser({ id: "new" })}>
                   <Plus className="w-4 h-4 mr-2" /> Add User
@@ -91,6 +101,9 @@ export default function AdminUsers() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
+            {status && (
+              <div className="mb-4 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded p-2">{status}</div>
+            )}
             {filtered.length === 0 ? (
               <div className="text-center text-gray-600 py-10">
                 No users yet. Ask users to sign up via the Signup page.
@@ -106,6 +119,15 @@ export default function AdminUsers() {
                       </Badge>
                     </div>
                     <div className="text-sm text-gray-600 mb-1">{u.email}</div>
+                    <div className="flex items-center gap-2 text-amber-700 mb-2">
+                      <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                      <span className="font-semibold">{u.points || 0} points</span>
+                    </div>
+                    {u.lastAward && (
+                      <div className="text-xs text-gray-600 mb-2">
+                        Last award: {u.lastAward.game_type || '—'} (+{u.lastAward.points_awarded || 0})
+                      </div>
+                    )}
                     <div className="text-xs text-gray-500">Age: {u.age || '-'}</div>
                     <div className="text-xs text-gray-500">City: {u.city || '-'}</div>
                     <div className="text-xs text-gray-500 mb-4">Madrasah: {u.madrasah || '-'}</div>
@@ -114,7 +136,31 @@ export default function AdminUsers() {
                         <Edit className="w-4 h-4 mr-1" /> Edit
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => setUsers(users.filter(x => x.id !== u.id))}>
-                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete (local)
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={async () => {
+                          try {
+                            const { auth } = getFirebase();
+                            const token = await auth?.currentUser?.getIdToken?.();
+                            const endpoint = import.meta.env?.DEV ? '/.netlify/functions/deleteUser' : '/api/deleteUser';
+                            const res = await fetch(endpoint, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+                              body: JSON.stringify({ uid: u.uid, email: u.email })
+                            });
+                            if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+                            const data = await res.json();
+                            setStatus(`Deleted user ${u.email} (uid=${u.uid || u.id}).`);
+                            await load();
+                          } catch (e) {
+                            setStatus(`Server delete failed for ${u.email}: ${e?.message || e}`);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete (server)
                       </Button>
                     </div>
                   </div>
@@ -159,7 +205,7 @@ export default function AdminUsers() {
                   </Button>
                   <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Users are loaded from Firestore `users` collection. Editing/deleting here is local-only.</p>
+                <p className="text-xs text-gray-500 mt-2">Users are loaded from Firestore `users` collection. Editing is local-only. Use "Delete (server)" to remove accounts from Firebase Auth and Firestore.</p>
               </div>
             )}
           </CardContent>

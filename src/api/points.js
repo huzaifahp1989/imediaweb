@@ -1,9 +1,11 @@
 import { base44 } from "@/api/base44Client";
+import { getFirebase } from "@/api/firebase";
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 // Centralized helper to award points based on backend GameSettings
 // Usage: await awardPointsForGame(user, gameType, { isPerfect, fallbackScore })
 export async function awardPointsForGame(user, gameType, opts = {}) {
-  const { isPerfect = false, fallbackScore = 10 } = opts;
+  const { isPerfect = false, fallbackScore = 10, metadata = {} } = opts;
 
   try {
     // Load setting for this game; fall back if none or inactive
@@ -21,16 +23,40 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     // Clamp within configured bounds
     awarded = Math.max(min, Math.min(awarded, max));
 
-    // Update persistence: record score and update user's total points (capped at 1500)
-    await base44.entities.GameScore.create({
-      user_id: user.id,
-      game_type: gameType,
-      score: awarded,
-      completed: true
-    });
+    // Persist points to Firebase via Netlify function (server-side authoritative)
+    const { auth } = getFirebase();
+    const token = await auth?.currentUser?.getIdToken?.();
+    if (token) {
+      const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ game_type: gameType, points_awarded: awarded, isPerfect, metadata }),
+        });
+        if (res.ok) {
+          return awarded;
+        }
+      } catch (e) {
+        // fall through to Firestore client-side fallback
+      }
+    }
 
-    const newTotalPoints = Math.min((user.points || 0) + awarded, 1500);
-    await base44.auth.updateMe({ points: newTotalPoints });
+    // Fallback: update Firestore client-side if backend not available
+    const { db, auth: fbAuth } = getFirebase();
+    const uid = fbAuth?.currentUser?.uid;
+    if (db && uid) {
+      try {
+        const ref = doc(db, 'users', uid);
+        const snap = await getDoc(ref);
+        const currentPoints = Number(snap.exists() ? (snap.data()?.points || 0) : 0);
+        const maxCap = 1500;
+        const nextTotal = Math.min(currentPoints + awarded, maxCap);
+        await updateDoc(ref, { points: nextTotal, updatedAt: new Date() });
+      } catch (_) {
+        // ignore
+      }
+    }
 
     return awarded;
   } catch (error) {
@@ -39,4 +65,3 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     return fallbackScore;
   }
 }
-

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -48,6 +49,10 @@ const BG_OPTIONS = [
 export default function AdminSettings() {
   const [settings, setSettings] = useState(DEFAULTS);
   const [saved, setSaved] = useState(false);
+  const [lookupEmail, setLookupEmail] = useState("");
+  const [lookupResult, setLookupResult] = useState("");
+  const [delIdentifier, setDelIdentifier] = useState("");
+  const [delResult, setDelResult] = useState("");
 
   useEffect(() => {
     try {
@@ -289,6 +294,95 @@ export default function AdminSettings() {
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2">Stored locally for now. For production, persist in Firestore or your backend (Netlify functions), with secure server-side enforcement.</p>
+
+            <div className="pt-8 border-t">
+              <h2 className="text-xl font-semibold mb-4">Admin Auth Tools</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="space-y-3">
+                  <Label>Check if Auth Email Exists</Label>
+                  <Input
+                    type="email"
+                    placeholder="user@example.com"
+                    value={lookupEmail}
+                    onChange={(e) => setLookupEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Button
+                    onClick={async () => {
+                      setLookupResult("");
+                      try {
+                        const { auth } = (await import("@/api/firebase")).getFirebase();
+                        const token = await auth?.currentUser?.getIdToken?.();
+                        if (!token) throw new Error("Admin login required");
+                        const res = await fetch("/.netlify/functions/authLookup", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ email: lookupEmail.trim().toLowerCase() }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data?.error || `Error ${res.status}`);
+                        setLookupResult(data.exists ? `Exists (uid: ${data.uid})` : "Not found in Auth");
+                      } catch (e) {
+                        setLookupResult(`Lookup failed: ${e.message || e}`);
+                      }
+                    }}
+                  >
+                    Check Email
+                  </Button>
+                </div>
+              </div>
+              {lookupResult && (
+                <div className="mt-3 text-sm p-2 rounded border bg-white/60">
+                  {lookupResult}
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-2">Requires admin login and server-side verification. Useful when signup says "email already in use" but no user appears in Firestore.</p>
+
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="space-y-3">
+                  <Label>Delete Test Account (Email or UID)</Label>
+                  <Input
+                    placeholder="user@example.com or UID"
+                    value={delIdentifier}
+                    onChange={(e) => setDelIdentifier(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Button
+                    variant="destructive"
+                    onClick={async () => {
+                      setDelResult("");
+                      const id = delIdentifier.trim();
+                      if (!id) { setDelResult("Provide email or UID"); return; }
+                      try {
+                        const { auth } = (await import("@/api/firebase")).getFirebase();
+                        const token = await auth?.currentUser?.getIdToken?.();
+                        if (!token) throw new Error("Admin login required");
+                        const isEmail = /@/.test(id);
+                        const res = await fetch("/.netlify/functions/deleteUser", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                          body: JSON.stringify(isEmail ? { email: id.toLowerCase() } : { uid: id }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data?.error || `Error ${res.status}`);
+                        setDelResult(`Deleted: uid=${data.uid}${data.email ? `, email=${data.email}` : ''}`);
+                      } catch (e) {
+                        setDelResult(`Delete failed: ${e.message || e}`);
+                      }
+                    }}
+                  >
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
+              {delResult && (
+                <div className="mt-3 text-sm p-2 rounded border bg-white/60">
+                  {delResult}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signUp, saveUserProfile } from "@/api/firebase";
+import { signUp, saveUserProfile, resetPassword, getFirebase, sendVerification } from "@/api/firebase";
 
 // Simple, dependency-free signup form that:
 // 1) Prefills an email to imedia786@gmail.com with all submitted details
@@ -21,6 +21,9 @@ export default function Signup() {
   const [errorMsg, setErrorMsg] = useState("");
   const [profileSaved, setProfileSaved] = useState(null); // null | true | false
   const [infoMsg, setInfoMsg] = useState("");
+  const [offerReset, setOfferReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
   const navigate = useNavigate();
 
   function validate() {
@@ -43,8 +46,10 @@ export default function Signup() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const normalizedEmail = email.trim();
+      const normalizedEmail = email.trim().toLowerCase();
       const user = await signUp(normalizedEmail, password.trim());
+      // Try sending a verification email to the new user (optional)
+      try { await sendVerification(); setVerificationSent(true); } catch {}
 
       // Account creation succeeded — show success and navigate regardless of profile save
       setSuccess(true);
@@ -60,6 +65,23 @@ export default function Signup() {
           email: normalizedEmail,
         });
         setProfileSaved(true);
+        // Also call backend to ensure record exists and notify admin by email
+        try {
+          const { auth } = getFirebase();
+          const token = await auth?.currentUser?.getIdToken?.();
+          if (token) {
+            const endpoint = import.meta.env?.DEV ? "/.netlify/functions/signupNotify" : "/api/signupNotify";
+            const res = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ email: normalizedEmail, fullName: fullName.trim() }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.notified) setInfoMsg("Admin has been notified of your signup.");
+            }
+          }
+        } catch (_) {}
       } catch (persistErr) {
         // Non-blocking: surface a friendly note if Firestore permissions are missing
         const pCode = persistErr?.code || "";
@@ -67,11 +89,32 @@ export default function Signup() {
         if (pCode === "permission-denied") pMsg = "Profile save requires Firebase access. You can still log in.";
         setProfileSaved(false);
         setInfoMsg(pMsg);
+        // Fallback: attempt backend creation and admin notification even if client save failed
+        try {
+          const { auth } = getFirebase();
+          const token = await auth?.currentUser?.getIdToken?.();
+          if (token) {
+            const endpoint = import.meta.env?.DEV ? "/.netlify/functions/signupNotify" : "/api/signupNotify";
+            const res = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ email: normalizedEmail, fullName: fullName.trim() }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.ok) setInfoMsg((prev) => prev || "Your account is registered on the backend.");
+            }
+          }
+        } catch (_) {}
       }
     } catch (err) {
       const code = err?.code || "";
       let msg = err?.message || "Signup failed";
-      if (code === "auth/email-already-in-use") msg = "Email already in use. Try logging in.";
+      if (code === "auth/email-already-in-use") {
+        msg = "Email already in use. Try logging in or reset your password.";
+        setOfferReset(true);
+        setResetEmail(email.trim().toLowerCase());
+      }
       if (code === "auth/invalid-email") msg = "Invalid email address.";
       if (code === "auth/weak-password") msg = "Password is too weak. Use at least 6 characters.";
       if (code === "auth/operation-not-allowed") msg = "Email/password sign-up is disabled. Enable it in Firebase.";
@@ -84,9 +127,12 @@ export default function Signup() {
   return (
     <div className="container mx-auto max-w-xl px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">Sign Up</h1>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600 mb-2">
         Create your account and we’ll register you in our backend. You can log in immediately after signing up.
       </p>
+      {import.meta.env?.DEV && import.meta.env?.VITE_FIREBASE_PROJECT_ID && (
+        <p className="text-xs text-gray-500 mb-6">Using Firebase project: {String(import.meta.env.VITE_FIREBASE_PROJECT_ID)}</p>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4 bg-white/50 rounded-lg p-6 shadow">
         <div>
@@ -168,10 +214,44 @@ export default function Signup() {
         </div>
 
         {errorMsg && <div className="text-red-600 text-sm">{errorMsg}</div>}
+        {offerReset && (
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <button
+              type="button"
+              className="text-blue-700 underline"
+              onClick={async () => {
+                setInfoMsg("");
+                try {
+                  await resetPassword(resetEmail);
+                  setInfoMsg("Password reset email sent. Check your inbox.");
+                  setOfferReset(false);
+                } catch (e) {
+                  const code = e?.code || "";
+                  let msg = e?.message || "Failed to send reset email.";
+                  if (code === "auth/invalid-email") msg = "Please enter a valid email address.";
+                  if (code === "auth/user-not-found") msg = "No account found for this email.";
+                  setInfoMsg(msg);
+                }
+              }}
+            >
+              Send reset email
+            </button>
+          </div>
+        )}
         {success && <div className="text-green-600 text-sm">Account created! Redirecting to login…</div>}
+        {verificationSent && (
+          <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm">
+            Verification email sent. Please check your inbox.
+          </div>
+        )}
         {profileSaved === false && (
           <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded p-2 text-sm">
             {infoMsg || "We couldn’t save your profile right now, but your account is created. You can complete your profile after login."}
+          </div>
+        )}
+        {infoMsg && profileSaved !== false && (
+          <div className="text-blue-700 bg-blue-50 border border-blue-200 rounded p-2 text-sm">
+            {infoMsg}
           </div>
         )}
 

@@ -10,6 +10,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  sendEmailVerification,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -54,8 +56,11 @@ export function getFirebase() {
       app = initializeApp(config);
       auth = getAuth(app);
       const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-      // Use long-polling detection to avoid aborted listen requests in some dev networks
-      db = initializeFirestore(app, {
+      // In development, force long-polling to reduce Listen abort noise
+      db = initializeFirestore(app, isDev ? {
+        experimentalForceLongPolling: true,
+        useFetchStreams: false,
+      } : {
         experimentalAutoDetectLongPolling: true,
         useFetchStreams: false,
       });
@@ -63,7 +68,7 @@ export function getFirebase() {
         try {
           console.info('[Firebase] Firestore initialized', {
             projectId: config.projectId,
-            experimentalAutoDetectLongPolling: true,
+            experimentalForceLongPolling: true,
             useFetchStreams: false,
           });
         } catch (_) {
@@ -126,6 +131,21 @@ export function watchAuth(callback) {
   const { auth } = getFirebase();
   if (!auth) return () => {};
   return onAuthStateChanged(auth, callback);
+}
+
+// Password reset helper
+export async function resetPassword(email) {
+  const { auth } = getFirebase();
+  if (!auth) throw new Error('Firebase not configured');
+  return sendPasswordResetEmail(auth, email);
+}
+
+// Send email verification to the currently signed-in user
+export async function sendVerification() {
+  const { auth } = getFirebase();
+  const user = auth?.currentUser;
+  if (!user) throw new Error('No authenticated user to verify');
+  await sendEmailVerification(user);
 }
 
 // Messages helpers

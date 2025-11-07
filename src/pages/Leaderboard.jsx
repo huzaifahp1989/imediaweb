@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { usersApi, watchAuth, getUserProfile } from "@/api/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,20 +12,32 @@ export default function Leaderboard() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Email-only access: assume guests, no external auth calls
+  // Watch Firebase auth and load current user's profile
   useEffect(() => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
+    const stop = watchAuth(async (u) => {
+      const authed = !!u;
+      setIsAuthenticated(authed);
+      if (authed) {
+        try {
+          const profile = await getUserProfile(u.uid);
+          setCurrentUser(profile ? { id: u.uid, ...profile } : { id: u.uid, email: u.email, points: 0 });
+        } catch {
+          setCurrentUser({ id: u.uid, email: u.email, points: 0 });
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    return () => { try { stop?.(); } catch {} };
   }, []);
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['leaderboard'],
+    queryKey: ['leaderboard-users'],
     queryFn: async () => {
-      // No external API: return placeholder or locally stored leaderboard
       try {
-        const stored = localStorage.getItem('ikz_leaderboard');
-        const list = stored ? JSON.parse(stored) : [];
-        return Array.isArray(list) ? list : [];
+        const list = await usersApi.list();
+        // Sort by points descending
+        return list.sort((a, b) => (Number(b.points || 0) - Number(a.points || 0)));
       } catch {
         return [];
       }
@@ -168,12 +181,12 @@ export default function Leaderboard() {
               <div className="divide-y divide-gray-100">
                 {users.map((user, index) => (
                   <motion.div
-                    key={user.id ?? `${user.email || user.full_name || 'user'}-${index}`}
+                    key={user.uid || user.id || `${user.email || user.full_name || 'user'}-${index}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={`p-4 sm:p-6 hover:bg-gray-50 transition-colors ${
-                      currentUser?.id === user.id ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                      currentUser?.id && (currentUser.id === (user.uid || user.id)) ? "bg-blue-50 border-l-4 border-blue-500" : ""
                     }`}
                   >
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -193,7 +206,7 @@ export default function Leaderboard() {
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-sm sm:text-base text-gray-900 flex items-center gap-2 flex-wrap">
                             <span className="truncate">{getDisplayName(user)}</span>
-                            {currentUser?.id === user.id && (
+                            {currentUser?.id && (currentUser.id === (user.uid || user.id)) && (
                               <Badge className="bg-blue-500 text-xs flex-shrink-0">You</Badge>
                             )}
                           </div>
@@ -218,7 +231,7 @@ export default function Leaderboard() {
                       <div className="text-right flex-shrink-0">
                         <div className="flex items-center gap-1 sm:gap-2 text-lg sm:text-xl font-bold text-amber-600">
                           <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-500 text-amber-500" />
-                          <span>{user.points || 0}</span>
+                          <span>{Number(user.points || 0)}</span>
                         </div>
                         <p className="text-[10px] sm:text-xs text-gray-500">points</p>
                       </div>
