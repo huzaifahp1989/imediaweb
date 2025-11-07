@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import PropTypes from 'prop-types';
+import { watchAuth, getUserProfile } from "@/api/firebase";
 // Base44 auth removed from public UI; email-only access in place
 
 // Create Radio Context
@@ -97,11 +98,31 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [volume]);
 
-  // No-op for email-only access
-  const checkAuth = async () => {
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+  // Watch Firebase auth and load profile for username indicator
+  useEffect(() => {
+    const unsub = watchAuth(async (u) => {
+      try {
+        if (u) {
+          setIsAuthenticated(true);
+          let profile = null;
+          try {
+            profile = await getUserProfile(u.uid);
+          } catch {}
+          const fullName = profile?.fullName || profile?.name || u.displayName || u.email || "User";
+          const points = profile?.points || 0;
+          setUser({ full_name: fullName, points, email: u.email, uid: u.uid });
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      } catch (e) {
+        console.warn('Auth/profile load failed:', e?.message || e);
+        setIsAuthenticated(!!u);
+        setUser(u ? { full_name: u.email || 'User', points: 0, email: u.email, uid: u.uid } : null);
+      }
+    });
+    return () => unsub?.();
+  }, []);
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -247,6 +268,14 @@ export default function Layout({ children, currentPageName }) {
                   </>
                 ) : null}
               </div>
+
+              {/* Mobile user indicator */}
+              {isAuthenticated && user ? (
+                <div className="md:hidden flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-semibold">{user.full_name}</span>
+                </div>
+              ) : null}
 
               {/* Mobile Menu Button */}
               <Button

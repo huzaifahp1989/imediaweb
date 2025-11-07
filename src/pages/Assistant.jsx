@@ -65,6 +65,17 @@ export default function Assistant() {
       }
       if (!res || !res.ok) throw new Error(`Assistant error: ${res ? res.status : 'no response'}`);
       const data = await res.json();
+      if (data?.error) {
+        const code = data.error?.code;
+        const type = data.error?.type;
+        let banner = String(data.error?.message || 'Assistant error');
+        if (code === 429) {
+          banner = type === 'quota'
+            ? 'OpenAI quota exceeded for this API key. Check plan/billing or use a different key.'
+            : 'OpenAI rate limit reached. Please slow down and retry shortly.';
+        }
+        setError(banner);
+      }
       const reply = String(data.reply || '');
       const updated = [...messages, { role: 'user', content: text }, { role: 'assistant', content: reply }];
       setMessages(updated);

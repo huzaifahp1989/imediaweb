@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Edit, Trash2, Search } from "lucide-react";
-import { getFirebase } from "@/api/firebase";
+import { getFirebase, usersApi } from "@/api/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function AdminUsers() {
@@ -16,6 +16,26 @@ export default function AdminUsers() {
   useEffect(() => {
     const load = async () => {
       try {
+        // Prefer backend listing when available (requires admin auth)
+        const backend = await usersApi.list();
+        if (Array.isArray(backend) && backend.length >= 0) {
+          const list = backend.map((u) => ({
+            id: u.id || u.uid,
+            name: u.fullName || u.name || "",
+            email: u.email || "",
+            role: u.role || "user",
+            age: u.age || "",
+            city: u.city || "",
+            madrasah: u.madrasah || "",
+          }));
+          setUsers(list);
+          return;
+        }
+      } catch (e) {
+        console.warn('Backend users list failed:', e?.message || e);
+      }
+      try {
+        // Fallback to direct Firestore read
         const { db } = getFirebase();
         if (!db) return;
         const col = collection(db, 'users');

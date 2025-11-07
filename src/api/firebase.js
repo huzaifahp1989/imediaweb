@@ -22,6 +22,7 @@ import {
   setDoc,
   doc,
   deleteDoc,
+  getDoc,
 } from 'firebase/firestore';
 import {
   getStorage,
@@ -93,6 +94,15 @@ export async function saveUserProfile(uid, profile) {
   const ref = doc(db, 'users', uid);
   // Ensure the document id equals uid; merge to preserve existing fields
   await setDoc(ref, { uid, ...(profile || {}), updatedAt: new Date() }, { merge: true });
+}
+
+// Fetch a single user profile from Firestore
+export async function getUserProfile(uid) {
+  const { db } = getFirebase();
+  if (!db) throw new Error('Firebase not configured');
+  const ref = doc(db, 'users', uid);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
 }
 
 export function watchAuth(callback) {
@@ -172,6 +182,34 @@ export const messagesApi = {
     const ref = doc(db, 'messages', id);
     await updateDoc(ref, { read });
   },
+};
+
+// Admin-backed users listing via Netlify function with Firestore fallback
+export const usersApi = {
+  async list() {
+    // Try backend (requires VITE_USE_BACKEND and admin auth token)
+    if (useBackend) {
+      try {
+        const { auth } = getFirebase();
+        const token = await auth?.currentUser?.getIdToken?.();
+        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/users' : '/api/users';
+        const res = await fetch(endpoint, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.warn('Backend users list failed, falling back to Firestore:', e?.message || e);
+      }
+    }
+    // Fallback: read directly from Firestore (requires admin read in rules)
+    const { db } = getFirebase();
+    if (!db) throw new Error('Firebase not configured');
+    const col = collection(db, 'users');
+    const snap = await getDocs(col);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
 };
 
 // Sponsors/Ads helpers (Firestore-backed with localStorage fallback, no backend calls)

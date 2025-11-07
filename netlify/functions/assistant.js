@@ -46,12 +46,52 @@ export async function handler(event) {
           }),
         });
         if (!res.ok) {
-          let msg = `OpenAI error: ${res.status}`;
+          let messageText = `OpenAI error: ${res.status}`;
+          let errData = null;
           try {
-            const errData = await res.json();
-            if (errData?.error?.message) msg = `OpenAI ${res.status}: ${errData.error.message}`;
+            errData = await res.json();
+            if (errData?.error?.message) messageText = `OpenAI ${res.status}: ${errData.error.message}`;
           } catch {}
-          throw new Error(msg);
+          if (res.status === 429) {
+            const raw = String(errData?.error?.message || '');
+            const type = /quota/i.test(raw) ? 'quota' : 'rate_limit';
+            const baseMsg = type === 'quota'
+              ? 'Assistant is temporarily unavailable: OpenAI quota exceeded for this API key. Please check plan and billing or use a different key.'
+              : 'Too many requests to OpenAI right now. Please slow down and retry shortly.';
+            // Admin-mode fallback suggestions
+            let extra = '';
+            try {
+              const lastUser = messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+              const text = String(lastUser || '').toLowerCase();
+              const suggestions = [];
+              if (mode === 'admin') {
+                if (/banner|carousel|hero|promo/.test(text)) {
+                  suggestions.push('AdminBanners → edit banner → save changes.');
+                }
+                if (/story|stories|article|post/.test(text)) {
+                  suggestions.push('AdminStories → find story → edit → publish.');
+                }
+                if (/quiz|question|trivia/.test(text)) {
+                  suggestions.push('AdminQuizManager → create/edit quiz → save.');
+                }
+                if (/user|account|role|permission/.test(text)) {
+                  suggestions.push('AdminUsers → search user → update role/permissions.');
+                }
+              }
+              if (suggestions.length) {
+                extra = `\n\nIn the meantime, try: ${suggestions.join(' \u2022 ')}`;
+              }
+            } catch {}
+            const friendly = `${baseMsg}${extra}`;
+            return {
+              statusCode: 200,
+              body: JSON.stringify({
+                reply: friendly,
+                error: { code: 429, type, message: raw || baseMsg, doc: 'https://platform.openai.com/docs/guides/error-codes/api-errors.' }
+              })
+            };
+          }
+          throw new Error(messageText);
         }
         const data = await res.json();
         const reply = data?.choices?.[0]?.message?.content || '';
@@ -103,12 +143,52 @@ export async function handler(event) {
           }),
         });
         if (!res.ok) {
-          let msg = `OpenAI error: ${res.status}`;
+          let messageText = `OpenAI error: ${res.status}`;
+          let errData = null;
           try {
-            const errData = await res.json();
-            if (errData?.error?.message) msg = `OpenAI ${res.status}: ${errData.error.message}`;
+            errData = await res.json();
+            if (errData?.error?.message) messageText = `OpenAI ${res.status}: ${errData.error.message}`;
           } catch {}
-          throw new Error(msg);
+          if (res.status === 429) {
+            const raw = String(errData?.error?.message || '');
+            const type = /quota/i.test(raw) ? 'quota' : 'rate_limit';
+            const baseMsg = type === 'quota'
+              ? 'Assistant is temporarily unavailable: OpenAI quota exceeded for this API key. Please check plan and billing or use a different key.'
+              : 'Too many requests to OpenAI right now. Please slow down and retry shortly.';
+            // Admin-mode fallback suggestions
+            let extra = '';
+            try {
+              const lastUser = messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+              const text = String(lastUser || '').toLowerCase();
+              const suggestions = [];
+              if (mode === 'admin') {
+                if (/banner|carousel|hero|promo/.test(text)) {
+                  suggestions.push('AdminBanners → edit banner → save changes.');
+                }
+                if (/story|stories|article|post/.test(text)) {
+                  suggestions.push('AdminStories → find story → edit → publish.');
+                }
+                if (/quiz|question|trivia/.test(text)) {
+                  suggestions.push('AdminQuizManager → create/edit quiz → save.');
+                }
+                if (/user|account|role|permission/.test(text)) {
+                  suggestions.push('AdminUsers → search user → update role/permissions.');
+                }
+              }
+              if (suggestions.length) {
+                extra = `\n\nIn the meantime, try: ${suggestions.join(' \u2022 ')}`;
+              }
+            } catch {}
+            const friendly = `${baseMsg}${extra}`;
+            return {
+              statusCode: 200,
+              body: JSON.stringify({
+                reply: friendly,
+                error: { code: 429, type, message: raw || baseMsg, doc: 'https://platform.openai.com/docs/guides/error-codes/api-errors.' }
+              })
+            };
+          }
+          throw new Error(messageText);
         }
         const data = await res.json();
         reply = data?.choices?.[0]?.message?.content || '';
