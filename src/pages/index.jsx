@@ -5,6 +5,7 @@ import Home from "./Home";
 import Games from "./Games";
 
 import Leaderboard from "./Leaderboard";
+import MyPoints from "./MyPoints";
 
 import Stories from "./Stories";
 
@@ -117,6 +118,7 @@ const PAGES = {
     Games: Games,
     
     Leaderboard: Leaderboard,
+    MyPoints: MyPoints,
     
     Stories: Stories,
     
@@ -258,6 +260,8 @@ function PagesContent() {
                 <Route path="/games" element={<Games />} />
                 
                 <Route path="/Leaderboard" element={<Leaderboard />} />
+                <Route path="/MyPoints" element={<MyPoints />} />
+                <Route path="/mypoints" element={<MyPoints />} />
                 
                 <Route path="/Stories" element={<Stories />} />
                 

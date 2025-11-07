@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain } from "lucide-react";
+import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain, Star } from "lucide-react";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion } from "framer-motion";
 import {
@@ -165,6 +165,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Games", icon: Gamepad2, path: "Games" },
     { name: "Learning Paths", icon: GraduationCap, path: "LearningPaths" },
     { name: "Leaderboard", icon: Trophy, path: "Leaderboard" },
+    { name: "My Points", icon: Star, path: "MyPoints" },
     { name: "Stories", icon: BookOpen, path: "Stories" },
     { name: "Videos", icon: Video, path: "Videos" },
     { name: "Audio", icon: Music, path: "Audio" },
@@ -253,6 +254,12 @@ export default function Layout({ children, currentPageName }) {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem asChild>
+                          <Link to={createPageUrl("MyPoints")} className="cursor-pointer">
+                            <Star className="w-4 h-4 mr-2" />
+                            My Points
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link to={createPageUrl("DeleteAccount")} className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50">
                             <Settings className="w-4 h-4 mr-2" />
@@ -405,6 +412,16 @@ export default function Layout({ children, currentPageName }) {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Link to={createPageUrl("MyPoints")} onClick={handleMobileLinkClick}>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-white"
+                        >
+                          <Star className="w-4 h-4 mr-2" />
+                          My Points
+                        </Button>
+                      </Link>
                       <Link to={createPageUrl("DeleteAccount")} onClick={handleMobileLinkClick}>
                         <Button
                           variant="outline"
