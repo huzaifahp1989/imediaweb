@@ -23,6 +23,7 @@ import ContactUs from "./ContactUs";
 import Duas from "./Duas";
 
 import RecordAndShare from "./RecordAndShare";
+import RecordingStudio from "./RecordingStudio";
 
 import RecordingsAdmin from "./RecordingsAdmin";
 
@@ -133,6 +134,7 @@ const PAGES = {
     Duas: Duas,
     
     RecordAndShare: RecordAndShare,
+    RecordingStudio: RecordingStudio,
     
     RecordingsAdmin: RecordingsAdmin,
     
@@ -169,6 +171,7 @@ const PAGES = {
     Multimedia: Multimedia,
     
     FullQuran: FullQuran,
+    Quran: FullQuran,
     
     ResetPointsAdmin: ResetPointsAdmin,
     
@@ -271,6 +274,7 @@ function PagesContent() {
                 <Route path="/Duas" element={<Duas />} />
                 
                 <Route path="/RecordAndShare" element={<RecordAndShare />} />
+                <Route path="/RecordingStudio" element={<RecordingStudio />} />
                 
                 <Route path="/RecordingsAdmin" element={<RecordingsAdmin />} />
                 
@@ -307,6 +311,8 @@ function PagesContent() {
                 <Route path="/Multimedia" element={<Multimedia />} />
                 
                 <Route path="/FullQuran" element={<FullQuran />} />
+                <Route path="/Quran" element={<FullQuran />} />
+                <Route path="/quran" element={<FullQuran />} />
                 
                 <Route path="/ResetPointsAdmin" element={<ResetPointsAdmin />} />
                 
