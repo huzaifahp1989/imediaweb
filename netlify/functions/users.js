@@ -22,18 +22,44 @@ export async function handler(event) {
 
     const method = event.httpMethod;
     if (method === 'GET') {
-      const snap = await db.collection('users').get();
-      const list = snap.docs.map(d => {
-        const data = d.data() || {};
+      // Merge Firebase Auth users with Firestore profiles to ensure admin sees all accounts
+      const profilesSnap = await db.collection('users').get();
+      const profileMap = new Map();
+      for (const d of profilesSnap.docs) {
+        profileMap.set(d.id, d.data() || {});
+      }
+
+      const authUsersPage = await admin.auth().listUsers(1000);
+      const seen = new Set();
+      const merged = authUsersPage.users.map(u => {
+        const data = profileMap.get(u.uid) || {};
+        seen.add(u.uid);
         return {
-          id: d.id,
-          uid: data.uid || d.id,
+          id: u.uid,
+          uid: u.uid,
+          fullName: data.fullName || data.name || u.displayName || '',
+          email: data.email || u.email || '',
+          role: data.role || 'user',
+          points: Number(data.points || 0),
+          lastAward: data.lastAward || null,
+        };
+      });
+
+      // Include any Firestore-only profiles that may not have a corresponding Auth user
+      for (const [uid, data] of profileMap.entries()) {
+        if (seen.has(uid)) continue;
+        merged.push({
+          id: uid,
+          uid,
           fullName: data.fullName || data.name || '',
           email: data.email || '',
           role: data.role || 'user',
-        };
-      });
-      return { statusCode: 200, body: JSON.stringify(list) };
+          points: Number(data.points || 0),
+          lastAward: data.lastAward || null,
+        });
+      }
+
+      return { statusCode: 200, body: JSON.stringify(merged) };
     }
 
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -41,4 +67,3 @@ export async function handler(event) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
   }
 }
-
