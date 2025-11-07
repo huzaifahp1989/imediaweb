@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signIn, getFirebase } from "@/api/firebase";
+import { signIn, getFirebase, getUserProfile } from "@/api/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
 
 export default function Login() {
@@ -15,8 +15,23 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await signIn(email, password);
-      navigate("/Games");
+      const user = await signIn(email, password);
+      try {
+        const { db } = getFirebase();
+        if (db && user?.uid) {
+          const profile = await getUserProfile(user.uid);
+          const missing = !profile?.fullName || !profile?.age || !profile?.city || !profile?.madrasah;
+          if (missing) {
+            navigate("/CompleteProfile");
+          } else {
+            navigate("/Games");
+          }
+        } else {
+          navigate("/Games");
+        }
+      } catch (_) {
+        navigate("/Games");
+      }
     } catch (err) {
       const code = err?.code || "";
       let msg = err?.message || "Login failed";

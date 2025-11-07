@@ -27,6 +27,7 @@ const DEFAULTS = {
   enableAnalytics: false,
   enableMessages: true,
   cacheTtlSeconds: 600,
+  recordingStudioText: "Welcome to Islam Media Central Recording Studio. Please record Quran recitation, nasheeds, or Islamic messages with clarity and respect.",
 };
 
 const GRADIENT_OPTIONS = [
@@ -264,6 +265,16 @@ export default function AdminSettings() {
                     value={settings.cacheTtlSeconds}
                     onChange={(e) => setSettings({ ...settings, cacheTtlSeconds: parseInt(e.target.value || 0, 10) })}
                   />
+                </div>
+                <div className="space-y-3 md:col-span-2">
+                  <Label>Recording Studio Page Text</Label>
+                  <Textarea
+                    value={settings.recordingStudioText}
+                    onChange={(e) => setSettings({ ...settings, recordingStudioText: e.target.value })}
+                    className="min-h-[120px]"
+                    placeholder="Write instructions, motivational messages, or Quran/Nasheed guidelines for users..."
+                  />
+                  <p className="text-xs text-gray-500">This appears at the top of the Recording Studio page.</p>
                 </div>
               </div>
             </div>

@@ -106,6 +106,7 @@ import Signup from "./Signup";
 import Login from "./Login";
 import AdminMessages from "./AdminMessages";
 import Assistant from "./Assistant";
+import CompleteProfile from "./CompleteProfile";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -214,6 +215,7 @@ const PAGES = {
     Signup: Signup,
     Login: Login,
     Assistant: Assistant,
+    CompleteProfile: CompleteProfile,
 
 }
 
@@ -276,7 +278,7 @@ function PagesContent() {
                 <Route path="/RecordAndShare" element={<RecordAndShare />} />
                 <Route path="/RecordingStudio" element={<RecordingStudio />} />
                 
-                <Route path="/RecordingsAdmin" element={<RecordingsAdmin />} />
+                <Route path="/RecordingsAdmin" element={<AdminGuard><RecordingsAdmin /></AdminGuard>} />
                 
                 <Route path="/CreativeCorner" element={<CreativeCorner />} />
                 
@@ -369,6 +371,9 @@ function PagesContent() {
                 {/* Login routes */}
                 <Route path="/Login" element={<Login />} />
                 <Route path="/login" element={<Login />} />
+                {/* Profile completion */}
+                <Route path="/CompleteProfile" element={<CompleteProfile />} />
+                <Route path="/completeprofile" element={<CompleteProfile />} />
                 {/* Assistant routes: bypass guard in local dev for faster testing */}
                 <Route path="/Assistant" element={assistantElement} />
                 <Route path="/assistant" element={assistantElement} />

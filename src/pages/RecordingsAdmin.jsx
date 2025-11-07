@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Play, Pause, CheckCircle, XCircle, Star, Mic, Calendar, User, Clock, Download } from "lucide-react";
+import { Play, Pause, CheckCircle, XCircle, Star, Mic, Calendar, User, Clock, Download, Trash2 } from "lucide-react";
 
 export default function RecordingsAdmin() {
   // Removed email-only banner; rely on AdminGuard
@@ -15,6 +15,7 @@ export default function RecordingsAdmin() {
   const [selectedRecording, setSelectedRecording] = useState(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [pointsToAward, setPointsToAward] = useState(50);
+  const [studioText, setStudioText] = useState("");
   
   const queryClient = useQueryClient();
 
@@ -31,6 +32,28 @@ export default function RecordingsAdmin() {
       setSelectedRecording(null);
     },
   });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('siteSettings');
+      if (raw) {
+        const s = JSON.parse(raw);
+        setStudioText(s?.recordingStudioText || "");
+      }
+    } catch {}
+  }, []);
+
+  const saveStudioText = () => {
+    try {
+      const raw = localStorage.getItem('siteSettings');
+      const s = raw ? JSON.parse(raw) : {};
+      const updated = { ...s, recordingStudioText: studioText };
+      localStorage.setItem('siteSettings', JSON.stringify(updated));
+      alert('Recording Studio text saved');
+    } catch (e) {
+      alert('Failed to save text');
+    }
+  };
 
   const handleApprove = async (recording) => {
     try {
@@ -119,6 +142,23 @@ export default function RecordingsAdmin() {
     }
   };
 
+  const handleDelete = async (recording) => {
+    if (!confirm('Delete this recording permanently?')) return;
+    try {
+      if (base44?.entities?.Recording?.delete) {
+        await base44.entities.Recording.delete(recording.id);
+      } else {
+        // Soft-delete fallback
+        await updateRecordingMutation.mutateAsync({ id: recording.id, data: { status: 'deleted' } });
+      }
+      queryClient.invalidateQueries({ queryKey: ['recordings'] });
+      alert('Recording deleted');
+    } catch (error) {
+      console.error('Error deleting recording:', error);
+      alert('Failed to delete recording');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -165,6 +205,25 @@ export default function RecordingsAdmin() {
             Review and manage student recordings
           </p>
         </motion.div>
+
+        {/* Edit Recording Studio Text */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Recording Studio Page Text</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Textarea
+              value={studioText}
+              onChange={(e) => setStudioText(e.target.value)}
+              className="min-h-[120px]"
+              placeholder="Write instructions, motivational messages, or Quran/Nasheed guidelines for users..."
+            />
+            <div className="flex gap-2">
+              <Button onClick={saveStudioText} className="bg-blue-600 hover:bg-blue-700">Save Text</Button>
+            </div>
+            <p className="text-xs text-gray-500">This text appears at the top of the Recording Studio page.</p>
+          </CardContent>
+        </Card>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -344,6 +403,13 @@ export default function RecordingsAdmin() {
                             )}
                           </div>
                         )}
+
+                        {/* Delete action */}
+                        <div className="mt-3">
+                          <Button onClick={() => handleDelete(recording)} variant="destructive">
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete Recording
+                          </Button>
+                        </div>
 
                         {/* Points Awarded Display */}
                         {recording.points_awarded > 0 && (

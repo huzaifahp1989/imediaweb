@@ -19,6 +19,8 @@ export default function Signup() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [profileSaved, setProfileSaved] = useState(null); // null | true | false
+  const [infoMsg, setInfoMsg] = useState("");
   const navigate = useNavigate();
 
   function validate() {
@@ -41,21 +43,37 @@ export default function Signup() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const user = await signUp(email.trim(), password.trim());
-      await saveUserProfile(user.uid, {
-        fullName: fullName.trim(),
-        age: age.trim(),
-        city: city.trim(),
-        madrasah: madrasah.trim(),
-        email: email.trim(),
-      });
+      const normalizedEmail = email.trim();
+      const user = await signUp(normalizedEmail, password.trim());
+
+      // Account creation succeeded — show success and navigate regardless of profile save
       setSuccess(true);
       setTimeout(() => navigate("/Login"), 1500);
+
+      // Try to persist profile, but do not block success if it fails
+      try {
+        await saveUserProfile(user.uid, {
+          fullName: fullName.trim(),
+          age: age.trim(),
+          city: city.trim(),
+          madrasah: madrasah.trim(),
+          email: normalizedEmail,
+        });
+        setProfileSaved(true);
+      } catch (persistErr) {
+        // Non-blocking: surface a friendly note if Firestore permissions are missing
+        const pCode = persistErr?.code || "";
+        let pMsg = persistErr?.message || "Profile save failed.";
+        if (pCode === "permission-denied") pMsg = "Profile save requires Firebase access. You can still log in.";
+        setProfileSaved(false);
+        setInfoMsg(pMsg);
+      }
     } catch (err) {
       const code = err?.code || "";
       let msg = err?.message || "Signup failed";
       if (code === "auth/email-already-in-use") msg = "Email already in use. Try logging in.";
       if (code === "auth/invalid-email") msg = "Invalid email address.";
+      if (code === "auth/weak-password") msg = "Password is too weak. Use at least 6 characters.";
       if (code === "auth/operation-not-allowed") msg = "Email/password sign-up is disabled. Enable it in Firebase.";
       setErrorMsg(msg);
     } finally {
@@ -151,6 +169,11 @@ export default function Signup() {
 
         {errorMsg && <div className="text-red-600 text-sm">{errorMsg}</div>}
         {success && <div className="text-green-600 text-sm">Account created! Redirecting to login…</div>}
+        {profileSaved === false && (
+          <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded p-2 text-sm">
+            {infoMsg || "We couldn’t save your profile right now, but your account is created. You can complete your profile after login."}
+          </div>
+        )}
 
         <button
           type="submit"
