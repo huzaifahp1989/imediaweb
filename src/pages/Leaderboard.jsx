@@ -72,8 +72,9 @@ export default function Leaderboard() {
   };
 
   const getDisplayName = (user) => {
-    if (user.full_name) {
-      const firstName = user.full_name.split(' ')[0];
+    const name = user.fullName || user.full_name || user.name || '';
+    if (name) {
+      const firstName = name.split(' ')[0];
       return firstName;
     }
     return user.email?.split('@')[0] || 'Anonymous';

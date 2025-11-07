@@ -1,6 +1,6 @@
 import { base44 } from "@/api/base44Client";
 import { getFirebase } from "@/api/firebase";
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Centralized helper to award points based on backend GameSettings
 // Usage: await awardPointsForGame(user, gameType, { isPerfect, fallbackScore })
@@ -45,6 +45,7 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     // Fallback: update Firestore client-side if backend not available
     const { db, auth: fbAuth } = getFirebase();
     const uid = fbAuth?.currentUser?.uid;
+    const email = fbAuth?.currentUser?.email || null;
     if (db && uid) {
       try {
         const ref = doc(db, 'users', uid);
@@ -52,7 +53,19 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
         const currentPoints = Number(snap.exists() ? (snap.data()?.points || 0) : 0);
         const maxCap = 1500;
         const nextTotal = Math.min(currentPoints + awarded, maxCap);
-        await updateDoc(ref, { points: nextTotal, updatedAt: new Date() });
+        await setDoc(ref, {
+          uid,
+          email,
+          points: nextTotal,
+          lastAward: {
+            game_type: gameType || null,
+            points_awarded: awarded,
+            perfect: isPerfect,
+            at: new Date(),
+          },
+          updatedAt: new Date(),
+          createdAt: snap.exists() ? (snap.data()?.createdAt || new Date()) : new Date(),
+        }, { merge: true });
       } catch (_) {
         // ignore
       }
