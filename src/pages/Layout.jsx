@@ -269,13 +269,7 @@ export default function Layout({ children, currentPageName }) {
                 ) : null}
               </div>
 
-              {/* Mobile user indicator */}
-              {isAuthenticated && user ? (
-                <div className="md:hidden flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                  <User className="w-4 h-4" />
-                  <span className="text-sm font-semibold">{user.full_name}</span>
-                </div>
-              ) : null}
+              {/* Mobile auth is shown inside the drawer above menu; header kept minimal */}
 
               {/* Mobile Menu Button */}
               <Button
@@ -289,6 +283,34 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
         </header>
+
+        {/* Mobile Quick Nav (icon-only chips, sticky) */}
+        <nav className="md:hidden bg-white/95 backdrop-blur-sm shadow-sm sticky top-[56px] z-40 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-2">
+            <div className="flex items-center overflow-x-auto gap-1 py-1.5 scrollbar-hide">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.path && currentPageName === item.path;
+                return (
+                  <Link
+                     key={item.path || item.name}
+                     to={item.path ? createPageUrl(item.path) : '#'}
+                     onClick={handleMobileLinkClick}
+                    aria-label={item.name}
+                    title={item.name}
+                    className={`flex items-center justify-center w-7 h-7 rounded-full whitespace-nowrap transition-all flex-shrink-0 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow'
+                        : 'bg-white border border-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:block bg-white shadow-md sticky top-[68px] z-40">
@@ -348,13 +370,13 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
+          <div className="fixed inset-0 z-[1000] md:hidden">
             <div 
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
             />
             
-            <div className="absolute top-0 right-0 h-full w-[280px] bg-white shadow-2xl overflow-y-auto">
+            <div className="absolute top-0 right-0 h-full w-[280px] bg-white shadow-2xl overflow-y-auto z-[1001]">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900">Menu</h2>
@@ -611,15 +633,7 @@ export default function Layout({ children, currentPageName }) {
           </motion.div>
         )}
 
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden text-white hover:bg-white/20"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </Button>
+        {/* (Removed) duplicated mobile menu button at bottom */}
       </div>
     </RadioContext.Provider>
   );

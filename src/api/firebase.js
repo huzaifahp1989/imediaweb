@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
   collection,
   addDoc,
   getDocs,
@@ -52,7 +53,23 @@ export function getFirebase() {
     if (config.apiKey && config.projectId) {
       app = initializeApp(config);
       auth = getAuth(app);
-      db = getFirestore(app);
+      const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+      // Use long-polling detection to avoid aborted listen requests in some dev networks
+      db = initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+        useFetchStreams: false,
+      });
+      if (isDev) {
+        try {
+          console.info('[Firebase] Firestore initialized', {
+            projectId: config.projectId,
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false,
+          });
+        } catch (_) {
+          // no-op
+        }
+      }
     }
   }
   return { app, auth, db };
