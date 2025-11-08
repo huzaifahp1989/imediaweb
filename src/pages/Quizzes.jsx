@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import { base44 } from "@/api/base44Client";
+import { awardPointsForGame } from "@/api/points";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -173,9 +174,23 @@ export default function Quizzes() {
         await base44.entities.Quiz.update(selectedQuiz.id, {
           total_attempts: (selectedQuiz.total_attempts || 0) + 1
         });
-        
-        const newTotalPoints = Math.min((user.points || 0) + pointsEarned, 1500);
-        await base44.auth.updateMe({ points: newTotalPoints });
+        // Award points via unified Firebase-backed pipeline
+        try {
+          await awardPointsForGame(user, 'quiz', {
+            isPerfect: scorePercentage === 100,
+            fallbackScore: pointsEarned,
+            metadata: {
+              quiz_id: selectedQuiz.id,
+              score_percentage: scorePercentage,
+              correct_answers: correctCount,
+              total_questions: totalQuestions,
+              time_taken_seconds: timeTaken,
+              passed,
+            }
+          });
+        } catch (e) {
+          console.warn('awardPointsForGame failed:', e?.message || e);
+        }
       } catch (error) {
         console.error("Error saving quiz attempt:", error);
       }
