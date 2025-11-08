@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 // import { base44 } from "@/api/base44Client";
 import { awardPointsForGame } from "@/api/points";
+import { watchAuth } from "@/api/firebase";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, Target, Star, CheckCircle2, XCircle, Award, Brain, BookOpen, Users, TrendingUp, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Quizzes() {
   const navigate = useNavigate();
@@ -22,9 +23,16 @@ export default function Quizzes() {
   const [quizComplete, setQuizComplete] = useState(false);
   const [quizResults, setQuizResults] = useState(null);
   const [filterSubject, setFilterSubject] = useState("all");
+  const [fbUser, setFbUser] = useState(null);
 
   useEffect(() => {
     loadUser();
+  }, []);
+
+  // Watch Firebase auth to ensure points can be persisted to Firestore for Leaderboard
+  useEffect(() => {
+    const unsub = watchAuth((u) => setFbUser(u));
+    return () => unsub && unsub();
   }, []);
 
   const loadUser = async () => {
@@ -152,6 +160,7 @@ export default function Quizzes() {
     setQuizResults(results);
     setQuizComplete(true);
     
+    // Persist Base44 attempt when available, but do not block points
     if (user) {
       try {
         await base44.entities.QuizAttempt.create({
@@ -170,30 +179,29 @@ export default function Quizzes() {
           passed: passed,
           completed_at: new Date().toISOString()
         });
-        
         await base44.entities.Quiz.update(selectedQuiz.id, {
           total_attempts: (selectedQuiz.total_attempts || 0) + 1
         });
-        // Award points via unified Firebase-backed pipeline
-        try {
-          await awardPointsForGame(user, 'quiz', {
-            isPerfect: scorePercentage === 100,
-            fallbackScore: pointsEarned,
-            metadata: {
-              quiz_id: selectedQuiz.id,
-              score_percentage: scorePercentage,
-              correct_answers: correctCount,
-              total_questions: totalQuestions,
-              time_taken_seconds: timeTaken,
-              passed,
-            }
-          });
-        } catch (e) {
-          console.warn('awardPointsForGame failed:', e?.message || e);
-        }
       } catch (error) {
         console.error("Error saving quiz attempt:", error);
       }
+    }
+    // Award points via unified Firebase-backed pipeline regardless of Base44 auth
+    try {
+      await awardPointsForGame(user, 'quiz', {
+        isPerfect: scorePercentage === 100,
+        fallbackScore: pointsEarned,
+        metadata: {
+          quiz_id: selectedQuiz.id,
+          score_percentage: scorePercentage,
+          correct_answers: correctCount,
+          total_questions: totalQuestions,
+          time_taken_seconds: timeTaken,
+          passed,
+        }
+      });
+    } catch (e) {
+      console.warn('awardPointsForGame failed:', e?.message || e);
     }
   };
 
@@ -436,6 +444,25 @@ export default function Quizzes() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Firebase sign-in notice for Leaderboard points */}
+        {!fbUser && (
+          <div className="mb-4">
+            <Card className="border-2 border-yellow-300 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm text-yellow-900">
+                    To track your points on the Leaderboard, please sign in.
+                  </div>
+                  <Link to="/Signup">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      Sign in / Signup
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
