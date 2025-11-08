@@ -43,6 +43,40 @@ const translations = [
   { id: "es.raulgonzales", name: "Raul Gonzales (Spanish)" }
 ];
 
+// Commonly used Juz (Para) names to make selection intuitive
+const JUZ_NAMES = [
+  { number: 1, name: "Alif Lām Mīm" },
+  { number: 2, name: "Sayaqūl" },
+  { number: 3, name: "Tilka ar-Rusul" },
+  { number: 4, name: "Lan Tanālu" },
+  { number: 5, name: "Wal Muḥsanāt" },
+  { number: 6, name: "Lā Yuḥibbullāhu al-jahr" },
+  { number: 7, name: "Wa Iḏā Samiʿū" },
+  { number: 8, name: "Wa Lau'annā" },
+  { number: 9, name: "Qāl al-Mala'u" },
+  { number: 10, name: "Wa Aʿlamū" },
+  { number: 11, name: "Yataḏakkarūn" },
+  { number: 12, name: "Wa Mā Ubarriʾu Nafsi" },
+  { number: 13, name: "Wa Mā Uʾūtītum" },
+  { number: 14, name: "Rubamā" },
+  { number: 15, name: "Subḥānalladhī" },
+  { number: 16, name: "Qāla Alam" },
+  { number: 17, name: "Iqtaraba" },
+  { number: 18, name: "Qad Aflaha" },
+  { number: 19, name: "Wa Qālalladhīna" },
+  { number: 20, name: "Aʿmān" },
+  { number: 21, name: "Utlu Mā" },
+  { number: 22, name: "Wa Māli" },
+  { number: 23, name: "Wa Mā Lī" },
+  { number: 24, name: "Faman Aẓlamu" },
+  { number: 25, name: "Ilayhi Yuraddu" },
+  { number: 26, name: "Ḥāʾ Mīm" },
+  { number: 27, name: "Qāla Fama" },
+  { number: 28, name: "Qad Samiʿallāhu" },
+  { number: 29, name: "Tabārakalladhī" },
+  { number: 30, name: "ʿAmma" }
+];
+
 
 const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
   return (
@@ -62,7 +96,7 @@ const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
             onClick={() => onPlay && onPlay(verse)}
             title="Click to play ayah audio"
             role="button"
-            className="text-right text-2xl md:text-3xl leading-loose mb-4 font-arabic cursor-pointer hover:text-green-700"
+            className="text-right text-2xl md:text-3xl leading-loose mb-4 font-arabic cursor-pointer hover:text-green-700 text-green-900"
           >
             {verse.arabic}
           </p>
@@ -497,19 +531,20 @@ export default function FullQuran() {
                 </Select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Juz</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Juz (Para)</label>
                 <Select value={selectedJuz ? String(selectedJuz) : undefined} onValueChange={(val) => { setSelectedJuz(Number(val)); setIsJuzMode(true); }}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose Juz (1-30)" />
+                    <SelectValue placeholder="Choose Juz (e.g., Alif Lām Mīm)" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 30 }, (_, i) => i + 1).map(j => (
-                      <SelectItem key={j} value={String(j)}>Juz {j}</SelectItem>
+                    {JUZ_NAMES.map(j => (
+                      <SelectItem key={j.number} value={String(j.number)}>Juz {j.number} — {j.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {isJuzMode && (
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center gap-2">
+                    <Badge className="bg-green-600">Viewing: Juz {selectedJuz} — {JUZ_NAMES.find(x => x.number === selectedJuz)?.name || ""}</Badge>
                     <Button variant="outline" onClick={() => { setIsJuzMode(false); setSelectedJuz(null); setJuzVerses([]); }}>
                       Exit Juz View
                     </Button>
