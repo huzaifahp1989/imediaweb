@@ -77,6 +77,40 @@ const JUZ_NAMES = [
   { number: 30, name: "ʿAmma" }
 ];
 
+// Urdu script Juz (Para) names for users who prefer Urdu labels
+const JUZ_NAMES_URDU = [
+  { number: 1, name: "الم" },
+  { number: 2, name: "سَيَقُولُ" },
+  { number: 3, name: "تِلْكَ الرُّسُلُ" },
+  { number: 4, name: "لَنْ تَنَالُوا" },
+  { number: 5, name: "وَٱلْمُحْصَنَاتُ" },
+  { number: 6, name: "لَا يُحِبُّ ٱللَّهُ ٱلْجَهْرَ" },
+  { number: 7, name: "وَإِذَا سَمِعُوا" },
+  { number: 8, name: "وَلَوْ أَنَّنَا" },
+  { number: 9, name: "قَالَ ٱلْمَلَأُ" },
+  { number: 10, name: "وَٱعْلَمُوا" },
+  { number: 11, name: "يَتَذَكَّرُونَ" },
+  { number: 12, name: "وَمَا أُبَرِّئُ نَفْسِي" },
+  { number: 13, name: "وَمَا أُوتِيتُمْ" },
+  { number: 14, name: "رُبَمَا" },
+  { number: 15, name: "سُبْحَانَ ٱلَّذِي" },
+  { number: 16, name: "قَالَ أَلَمْ" },
+  { number: 17, name: "ٱقْتَرَبَ" },
+  { number: 18, name: "قَدْ أَفْلَحَ" },
+  { number: 19, name: "وَقَالَ ٱلَّذِينَ" },
+  { number: 20, name: "أَمَّنْ" },
+  { number: 21, name: "ٱتْلُ مَا" },
+  { number: 22, name: "وَمَالِي" },
+  { number: 23, name: "وَمَا لِيَ" },
+  { number: 24, name: "فَمَنْ أَظْلَمُ" },
+  { number: 25, name: "إِلَيْهِ يُرَدُّ" },
+  { number: 26, name: "حم" },
+  { number: 27, name: "قَالَ فَمَا" },
+  { number: 28, name: "قَدْ سَمِعَ ٱللَّهُ" },
+  { number: 29, name: "تَبَارَكَ ٱلَّذِي" },
+  { number: 30, name: "عَمَّ" }
+];
+
 
 const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
   return (
@@ -163,6 +197,7 @@ export default function FullQuran() {
   const [expandedVerse, setExpandedVerse] = useState(null);
   const [isJuzMode, setIsJuzMode] = useState(false);
   const [selectedJuz, setSelectedJuz] = useState(null);
+  const [juzNameStyle, setJuzNameStyle] = useState("translit"); // translit | urdu
   const [repeat, setRepeat] = useState(false);
   const [playingVerseNumber, setPlayingVerseNumber] = useState(null);
 
@@ -376,6 +411,13 @@ export default function FullQuran() {
     }
   };
 
+  const jumpToStartOfJuz = () => {
+    const el = verseRefs.current?.juzStart;
+    if (el && el.scrollIntoView) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const handleReciterChange = (reciter) => {
     stopCurrentAudio(); // Stop current audio if playing
     setSelectedReciter(reciter);
@@ -547,14 +589,23 @@ export default function FullQuran() {
                     <SelectValue placeholder="Choose Juz (e.g., Alif Lām Mīm)" />
                   </SelectTrigger>
                   <SelectContent>
-                    {JUZ_NAMES.map(j => (
+                    {(juzNameStyle === "urdu" ? JUZ_NAMES_URDU : JUZ_NAMES).map(j => (
                       <SelectItem key={j.number} value={String(j.number)}>Juz {j.number} — {j.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-xs text-gray-600">Name style:</span>
+                  <Button size="sm" variant={juzNameStyle === "translit" ? "default" : "outline"} onClick={() => setJuzNameStyle("translit")}>
+                    Transliteration
+                  </Button>
+                  <Button size="sm" variant={juzNameStyle === "urdu" ? "default" : "outline"} onClick={() => setJuzNameStyle("urdu")}>
+                    اردو
+                  </Button>
+                </div>
                 {isJuzMode && (
                   <div className="mt-2 flex items-center gap-2">
-                    <Badge className="bg-green-600">Viewing: Juz {selectedJuz} — {JUZ_NAMES.find(x => x.number === selectedJuz)?.name || ""}</Badge>
+                    <Badge className="bg-green-600">Viewing: Juz {selectedJuz} — {(juzNameStyle === "urdu" ? JUZ_NAMES_URDU : JUZ_NAMES).find(x => x.number === selectedJuz)?.name || ""}</Badge>
                     <Button variant="outline" onClick={() => { setIsJuzMode(false); setSelectedJuz(null); setJuzVerses([]); }}>
                       Exit Juz View
                     </Button>
@@ -656,19 +707,22 @@ export default function FullQuran() {
                 <CardContent className="py-4 px-6">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Juz {selectedJuz} — {JUZ_NAMES.find(x => x.number === selectedJuz)?.name || ""}</h3>
+                      <h3 className="text-2xl font-bold text-gray-900">Juz {selectedJuz} — {(juzNameStyle === "urdu" ? JUZ_NAMES_URDU : JUZ_NAMES).find(x => x.number === selectedJuz)?.name || ""}</h3>
                       <p className="text-sm text-gray-600">Displaying combined ayat across their surahs</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <Repeat className="w-6 h-6 text-green-600" />
                       <StopCircle className="w-6 h-6 text-red-600" />
+                      <Button variant="outline" onClick={jumpToStartOfJuz}>
+                        <BookOpen className="w-4 h-4 mr-1" /> Go to start
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
-            {(isJuzMode ? juzVerses : surahVerses).map((verse) => (
-              <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; }}>
+            {(isJuzMode ? juzVerses : surahVerses).map((verse, idx) => (
+              <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; if (isJuzMode && idx === 0) verseRefs.current.juzStart = el; }}>
                 {/* Show surah badge when in Juz mode */}
                 {isJuzMode && (
                   <div className="mb-1 text-sm text-gray-600">Surah {verse.surahName} — Ayah {verse.numberInSurah}</div>
