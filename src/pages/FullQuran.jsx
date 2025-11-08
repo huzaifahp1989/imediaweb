@@ -200,6 +200,7 @@ export default function FullQuran() {
   const [juzNameStyle, setJuzNameStyle] = useState("translit"); // translit | urdu
   const [repeat, setRepeat] = useState(false);
   const [playingVerseNumber, setPlayingVerseNumber] = useState(null);
+  const [pendingJuzAutoplay, setPendingJuzAutoplay] = useState(false);
   const [isJuzSequence, setIsJuzSequence] = useState(false);
   const [juzPlayIndex, setJuzPlayIndex] = useState(null);
 
@@ -242,6 +243,14 @@ export default function FullQuran() {
       loadJuz(selectedJuz, selectedTranslation.id);
     }
   }, [isJuzMode, selectedJuz, selectedTranslation]);
+
+  // When Juz finishes loading and autoplay is pending, start from the first ayah
+  useEffect(() => {
+    if (isJuzMode && selectedJuz && pendingJuzAutoplay && juzVerses.length > 0 && !loading) {
+      setPendingJuzAutoplay(false);
+      playJuzFromStart();
+    }
+  }, [isJuzMode, selectedJuz, pendingJuzAutoplay, juzVerses, loading]);
 
   // Map reciter to audio edition for verse-level audio (default to Alafasy)
   const audioEditions = {
@@ -710,15 +719,30 @@ export default function FullQuran() {
             </div>
 
             <Button
-              onClick={isPlaying ? pauseAudio : (isJuzMode ? playJuzFromStart : playFullSurahAudio)}
+              onClick={() => {
+                if (isPlaying) {
+                  pauseAudio();
+                  return;
+                }
+                if (isJuzMode) {
+                  if (loading || !juzVerses.length) {
+                    setPendingJuzAutoplay(true);
+                    toast.info("Loading Juz… playback will start automatically.");
+                  } else {
+                    playJuzFromStart();
+                  }
+                } else {
+                  playFullSurahAudio();
+                }
+              }}
               className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
               size="lg"
-              disabled={loading} // Disable play button when loading verses
+              disabled={false} // Allow queuing autoplay even while loading
             >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Loading Surah...
+                  {isJuzMode ? "Loading Juz..." : "Loading Surah..."}
                 </>
               ) : isPlaying ? (
                 <>
