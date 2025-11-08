@@ -57,7 +57,6 @@ const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
         </Badge>
         <div className="flex-1">
           <p
-            className="text-right text-2xl md:text-3xl leading-loose mb-4 font-arabic"
             dir="rtl"
             style={{ fontFamily: "'Scheherazade New', 'Amiri', serif" }}
             onClick={() => onPlay && onPlay(verse)}
@@ -138,6 +137,7 @@ export default function FullQuran() {
 
   // New state to manage the currently playing Audio object
   const [currentAudio, setCurrentAudio] = useState(null);
+  const isStartingRef = useRef(false);
 
   // Function to stop any currently playing audio
   const stopCurrentAudio = () => {
@@ -250,31 +250,46 @@ export default function FullQuran() {
     }
   };
 
-  const handlePlayAudio = (audioUrl, verseNumber = null) => {
-    stopCurrentAudio(); // Stop any currently playing audio
+  const handlePlayAudio = async (audioUrl, verseNumber = null) => {
+    if (!audioUrl) {
+      toast.error("No audio available for this selection.");
+      return;
+    }
+    if (isStartingRef.current) {
+      // Prevent rapid double-start triggering AbortError
+      return;
+    }
+    isStartingRef.current = true;
+    try {
+      stopCurrentAudio(); // Stop any currently playing audio
+      const audio = new Audio(audioUrl);
+      audio.loop = repeat;
+      setCurrentAudio(audio); // Store the audio object in state
 
-    const audio = new Audio(audioUrl);
-    setCurrentAudio(audio); // Store the audio object in state
-    audio.loop = repeat;
-
-    audio.play().then(() => {
+      await audio.play();
       setIsPlaying(true);
       setPlayingVerseNumber(verseNumber);
-    }).catch((error) => {
-      console.error("Error playing audio:", error);
-      toast.error("Unable to play audio. The reciter might not have audio for this surah, or there's a network issue.");
-      setIsPlaying(false);
-      setCurrentAudio(null);
-      setPlayingVerseNumber(null);
-    });
 
-    audio.onended = () => {
-      if (!repeat) {
-        setIsPlaying(false);
-        setCurrentAudio(null);
-        setPlayingVerseNumber(null);
+      audio.onended = () => {
+        if (!repeat) {
+          setIsPlaying(false);
+          setCurrentAudio(null);
+          setPlayingVerseNumber(null);
+        }
+      };
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        // Benign interruption (e.g., user pressed stop while starting). Don't show error toast.
+        console.debug("Audio play aborted (pause/stop triggered). Ignoring.");
+      } else {
+        console.error("Error playing audio:", error);
+        toast.error("Unable to play audio. The reciter might not have audio for this ayah/surah, or there's a network issue.");
       }
-    };
+      setIsPlaying(false);
+      setPlayingVerseNumber(null);
+    } finally {
+      isStartingRef.current = false;
+    }
   };
 
   const playFullSurahAudio = () => {
