@@ -253,26 +253,36 @@ export default function FullQuran() {
   const loadJuz = async (juzNum, translationId) => {
     setLoading(true);
     stopCurrentAudio();
+    const audioEdition = getAudioEditionForReciter();
+    const buildUrl = (scriptEdition) =>
+      `https://api.alquran.cloud/v1/juz/${juzNum}/editions/${scriptEdition},${translationId},${audioEdition}`;
     try {
-      const audioEdition = getAudioEditionForReciter();
-      const response = await fetch(
-        `https://api.alquran.cloud/v1/juz/${juzNum}/editions/quran-simple,${translationId},${audioEdition}`
-      );
-      const data = await response.json();
+      // Prefer uthmani script for better glyphs, fall back to simple if needed
+      let res = await fetch(buildUrl("quran-uthmani"));
+      let data = await res.json();
+      if (data.status !== "OK" || !data?.data?.[0]?.ayahs?.length) {
+        res = await fetch(buildUrl("quran-simple"));
+        data = await res.json();
+      }
+
       if (data.status === "OK") {
-        const arabicAyahs = data.data[0].ayahs || [];
-        const englishAyahs = data.data[1] ? data.data[1].ayahs : [];
-        const audioAyahs = data.data[2] ? data.data[2].ayahs : [];
+        const arabicAyahs = data.data[0]?.ayahs || [];
+        const englishAyahs = data.data[1]?.ayahs || [];
+        const audioAyahs = data.data[2]?.ayahs || [];
+
         const formatted = arabicAyahs.map((ayah, idx) => ({
           surahNumber: ayah.surah.number,
           surahName: ayah.surah.englishName || ayah.surah.name,
           numberInSurah: ayah.numberInSurah,
           arabic: ayah.text,
-          translation: englishAyahs[idx] ? englishAyahs[idx].text : "Translation not available.",
+          translation: englishAyahs[idx]?.text || "Translation not available.",
           tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${ayah.surah.englishName || ayah.surah.name}.`,
           audio: audioAyahs[idx]?.audio || null,
         }));
         setJuzVerses(formatted);
+        if (!formatted.length) {
+          toast.info("No verses loaded for this Juz. Try a different translation or check your network.");
+        }
       } else {
         toast.error("Failed to load Juz.");
       }
@@ -641,6 +651,22 @@ export default function FullQuran() {
           </div>
         ) : (
           <div className="space-y-4">
+            {isJuzMode && selectedJuz && (
+              <Card className="mb-4 border border-green-200 bg-green-50">
+                <CardContent className="py-4 px-6">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Juz {selectedJuz} — {JUZ_NAMES.find(x => x.number === selectedJuz)?.name || ""}</h3>
+                      <p className="text-sm text-gray-600">Displaying combined ayat across their surahs</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Repeat className="w-6 h-6 text-green-600" />
+                      <StopCircle className="w-6 h-6 text-red-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {(isJuzMode ? juzVerses : surahVerses).map((verse) => (
               <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; }}>
                 {/* Show surah badge when in Juz mode */}
