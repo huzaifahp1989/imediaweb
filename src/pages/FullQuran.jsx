@@ -315,18 +315,33 @@ export default function FullQuran() {
 
       if (data.status === "OK") {
         const arabicAyahs = data.data[0]?.ayahs || [];
-        const englishAyahs = data.data[1]?.ayahs || [];
+        const translationAyahs = data.data[1]?.ayahs || [];
         const audioAyahs = data.data[2]?.ayahs || [];
 
-        const formatted = arabicAyahs.map((ayah, idx) => ({
-          surahNumber: ayah.surah.number,
-          surahName: ayah.surah.englishName || ayah.surah.name,
-          numberInSurah: ayah.numberInSurah,
-          arabic: ayah.text,
-          translation: englishAyahs[idx]?.text || "Translation not available.",
-          tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${ayah.surah.englishName || ayah.surah.name}.`,
-          audio: audioAyahs[idx]?.audio || null,
-        }));
+        // Build reliable maps keyed by Surah#-Ayah# to avoid indexing mismatches
+        const translationMap = new Map();
+        for (const t of translationAyahs) {
+          const key = `${t?.surah?.number}-${t?.numberInSurah}`;
+          if (key) translationMap.set(key, t?.text ?? "");
+        }
+        const audioMap = new Map();
+        for (const a of audioAyahs) {
+          const key = `${a?.surah?.number}-${a?.numberInSurah}`;
+          if (key) audioMap.set(key, a?.audio ?? null);
+        }
+
+        const formatted = arabicAyahs.map((ayah) => {
+          const key = `${ayah?.surah?.number}-${ayah?.numberInSurah}`;
+          return {
+            surahNumber: ayah.surah.number,
+            surahName: ayah.surah.englishName || ayah.surah.name,
+            numberInSurah: ayah.numberInSurah,
+            arabic: ayah.text,
+            translation: translationMap.get(key) || "Translation not available.",
+            tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${ayah.surah.englishName || ayah.surah.name}.`,
+            audio: audioMap.get(key) || null,
+          };
+        });
         setJuzVerses(formatted);
         if (!formatted.length) {
           toast.info("No verses loaded for this Juz. Try a different translation or check your network.");
@@ -806,7 +821,7 @@ export default function FullQuran() {
         {loading && !isPlaying ? ( // Show loading spinner only when verses are loading and audio is not playing
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 animate-spin text-green-600 mb-4" />
-            <p className="text-gray-600">Loading Surah Verses...</p>
+            <p className="text-gray-600">{isJuzMode ? "Loading Juz Verses..." : "Loading Surah Verses..."}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -832,6 +847,11 @@ export default function FullQuran() {
                 </CardContent>
               </Card>
             )}
+            {/* Empty state if nothing loaded in Juz mode */}
+            {isJuzMode && !loading && selectedJuz && juzVerses.length === 0 && (
+              <p className="text-center text-sm text-gray-600">No ayat loaded for this Juz. Try a different translation or check your network.</p>
+            )}
+
             {(isJuzMode ? juzVerses : surahVerses).map((verse, idx) => (
               <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; if (isJuzMode && idx === 0) verseRefs.current.juzStart = el; }}>
                 {/* Show surah badge when in Juz mode */}
