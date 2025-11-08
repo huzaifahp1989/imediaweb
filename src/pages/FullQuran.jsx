@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input"; // Added for search functionality
 import { motion } from "framer-motion";
-import { BookOpen, Volume2, Play, Pause, ChevronDown, ChevronUp, Loader2, Search } from "lucide-react"; // Added Search icon
+import { BookOpen, Volume2, Play, Pause, ChevronDown, ChevronUp, Loader2, Search, Repeat, StopCircle } from "lucide-react"; // Added Search, Repeat, Stop
 import { toast } from "sonner";
 import PropTypes from 'prop-types';
 
@@ -44,7 +44,7 @@ const translations = [
 ];
 
 
-const VerseCard = ({ verse, expanded, onToggle }) => {
+const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -60,6 +60,10 @@ const VerseCard = ({ verse, expanded, onToggle }) => {
             className="text-right text-2xl md:text-3xl leading-loose mb-4 font-arabic"
             dir="rtl"
             style={{ fontFamily: "'Scheherazade New', 'Amiri', serif" }}
+            onClick={() => onPlay && onPlay(verse)}
+            title="Click to play ayah audio"
+            role="button"
+            className="text-right text-2xl md:text-3xl leading-loose mb-4 font-arabic cursor-pointer hover:text-green-700"
           >
             {verse.arabic}
           </p>
@@ -110,7 +114,8 @@ const VerseCard = ({ verse, expanded, onToggle }) => {
 VerseCard.propTypes = {
   verse: PropTypes.object.isRequired,
   expanded: PropTypes.bool.isRequired,
-  onToggle: PropTypes.func.isRequired
+  onToggle: PropTypes.func.isRequired,
+  onPlay: PropTypes.func,
 };
 
 export default function FullQuran() {
@@ -118,10 +123,18 @@ export default function FullQuran() {
   const [selectedReciter, setSelectedReciter] = useState(reciters[0]); // Initialize with first reciter object
   const [selectedTranslation, setSelectedTranslation] = useState(translations[0]); // Initialize with first translation object
   const [searchQuery, setSearchQuery] = useState("");
-  const [verses, setVerses] = useState([]);
+  const [surahVerses, setSurahVerses] = useState([]);
+  const [juzVerses, setJuzVerses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false); // Renamed from 'playing' for clarity
   const [expandedVerse, setExpandedVerse] = useState(null);
+  const [isJuzMode, setIsJuzMode] = useState(false);
+  const [selectedJuz, setSelectedJuz] = useState(null);
+  const [repeat, setRepeat] = useState(false);
+  const [playingVerseNumber, setPlayingVerseNumber] = useState(null);
+
+  // Verse refs for scrolling when selecting an ayah
+  const verseRefs = useRef({});
 
   // New state to manage the currently playing Audio object
   const [currentAudio, setCurrentAudio] = useState(null);
@@ -145,32 +158,53 @@ export default function FullQuran() {
 
   // Load surah verses when selectedSurah or selectedTranslation changes
   useEffect(() => {
-    if (selectedSurah) { // Ensure selectedSurah is not null before loading
+    if (!isJuzMode && selectedSurah) { // Ensure selectedSurah is not null before loading
       loadSurah(selectedSurah.number, selectedTranslation.id);
     }
-  }, [selectedSurah, selectedTranslation]);
+  }, [selectedSurah, selectedTranslation, isJuzMode]);
+
+  // Load selected Juz when changed
+  useEffect(() => {
+    if (isJuzMode && selectedJuz) {
+      loadJuz(selectedJuz, selectedTranslation.id);
+    }
+  }, [isJuzMode, selectedJuz, selectedTranslation]);
+
+  // Map reciter to audio edition for verse-level audio (default to Alafasy)
+  const audioEditions = {
+    alafasy: "ar.alafasy",
+    sudais: "ar.abdurrahmanalsudais",
+    basit: "ar.abdulbasitmurattal",
+    husary: "ar.husary",
+  };
+  const getAudioEditionForReciter = () => {
+    return audioEditions[selectedReciter?.id] || "ar.alafasy";
+  };
 
   const loadSurah = async (surahNum, translationId) => {
     setLoading(true);
     stopCurrentAudio(); // Stop audio when a new surah is loading or translation changes
     try {
+      const audioEdition = getAudioEditionForReciter();
       const response = await fetch(
-        `https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-simple,${translationId}`
+        `https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-simple,${translationId},${audioEdition}`
       );
       const data = await response.json();
 
       if (data.status === "OK") {
         const arabicAyahs = data.data[0].ayahs;
         const englishAyahs = data.data[1] ? data.data[1].ayahs : []; // Check if translation data exists
+        const audioAyahs = data.data[2] ? data.data[2].ayahs : [];
 
         const formattedVerses = arabicAyahs.map((ayah, index) => ({
           numberInSurah: ayah.numberInSurah,
           arabic: ayah.text,
           translation: englishAyahs[index] ? englishAyahs[index].text : "Translation not available for this verse.", // Handle missing translation
-          tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${selectedSurah.englishName}. In a real application, this would be loaded from a dedicated Tafsir API or dataset.`
+          tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${selectedSurah.englishName}. In a real application, this would be loaded from a dedicated Tafsir API or dataset.`,
+          audio: audioAyahs[index]?.audio || null,
         }));
 
-        setVerses(formattedVerses);
+        setSurahVerses(formattedVerses);
       } else {
         toast.error("Failed to load surah details from API.");
       }
@@ -182,24 +216,64 @@ export default function FullQuran() {
     }
   };
 
-  const handlePlayAudio = (audioUrl) => {
+  const loadJuz = async (juzNum, translationId) => {
+    setLoading(true);
+    stopCurrentAudio();
+    try {
+      const audioEdition = getAudioEditionForReciter();
+      const response = await fetch(
+        `https://api.alquran.cloud/v1/juz/${juzNum}/editions/quran-simple,${translationId},${audioEdition}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        const arabicAyahs = data.data[0].ayahs || [];
+        const englishAyahs = data.data[1] ? data.data[1].ayahs : [];
+        const audioAyahs = data.data[2] ? data.data[2].ayahs : [];
+        const formatted = arabicAyahs.map((ayah, idx) => ({
+          surahNumber: ayah.surah.number,
+          surahName: ayah.surah.englishName || ayah.surah.name,
+          numberInSurah: ayah.numberInSurah,
+          arabic: ayah.text,
+          translation: englishAyahs[idx] ? englishAyahs[idx].text : "Translation not available.",
+          tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${ayah.surah.englishName || ayah.surah.name}.`,
+          audio: audioAyahs[idx]?.audio || null,
+        }));
+        setJuzVerses(formatted);
+      } else {
+        toast.error("Failed to load Juz.");
+      }
+    } catch (error) {
+      console.error("Error loading juz:", error);
+      toast.error("Failed to load Juz. Please check your internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePlayAudio = (audioUrl, verseNumber = null) => {
     stopCurrentAudio(); // Stop any currently playing audio
 
     const audio = new Audio(audioUrl);
     setCurrentAudio(audio); // Store the audio object in state
+    audio.loop = repeat;
 
     audio.play().then(() => {
       setIsPlaying(true);
+      setPlayingVerseNumber(verseNumber);
     }).catch((error) => {
       console.error("Error playing audio:", error);
       toast.error("Unable to play audio. The reciter might not have audio for this surah, or there's a network issue.");
       setIsPlaying(false);
       setCurrentAudio(null);
+      setPlayingVerseNumber(null);
     });
 
     audio.onended = () => {
-      setIsPlaying(false);
-      setCurrentAudio(null);
+      if (!repeat) {
+        setIsPlaying(false);
+        setCurrentAudio(null);
+        setPlayingVerseNumber(null);
+      }
     };
   };
 
@@ -215,6 +289,32 @@ export default function FullQuran() {
 
   const pauseAudio = () => {
     stopCurrentAudio();
+  };
+
+  const toggleRepeat = () => {
+    const next = !repeat;
+    setRepeat(next);
+    if (currentAudio) currentAudio.loop = next;
+  };
+
+  const onPlayVerse = (verse) => {
+    if (verse?.audio) {
+      handlePlayAudio(verse.audio, verse.numberInSurah);
+    } else {
+      toast.info("Ayah audio not available for this reciter. Playing full surah instead.");
+      playFullSurahAudio();
+    }
+  };
+
+  const onSelectAyah = (num) => {
+    const v = (isJuzMode ? juzVerses.find(v => v.numberInSurah === num) : surahVerses.find(v => v.numberInSurah === num));
+    if (v) {
+      // Scroll into view
+      const ref = verseRefs.current[num];
+      if (ref && ref.scrollIntoView) ref.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Play audio
+      onPlayVerse(v);
+    }
   };
 
   const handleReciterChange = (reciter) => {
@@ -366,6 +466,54 @@ export default function FullQuran() {
               )}
             </div>
 
+            {/* Ayah & Juz selection controls */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Ayah (verse)</label>
+                <Select onValueChange={(val) => onSelectAyah(Number(val))} disabled={isJuzMode || !selectedSurah}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose Ayah number" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedSurah && Array.from({ length: selectedSurah.verses }, (_, i) => i + 1).map(n => (
+                      <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Juz</label>
+                <Select value={selectedJuz ? String(selectedJuz) : undefined} onValueChange={(val) => { setSelectedJuz(Number(val)); setIsJuzMode(true); }}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose Juz (1-30)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map(j => (
+                      <SelectItem key={j} value={String(j)}>Juz {j}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isJuzMode && (
+                  <div className="mt-2">
+                    <Button variant="outline" onClick={() => { setIsJuzMode(false); setSelectedJuz(null); setJuzVerses([]); }}>
+                      Exit Juz View
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Audio Controls</label>
+                <div className="flex gap-2">
+                  <Button onClick={pauseAudio} variant="outline" className="flex-1">
+                    <StopCircle className="w-4 h-4 mr-1" /> Stop
+                  </Button>
+                  <Button onClick={toggleRepeat} variant={repeat ? "default" : "outline"} className="flex-1">
+                    <Repeat className="w-4 h-4 mr-1" /> {repeat ? "Repeat: On" : "Repeat: Off"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
             <Button
               onClick={isPlaying ? pauseAudio : playFullSurahAudio}
               className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
@@ -443,15 +591,35 @@ export default function FullQuran() {
           </div>
         ) : (
           <div className="space-y-4">
-            {verses.map((verse) => (
-              <VerseCard
-                key={verse.numberInSurah}
-                verse={verse}
-                expanded={expandedVerse === verse.numberInSurah}
-                onToggle={(verseNum) =>
-                  setExpandedVerse(expandedVerse === verseNum ? null : verseNum)
-                }
-              />
+            {(isJuzMode ? juzVerses : surahVerses).map((verse) => (
+              <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; }}>
+                {/* Show surah badge when in Juz mode */}
+                {isJuzMode && (
+                  <div className="mb-1 text-sm text-gray-600">Surah {verse.surahName} — Ayah {verse.numberInSurah}</div>
+                )}
+                <VerseCard
+                  verse={verse}
+                  expanded={expandedVerse === verse.numberInSurah}
+                  onToggle={(verseNum) =>
+                    setExpandedVerse(expandedVerse === verseNum ? null : verseNum)
+                  }
+                  onPlay={onPlayVerse}
+                />
+                <div className="flex gap-2 mb-6">
+                  <Button onClick={() => onPlayVerse(verse)} className="bg-green-600">
+                    <Play className="w-4 h-4 mr-1" /> Play Ayah
+                  </Button>
+                  <Button onClick={pauseAudio} variant="outline">
+                    <StopCircle className="w-4 h-4 mr-1" /> Stop
+                  </Button>
+                  <Button onClick={toggleRepeat} variant={repeat ? "default" : "outline"}>
+                    <Repeat className="w-4 h-4 mr-1" /> {repeat ? "Repeat On" : "Repeat Off"}
+                  </Button>
+                  {playingVerseNumber === verse.numberInSurah && isPlaying && (
+                    <Badge className="bg-green-600">Playing</Badge>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
