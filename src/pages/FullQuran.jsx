@@ -200,6 +200,8 @@ export default function FullQuran() {
   const [juzNameStyle, setJuzNameStyle] = useState("translit"); // translit | urdu
   const [repeat, setRepeat] = useState(false);
   const [playingVerseNumber, setPlayingVerseNumber] = useState(null);
+  const [isJuzSequence, setIsJuzSequence] = useState(false);
+  const [juzPlayIndex, setJuzPlayIndex] = useState(null);
 
   // Verse refs for scrolling when selecting an ayah
   const verseRefs = useRef({});
@@ -216,6 +218,8 @@ export default function FullQuran() {
       setCurrentAudio(null); // Clear the reference
       setIsPlaying(false);
     }
+    setIsJuzSequence(false);
+    setJuzPlayIndex(null);
   };
 
   // Cleanup audio on component unmount
@@ -329,7 +333,7 @@ export default function FullQuran() {
     }
   };
 
-  const handlePlayAudio = async (audioUrl, verseNumber = null) => {
+  const handlePlayAudio = async (audioUrl, verseNumber = null, onEnded = null) => {
     if (!audioUrl) {
       toast.error("No audio available for this selection.");
       return;
@@ -350,6 +354,10 @@ export default function FullQuran() {
       setPlayingVerseNumber(verseNumber);
 
       audio.onended = () => {
+        if (typeof onEnded === "function") {
+          onEnded();
+          return;
+        }
         if (!repeat) {
           setIsPlaying(false);
           setCurrentAudio(null);
@@ -416,6 +424,56 @@ export default function FullQuran() {
     if (el && el.scrollIntoView) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const playJuzFromStart = () => {
+    if (!isJuzMode || !selectedJuz) {
+      toast.error("Please select a Juz first.");
+      return;
+    }
+    if (!juzVerses || juzVerses.length === 0) {
+      toast.error("No ayat loaded for this Juz yet. Please wait or reselect the Juz.");
+      return;
+    }
+    setIsJuzSequence(true);
+    setJuzPlayIndex(0);
+
+    const playAtIndex = (idx) => {
+      const verse = juzVerses[idx];
+      if (!verse || !verse.audio) {
+        // Skip to next if audio missing
+        const next = idx + 1;
+        if (next < juzVerses.length) {
+          setJuzPlayIndex(next);
+          playAtIndex(next);
+        } else {
+          setIsJuzSequence(false);
+          setPlayingVerseNumber(null);
+          setCurrentAudio(null);
+          setIsPlaying(false);
+        }
+        return;
+      }
+      setPlayingVerseNumber(verse.numberInSurah);
+      handlePlayAudio(verse.audio, verse.numberInSurah, () => {
+        if (repeat) {
+          // If repeat is on, loop this ayah (audio.loop handles it)
+          return;
+        }
+        const next = idx + 1;
+        if (next < juzVerses.length) {
+          setJuzPlayIndex(next);
+          playAtIndex(next);
+        } else {
+          setIsJuzSequence(false);
+          setPlayingVerseNumber(null);
+          setCurrentAudio(null);
+          setIsPlaying(false);
+        }
+      });
+    };
+
+    playAtIndex(0);
   };
 
   const handleReciterChange = (reciter) => {
@@ -570,17 +628,43 @@ export default function FullQuran() {
             {/* Ayah & Juz selection controls */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Ayah (verse)</label>
-                <Select onValueChange={(val) => onSelectAyah(Number(val))} disabled={isJuzMode || !selectedSurah}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose Ayah number" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedSurah && Array.from({ length: selectedSurah.verses }, (_, i) => i + 1).map(n => (
-                      <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {!isJuzMode ? (
+                  <>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Select Ayah (verse)</label>
+                    <Select onValueChange={(val) => onSelectAyah(Number(val))} disabled={!selectedSurah}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Choose Ayah number" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedSurah && Array.from({ length: selectedSurah.verses }, (_, i) => i + 1).map(n => (
+                          <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Select Ayah in Juz</label>
+                    <Select onValueChange={(val) => {
+                      const idx = Number(val) - 1;
+                      const verse = juzVerses[idx];
+                      if (verse) {
+                        const ref = verseRefs.current[verse.numberInSurah];
+                        if (ref && ref.scrollIntoView) ref.scrollIntoView({ behavior: "smooth", block: "center" });
+                        onPlayVerse(verse);
+                      }
+                    }} disabled={!selectedJuz}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Choose Ayah index in Juz" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {juzVerses && juzVerses.map((_, i) => (
+                          <SelectItem key={i} value={String(i + 1)}>{i + 1}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Select Juz (Para)</label>
@@ -626,7 +710,7 @@ export default function FullQuran() {
             </div>
 
             <Button
-              onClick={isPlaying ? pauseAudio : playFullSurahAudio}
+              onClick={isPlaying ? pauseAudio : (isJuzMode ? playJuzFromStart : playFullSurahAudio)}
               className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
               size="lg"
               disabled={loading} // Disable play button when loading verses
@@ -644,7 +728,7 @@ export default function FullQuran() {
               ) : (
                 <>
                   <Play className="w-5 h-5 mr-2" />
-                  Play Full Surah
+                  {isJuzMode ? "Play Full Juz" : "Play Full Surah"}
                 </>
               )}
             </Button>
@@ -715,6 +799,9 @@ export default function FullQuran() {
                       <StopCircle className="w-6 h-6 text-red-600" />
                       <Button variant="outline" onClick={jumpToStartOfJuz}>
                         <BookOpen className="w-4 h-4 mr-1" /> Go to start
+                      </Button>
+                      <Button className="bg-green-600" onClick={playJuzFromStart}>
+                        <Play className="w-4 h-4 mr-1" /> Play from start
                       </Button>
                     </div>
                   </div>
