@@ -1,14 +1,19 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input"; // Added for search functionality
 import { motion } from "framer-motion";
-import { BookOpen, Volume2, Play, Pause, ChevronDown, ChevronUp, Loader2, Search, Repeat, StopCircle } from "lucide-react"; // Added Search, Repeat, Stop
+import { BookOpen, Volume2, Play, Pause, ChevronDown, ChevronUp, Loader2, Search, Repeat, StopCircle, Moon, Sun, AlertTriangle, Download } from "lucide-react"; // Added Search, Repeat, Stop
 import { toast } from "sonner";
 import PropTypes from 'prop-types';
+import AyahStatusControls from '@/components/Quran/AyahStatusControls.jsx';
+ import { fetchSajdaList, TRANSLATIONS as CLOUD_TRANSLATIONS, getAudioEdition as cloudAudioEdition, fetchJuz as cloudFetchJuz } from '@/api/quranCloud.js';
+import { setSurahCache, getSurahCache, setJuzCache, getJuzCache } from '@/api/quranOfflineDb.js';
+import { getQuarterStart } from '@/api/juzQuarterMap.js';
 
 const reciters = [
   { id: "alafasy", name: "Mishary Rashid Alafasy", url: "https://server8.mp3quran.net/afs/", flag: "🇰🇼" }, // Flag for Kuwait
@@ -36,12 +41,8 @@ const surahs = [
   { number: 114, name: "An-Nas", englishName: "Mankind", verses: 6, revelation: "Meccan" }
 ];
 
-// Dummy translations array as suggested by the outline's `selectedTranslation` state
-const translations = [
-  { id: "en.sahih", name: "Sahih International" },
-  { id: "en.yusufali", name: "Yusuf Ali" },
-  { id: "es.raulgonzales", name: "Raul Gonzales (Spanish)" }
-];
+// Translations list (includes Urdu options)
+const translations = CLOUD_TRANSLATIONS;
 
 // Commonly used Juz (Para) names to make selection intuitive
 const JUZ_NAMES = [
@@ -89,7 +90,7 @@ const JUZ_NAMES_URDU = [
   { number: 8, name: "وَلَوْ أَنَّنَا" },
   { number: 9, name: "قَالَ ٱلْمَلَأُ" },
   { number: 10, name: "وَٱعْلَمُوا" },
-  { number: 11, name: "يَتَذَكَّرُونَ" },
+  { number: 11, name: "يَتَذَّرُونَ" },
   { number: 12, name: "وَمَا أُبَرِّئُ نَفْسِي" },
   { number: 13, name: "وَمَا أُوتِيتُمْ" },
   { number: 14, name: "رُبَمَا" },
@@ -112,17 +113,26 @@ const JUZ_NAMES_URDU = [
 ];
 
 
-const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
+const VerseCard = ({ verse, expanded, onToggle, onPlay, isHighlighted = false }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 border-l-4 border-green-500 shadow-sm hover:shadow-md transition-shadow mb-4"
+      className={`bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 border-l-4 border-green-500 shadow-sm hover:shadow-md transition-shadow mb-4 ${
+        isHighlighted ? 'ring-2 ring-green-500 shadow-lg' : ''
+      }`}
     >
       <div className="flex items-start gap-4">
-        <Badge className="bg-green-600 text-white text-sm px-3 py-1 flex-shrink-0">
-          {verse.numberInSurah}
-        </Badge>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Badge className="bg-green-600 text-white text-sm px-3 py-1">
+            {verse.numberInSurah}
+          </Badge>
+          {verse.isSajda && (
+            <Badge className="bg-orange-500 text-white text-xs px-2 py-1" title="Sajda Ayah">
+              <AlertTriangle className="w-3 h-3 mr-1 inline" /> Sajda
+            </Badge>
+          )}
+        </div>
         <div className="flex-1">
           <p
             dir="rtl"
@@ -137,6 +147,14 @@ const VerseCard = ({ verse, expanded, onToggle, onPlay }) => {
           <p className="text-gray-700 leading-relaxed text-base">
             {verse.translation}
           </p>
+
+          <div className="mt-3">
+            <AyahStatusControls
+              surahNumber={verse.surahNumber || verse?.surahNumber || 0}
+              ayahNumber={verse.numberInSurah}
+              onChange={() => {}}
+            />
+          </div>
 
           {verse.tafsir && (
             <div className="mt-4">
@@ -186,6 +204,7 @@ VerseCard.propTypes = {
 };
 
 export default function FullQuran() {
+  const location = useLocation();
   const [selectedSurah, setSelectedSurah] = useState(surahs[0]); // Initialize with first surah object
   const [selectedReciter, setSelectedReciter] = useState(reciters[0]); // Initialize with first reciter object
   const [selectedTranslation, setSelectedTranslation] = useState(translations[0]); // Initialize with first translation object
@@ -203,9 +222,81 @@ export default function FullQuran() {
   const [pendingJuzAutoplay, setPendingJuzAutoplay] = useState(false);
   const [isJuzSequence, setIsJuzSequence] = useState(false);
   const [juzPlayIndex, setJuzPlayIndex] = useState(null);
+  const [sajdaSet, setSajdaSet] = useState(new Set());
+  const [selectedQuarter, setSelectedQuarter] = useState(null); // 1..8 within a Juz
+
+  // Read query params for deep links (e.g., ?surah=36 or ?juz=5&quarter=2)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search || '');
+    const surahParam = params.get('surah');
+    const juzParam = params.get('juz');
+    const quarterParam = params.get('quarter');
+    if (surahParam) {
+      const num = Number(surahParam);
+      const found = surahs.find(s => s.number === num);
+      if (found) {
+        setSelectedSurah(found);
+        setIsJuzMode(false);
+      }
+    } else if (juzParam) {
+      const jnum = Number(juzParam);
+      if (jnum >= 1 && jnum <= 30) {
+        setSelectedJuz(jnum);
+        setIsJuzMode(true);
+      }
+      if (quarterParam) {
+        const q = Number(quarterParam);
+        if (q >= 1 && q <= 8) {
+          setSelectedQuarter(q);
+        }
+      }
+    }
+  }, [location.search]);
+
+  // When a quarter is selected and Juz verses are loaded, scroll to the approximate segment
+  useEffect(() => {
+    if (isJuzMode && selectedQuarter && Array.isArray(juzVerses) && juzVerses.length > 0) {
+      // Try precise mapping first (if available), else fall back to approximate segmenting
+      let targetIndex = null;
+      let preciseTarget = null;
+      if (selectedJuz) {
+        const start = getQuarterStart(selectedJuz, selectedQuarter);
+        if (start) {
+          const idx = juzVerses.findIndex(v => v?.surahNumber === start.surah && v?.numberInSurah === start.ayah);
+          if (idx >= 0) {
+            targetIndex = idx;
+            preciseTarget = { surah: start.surah, ayah: start.ayah };
+          }
+        }
+      }
+      if (targetIndex == null) {
+        const total = juzVerses.length;
+        const segmentSize = Math.floor(total / 8) || 1;
+        targetIndex = Math.min(total - 1, Math.max(0, (selectedQuarter - 1) * segmentSize));
+      }
+      const el = verseRefs?.current?.byIndex?.[targetIndex];
+      if (el && el.scrollIntoView) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the targeted ayah briefly to aid QA visibility
+        const v = juzVerses[targetIndex];
+        if (v) {
+          setHighlightVerse({ surah: v.surahNumber, ayah: v.numberInSurah });
+          setTimeout(() => setHighlightVerse(null), 2500);
+          if (preciseTarget) {
+            toast.success(`Jumped to Juz ${selectedJuz} Q${selectedQuarter} start → Surah ${preciseTarget.surah}, Ayah ${preciseTarget.ayah}`);
+          } else {
+            toast.info(`Jumped to Juz ${selectedJuz} Q${selectedQuarter} (approximate segment)`);
+          }
+        }
+      }
+    }
+  }, [isJuzMode, selectedQuarter, selectedJuz, juzVerses]);
+  const [theme, setTheme] = useState('light'); // simple light/dark toggle
 
   // Verse refs for scrolling when selecting an ayah
   const verseRefs = useRef({});
+  // Highlight state for QA: which verse to visually emphasize after deep-link scroll
+  const [highlightVerse, setHighlightVerse] = useState(null);
 
   // New state to manage the currently playing Audio object
   const [currentAudio, setCurrentAudio] = useState(null);
@@ -223,12 +314,35 @@ export default function FullQuran() {
     setJuzPlayIndex(null);
   };
 
+  // Enhanced stop function that preserves the current position for resume
+  const stopAudioAndPreservePosition = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+      // Don't reset currentTime - preserve position for resume
+      setCurrentAudio(null);
+      setIsPlaying(false);
+    }
+    // Keep juzPlayIndex for resume functionality
+    setIsJuzSequence(false);
+  };
+
   // Cleanup audio on component unmount
   useEffect(() => {
     return () => {
       stopCurrentAudio();
     };
   }, [currentAudio]); // Dependency ensures cleanup for the specific audio instance
+
+  // Load Sajda list once
+  useEffect(() => {
+    let mounted = true;
+    fetchSajdaList().then((list) => {
+      if (!mounted) return;
+      const s = new Set(list.map((x) => `${x.surah}-${x.ayah}`));
+      setSajdaSet(s);
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   // Load surah verses when selectedSurah or selectedTranslation changes
   useEffect(() => {
@@ -260,7 +374,7 @@ export default function FullQuran() {
     husary: "ar.husary",
   };
   const getAudioEditionForReciter = () => {
-    return audioEditions[selectedReciter?.id] || "ar.alafasy";
+    return audioEditions[selectedReciter?.id] || cloudAudioEdition(selectedReciter?.id);
   };
 
   const loadSurah = async (surahNum, translationId) => {
@@ -268,27 +382,42 @@ export default function FullQuran() {
     stopCurrentAudio(); // Stop audio when a new surah is loading or translation changes
     try {
       const audioEdition = getAudioEditionForReciter();
-      const response = await fetch(
-        `https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-simple,${translationId},${audioEdition}`
-      );
-      const data = await response.json();
-
-      if (data.status === "OK") {
-        const arabicAyahs = data.data[0].ayahs;
-        const englishAyahs = data.data[1] ? data.data[1].ayahs : []; // Check if translation data exists
-        const audioAyahs = data.data[2] ? data.data[2].ayahs : [];
-
-        const formattedVerses = arabicAyahs.map((ayah, index) => ({
-          numberInSurah: ayah.numberInSurah,
-          arabic: ayah.text,
-          translation: englishAyahs[index] ? englishAyahs[index].text : "Translation not available for this verse.", // Handle missing translation
-          tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${selectedSurah.englishName}. In a real application, this would be loaded from a dedicated Tafsir API or dataset.`,
-          audio: audioAyahs[index]?.audio || null,
-        }));
-
-        setSurahVerses(formattedVerses);
+      // Use cache if available
+      const cacheKey = `${surahNum}|${translationId}|${audioEdition}`;
+      const cached = await getSurahCache(cacheKey);
+      if (cached?.verses?.length) {
+        setSurahVerses(cached.verses.map(v => ({
+          ...v,
+          isSajda: sajdaSet.has(`${surahNum}-${v.numberInSurah}`),
+          tafsir: v.tafsir || null,
+        })));
       } else {
-        toast.error("Failed to load surah details from API.");
+        const response = await fetch(
+          `https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-simple,${translationId},${audioEdition}`
+        );
+        const data = await response.json();
+
+        if (data.status === "OK") {
+          const arabicAyahs = data.data[0].ayahs;
+          const englishAyahs = data.data[1] ? data.data[1].ayahs : []; // Check if translation data exists
+          const audioAyahs = data.data[2] ? data.data[2].ayahs : [];
+
+          const formattedVerses = arabicAyahs.map((ayah, index) => ({
+            numberInSurah: ayah.numberInSurah,
+            arabic: ayah.text,
+            translation: englishAyahs[index] ? englishAyahs[index].text : "Translation not available for this verse.",
+            tafsir: null,
+            audio: audioAyahs[index]?.audio || null,
+            surahNumber: surahNum,
+            isSajda: sajdaSet.has(`${surahNum}-${ayah.numberInSurah}`),
+          }));
+
+          setSurahVerses(formattedVerses);
+          // Save to cache
+          setSurahCache(cacheKey, { verses: formattedVerses, cachedAt: Date.now() }).catch(() => {});
+        } else {
+          toast.error("Failed to load surah details from API.");
+        }
       }
     } catch (error) {
       console.error("Error loading surah:", error);
@@ -303,51 +432,116 @@ export default function FullQuran() {
     stopCurrentAudio();
     const audioEdition = getAudioEditionForReciter();
     const buildUrl = (scriptEdition) =>
-      `https://api.alquran.cloud/v1/juz/${juzNum}/editions/${scriptEdition},${translationId},${audioEdition}`;
+      `https://api.alquran.cloud/v1/juz/${juzNum}/editions/${scriptEdition},${translationId}`;
     try {
-      // Prefer uthmani script for better glyphs, fall back to simple if needed
-      let res = await fetch(buildUrl("quran-uthmani"));
-      let data = await res.json();
-      if (data.status !== "OK" || !data?.data?.[0]?.ayahs?.length) {
-        res = await fetch(buildUrl("quran-simple"));
-        data = await res.json();
-      }
-
-      if (data.status === "OK") {
-        const arabicAyahs = data.data[0]?.ayahs || [];
-        const translationAyahs = data.data[1]?.ayahs || [];
-        const audioAyahs = data.data[2]?.ayahs || [];
-
-        // Build reliable maps keyed by Surah#-Ayah# to avoid indexing mismatches
-        const translationMap = new Map();
-        for (const t of translationAyahs) {
-          const key = `${t?.surah?.number}-${t?.numberInSurah}`;
-          if (key) translationMap.set(key, t?.text ?? "");
-        }
-        const audioMap = new Map();
-        for (const a of audioAyahs) {
-          const key = `${a?.surah?.number}-${a?.numberInSurah}`;
-          if (key) audioMap.set(key, a?.audio ?? null);
-        }
-
-        const formatted = arabicAyahs.map((ayah) => {
-          const key = `${ayah?.surah?.number}-${ayah?.numberInSurah}`;
-          return {
-            surahNumber: ayah.surah.number,
-            surahName: ayah.surah.englishName || ayah.surah.name,
-            numberInSurah: ayah.numberInSurah,
-            arabic: ayah.text,
-            translation: translationMap.get(key) || "Translation not available.",
-            tafsir: `This is a sample Tafsir for verse ${ayah.numberInSurah} of Surah ${ayah.surah.englishName || ayah.surah.name}.`,
-            audio: audioMap.get(key) || null,
-          };
-        });
-        setJuzVerses(formatted);
-        if (!formatted.length) {
-          toast.info("No verses loaded for this Juz. Try a different translation or check your network.");
-        }
+      const cacheKey = `${juzNum}|${translationId}|${audioEdition}`;
+      const cached = await getJuzCache(cacheKey);
+      if (cached?.verses?.length) {
+        setJuzVerses(cached.verses.map(v => ({
+          ...v,
+          isSajda: sajdaSet.has(`${v.surahNumber}-${v.numberInSurah}`),
+        })));
       } else {
-        toast.error("Failed to load Juz.");
+        // First try our API wrapper (handles uthmani/simple fallback and formatting)
+        try {
+          const formattedViaWrapper = await cloudFetchJuz({
+            juzNumber: juzNum,
+            translationId,
+            // Omit audio edition to avoid API-level failures; we add audio during playback via surah fallback
+          });
+          const formatted = (formattedViaWrapper || []).map(v => ({
+            ...v,
+            isSajda: sajdaSet.has(`${v.surahNumber}-${v.numberInSurah}`),
+          }));
+          setJuzVerses(formatted);
+          setJuzCache(cacheKey, { verses: formatted, cachedAt: Date.now() }).catch(() => {});
+          if (!formatted.length) {
+            // If wrapper returned empty, attempt a direct fetch as a secondary fallback
+            let res = await fetch(buildUrl("quran-uthmani"));
+            let data = await res.json();
+            if (data.status !== "OK" || !data?.data?.[0]?.ayahs?.length) {
+              res = await fetch(buildUrl("quran-simple"));
+              data = await res.json();
+            }
+
+            if (data.status === "OK") {
+              const arabicAyahs = data.data[0]?.ayahs || [];
+              const translationAyahs = data.data[1]?.ayahs || [];
+              const audioAyahs = data.data[2]?.ayahs || [];
+              const translationMap = new Map();
+              for (const t of translationAyahs) {
+                const key = `${t?.surah?.number}-${t?.numberInSurah}`;
+                if (key) translationMap.set(key, t?.text ?? "");
+              }
+              const audioMap = new Map();
+              for (const a of audioAyahs) {
+                const key = `${a?.surah?.number}-${a?.numberInSurah}`;
+                if (key) audioMap.set(key, a?.audio ?? null);
+              }
+              const formattedDirect = arabicAyahs.map((ayah) => {
+                const key = `${ayah?.surah?.number}-${ayah?.numberInSurah}`;
+                return {
+                  surahNumber: ayah.surah.number,
+                  surahName: ayah.surah.englishName || ayah.surah.name,
+                  numberInSurah: ayah.numberInSurah,
+                  arabic: ayah.text,
+                  translation: translationMap.get(key) || "",
+                  audio: audioMap.get(key) || null,
+                  isSajda: sajdaSet.has(`${ayah.surah.number}-${ayah.numberInSurah}`),
+                };
+              });
+              setJuzVerses(formattedDirect);
+              setJuzCache(cacheKey, { verses: formattedDirect, cachedAt: Date.now() }).catch(() => {});
+              if (!formattedDirect.length) {
+                toast.info("No verses loaded for this Juz. Try a different translation or check your network.");
+              }
+            } else {
+              toast.error("Failed to load Juz.");
+            }
+          }
+        } catch (innerErr) {
+          // If wrapper throws, attempt direct fetch immediately
+          let res = await fetch(buildUrl("quran-uthmani"));
+          let data = await res.json();
+          if (data.status !== "OK" || !data?.data?.[0]?.ayahs?.length) {
+            res = await fetch(buildUrl("quran-simple"));
+            data = await res.json();
+          }
+          if (data.status === "OK") {
+            const arabicAyahs = data.data[0]?.ayahs || [];
+            const translationAyahs = data.data[1]?.ayahs || [];
+            const audioAyahs = data.data[2]?.ayahs || [];
+            const translationMap = new Map();
+            for (const t of translationAyahs) {
+              const key = `${t?.surah?.number}-${t?.numberInSurah}`;
+              if (key) translationMap.set(key, t?.text ?? "");
+            }
+            const audioMap = new Map();
+            for (const a of audioAyahs) {
+              const key = `${a?.surah?.number}-${a?.numberInSurah}`;
+              if (key) audioMap.set(key, a?.audio ?? null);
+            }
+            const formatted = arabicAyahs.map((ayah) => {
+              const key = `${ayah?.surah?.number}-${ayah?.numberInSurah}`;
+              return {
+                surahNumber: ayah.surah.number,
+                surahName: ayah.surah.englishName || ayah.surah.name,
+                numberInSurah: ayah.numberInSurah,
+                arabic: ayah.text,
+                translation: translationMap.get(key) || "",
+                audio: audioMap.get(key) || null,
+                isSajda: sajdaSet.has(`${ayah.surah.number}-${ayah.numberInSurah}`),
+              };
+            });
+            setJuzVerses(formatted);
+            setJuzCache(cacheKey, { verses: formatted, cachedAt: Date.now() }).catch(() => {});
+            if (!formatted.length) {
+              toast.info("No verses loaded for this Juz. Try a different translation or check your network.");
+            }
+          } else {
+            toast.error("Failed to load Juz.");
+          }
+        }
       }
     } catch (error) {
       console.error("Error loading juz:", error);
@@ -414,7 +608,9 @@ export default function FullQuran() {
   };
 
   const pauseAudio = () => {
+    // Stop current audio, but preserve juzPlayIndex so we can resume later
     stopCurrentAudio();
+    setIsJuzSequence(false);
   };
 
   const toggleRepeat = () => {
@@ -450,7 +646,8 @@ export default function FullQuran() {
     }
   };
 
-  const playJuzFromStart = () => {
+  // Start or resume Juz sequence playback at a given index
+  const startJuzSequenceAt = (startIdx = 0) => {
     if (!isJuzMode || !selectedJuz) {
       toast.error("Please select a Juz first.");
       return;
@@ -460,26 +657,19 @@ export default function FullQuran() {
       return;
     }
     setIsJuzSequence(true);
-    setJuzPlayIndex(0);
+    setJuzPlayIndex(startIdx);
 
     const playAtIndex = (idx) => {
       const verse = juzVerses[idx];
-      if (!verse || !verse.audio) {
-        // Skip to next if audio missing
-        const next = idx + 1;
-        if (next < juzVerses.length) {
-          setJuzPlayIndex(next);
-          playAtIndex(next);
-        } else {
-          setIsJuzSequence(false);
-          setPlayingVerseNumber(null);
-          setCurrentAudio(null);
-          setIsPlaying(false);
-        }
+      if (!verse) {
+        setIsJuzSequence(false);
+        setPlayingVerseNumber(null);
+        setCurrentAudio(null);
+        setIsPlaying(false);
         return;
       }
-      setPlayingVerseNumber(verse.numberInSurah);
-      handlePlayAudio(verse.audio, verse.numberInSurah, () => {
+
+      const onVerseEnded = () => {
         if (repeat) {
           // If repeat is on, loop this ayah (audio.loop handles it)
           return;
@@ -494,10 +684,26 @@ export default function FullQuran() {
           setCurrentAudio(null);
           setIsPlaying(false);
         }
-      });
+      };
+
+      setPlayingVerseNumber(verse.numberInSurah);
+      if (verse.audio) {
+        // Preferred: play verse-level audio if available
+        handlePlayAudio(verse.audio, verse.numberInSurah, onVerseEnded);
+      } else {
+        // Fallback: play full surah audio for this verse's surah
+        const surahNumberStr = String(verse.surahNumber).padStart(3, "0");
+        const surahAudioUrl = `${selectedReciter.url}${surahNumberStr}.mp3`;
+        toast.info(`Verse-level audio unavailable; playing Surah ${verse.surahNumber} audio as fallback.`);
+        handlePlayAudio(surahAudioUrl, verse.numberInSurah, onVerseEnded);
+      }
     };
 
-    playAtIndex(0);
+    playAtIndex(startIdx);
+  };
+
+  const playJuzFromStart = () => {
+    startJuzSequenceAt(0);
   };
 
   const handleReciterChange = (reciter) => {
@@ -523,6 +729,33 @@ export default function FullQuran() {
     s.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.number.toString().includes(searchQuery)
   );
+
+  const downloadCurrentSelection = async () => {
+    try {
+      if (isJuzMode && selectedJuz) {
+        const audioEdition = getAudioEditionForReciter();
+        const cacheKey = `${selectedJuz}|${selectedTranslation.id}|${audioEdition}`;
+        // Reuse current verses if available, else fetch and cache
+        if (juzVerses.length) {
+          await setJuzCache(cacheKey, { verses: juzVerses, cachedAt: Date.now() });
+        } else {
+          await loadJuz(selectedJuz, selectedTranslation.id);
+        }
+        toast.success(`Juz ${selectedJuz} cached for offline use.`);
+      } else if (selectedSurah) {
+        const audioEdition = getAudioEditionForReciter();
+        const cacheKey = `${selectedSurah.number}|${selectedTranslation.id}|${audioEdition}`;
+        if (surahVerses.length) {
+          await setSurahCache(cacheKey, { verses: surahVerses, cachedAt: Date.now() });
+        } else {
+          await loadSurah(selectedSurah.number, selectedTranslation.id);
+        }
+        toast.success(`Surah ${selectedSurah.name} cached for offline use.`);
+      }
+    } catch (e) {
+      toast.error('Failed to cache selection.');
+    }
+  };
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -729,6 +962,9 @@ export default function FullQuran() {
                   <Button onClick={toggleRepeat} variant={repeat ? "default" : "outline"} className="flex-1">
                     <Repeat className="w-4 h-4 mr-1" /> {repeat ? "Repeat: On" : "Repeat: Off"}
                   </Button>
+                  <Button onClick={downloadCurrentSelection} variant="outline" className="flex-1">
+                    <Download className="w-4 h-4 mr-1" /> Cache Offline
+                  </Button>
                 </div>
               </div>
             </div>
@@ -771,6 +1007,29 @@ export default function FullQuran() {
                 </>
               )}
             </Button>
+            
+            {/* Juz-specific controls */}
+            {isJuzMode && juzVerses.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <Button
+                  onClick={stopJuzSequence}
+                  variant="destructive"
+                  className="w-full"
+                  disabled={!isPlaying && !isJuzSequence}
+                >
+                  <StopCircle className="w-4 h-4 mr-1" />
+                  Stop Juz
+                </Button>
+                <Button
+                  onClick={resumeJuzSequence}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isPlaying || juzPlayIndex === null}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Resume Juz
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -797,6 +1056,9 @@ export default function FullQuran() {
                 <div className="flex items-center gap-3">
                   <BookOpen className="w-8 h-8 text-blue-600" />
                   <Volume2 className="w-8 h-8 text-green-600" />
+                  <Button variant="outline" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title="Toggle theme">
+                    {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -842,6 +1104,11 @@ export default function FullQuran() {
                       <Button className="bg-green-600" onClick={playJuzFromStart}>
                         <Play className="w-4 h-4 mr-1" /> Play from start
                       </Button>
+                      {(!isPlaying && isJuzMode && juzVerses?.length > 0 && juzPlayIndex != null) && (
+                        <Button className="bg-green-600" onClick={() => startJuzSequenceAt(juzPlayIndex)}>
+                          <Play className="w-4 h-4 mr-1" /> Resume Juz
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -853,7 +1120,13 @@ export default function FullQuran() {
             )}
 
             {(isJuzMode ? juzVerses : surahVerses).map((verse, idx) => (
-              <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`} ref={(el) => { verseRefs.current[verse.numberInSurah] = el; if (isJuzMode && idx === 0) verseRefs.current.juzStart = el; }}>
+              <div key={`${verse.surahNumber || selectedSurah?.number}-${verse.numberInSurah}`}
+                   ref={(el) => {
+                     verseRefs.current[verse.numberInSurah] = el;
+                     if (!verseRefs.current.byIndex) verseRefs.current.byIndex = [];
+                     verseRefs.current.byIndex[idx] = el;
+                     if (isJuzMode && idx === 0) verseRefs.current.juzStart = el;
+                   }}>
                 {/* Show surah badge when in Juz mode */}
                 {isJuzMode && (
                   <div className="mb-1 text-sm text-gray-600">Surah {verse.surahName} — Ayah {verse.numberInSurah}</div>
@@ -865,6 +1138,7 @@ export default function FullQuran() {
                     setExpandedVerse(expandedVerse === verseNum ? null : verseNum)
                   }
                   onPlay={onPlayVerse}
+                  isHighlighted={!!(highlightVerse && highlightVerse.surah === verse.surahNumber && highlightVerse.ayah === verse.numberInSurah)}
                 />
                 <div className="flex gap-2 mb-6">
                   <Button onClick={() => onPlayVerse(verse)} className="bg-green-600">

@@ -115,6 +115,24 @@ export default function About() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Credits Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8"
+        >
+          <Card className="shadow border-2 border-green-200">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Acknowledgements</h3>
+              <p className="text-gray-700">
+                Qur’an text, translations, and audio in our Recitation & Hifz module are powered by the
+                <a href="https://alquran.cloud/api" target="_blank" rel="noreferrer" className="text-green-700 font-semibold ml-1">AlQuran.Cloud API</a>
+                by Islamic Network. We are grateful for their service to the community.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

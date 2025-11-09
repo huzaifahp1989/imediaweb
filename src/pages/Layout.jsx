@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain, Star } from "lucide-react";
+import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain, Star, BarChart2, Layers } from "lucide-react";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion } from "framer-motion";
 import {
@@ -173,17 +173,20 @@ export default function Layout({ children, currentPageName }) {
       name: "Learn",
       icon: GraduationCap,
       dropdown: [
-        { name: "Hadith", path: "Hadith" },
-        { name: "History", path: "History" },
-        { name: "Tajweed", path: "Tajweed" },
+        { name: "Hadith", path: "Hadith", icon: BookOpen },
+        { name: "History", path: "History", icon: Book },
+        { name: "Tajweed", path: "Tajweed", icon: GraduationCap },
       ]
     },
     {
       name: "Quran",
-      icon: Book,
+      icon: BookOpen,
       dropdown: [
-        { name: "Learn Quran", path: "Quran" },
-        { name: "Full Quran", path: "FullQuran" },
+        { name: "Learn Quran", path: "Quran", icon: BookOpen },
+        { name: "Full Quran", path: "FullQuran", icon: Book },
+        { name: "Manzil (1–7)", path: "Manzil", icon: Layers },
+        { name: "Hizb (1–240)", path: "Hizb", icon: Layers },
+        { name: "Hifz Dashboard", path: "HifzDashboard", icon: BarChart2 },
       ]
     },
     { name: "Challenges", icon: Trophy, path: "Challenges" },
@@ -344,13 +347,17 @@ export default function Layout({ children, currentPageName }) {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {item.dropdown.map((subItem) => (
-                          <DropdownMenuItem key={subItem.path} asChild>
-                            <Link to={createPageUrl(subItem.path)} className="cursor-pointer">
-                              {subItem.name}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
+                        {item.dropdown.map((subItem) => {
+                          const SubIcon = subItem.icon;
+                          return (
+                            <DropdownMenuItem key={subItem.path} asChild>
+                              <Link to={createPageUrl(subItem.path)} className="cursor-pointer flex items-center gap-2">
+                                {SubIcon ? <SubIcon className="w-4 h-4" /> : null}
+                                <span>{subItem.name}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          );
+                        })}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   );
@@ -488,20 +495,24 @@ export default function Layout({ children, currentPageName }) {
                           
                           {isOpen && (
                             <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-2">
-                              {item.dropdown.map((subItem) => (
-                                <Link
-                                  key={subItem.path}
-                                  to={createPageUrl(subItem.path)}
-                                  onClick={handleMobileLinkClick}
-                                  className={`block px-4 py-2 rounded-lg transition-all ${
-                                    currentPageName === subItem.path
-                                      ? "bg-blue-50 text-blue-600 font-medium"
-                                      : "text-gray-600 hover:bg-gray-50"
-                                  }`}
-                                >
-                                  {subItem.name}
-                                </Link>
-                              ))}
+                              {item.dropdown.map((subItem) => {
+                                const SubIcon = subItem.icon;
+                                return (
+                                  <Link
+                                    key={subItem.path}
+                                    to={createPageUrl(subItem.path)}
+                                    onClick={handleMobileLinkClick}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                                      currentPageName === subItem.path
+                                        ? "bg-blue-50 text-blue-600 font-medium"
+                                        : "text-gray-600 hover:bg-gray-50"
+                                    }`}
+                                  >
+                                    {SubIcon ? <SubIcon className="w-4 h-4" /> : null}
+                                    <span>{subItem.name}</span>
+                                  </Link>
+                                );
+                              })}
                             </div>
                           )}
                         </div>

@@ -7,8 +7,8 @@ service cloud.firestore {
 
     // Users profiles: allow each authenticated user to create/update/read their own
     match /users/{uid} {
-      // Only the authenticated owner can create their profile document
-      allow create: if request.auth != null && request.auth.uid == uid;
+      // Only the authenticated owner can create or set their profile document
+      allow create, set: if request.auth != null && request.auth.uid == uid;
       // Owner can read their own profile; admins can read all for management
       allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
       // Owner can update their own profile

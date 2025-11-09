@@ -61,6 +61,9 @@ import PrintableQuizzes from "./PrintableQuizzes";
 import Multimedia from "./Multimedia";
 
 import FullQuran from "./FullQuran";
+import Manzil from "./Manzil";
+import Hizb from "./Hizb";
+import HifzDashboard from "./HifzDashboard";
 
 import ResetPointsAdmin from "./ResetPointsAdmin";
 
@@ -175,6 +178,9 @@ const PAGES = {
     
     FullQuran: FullQuran,
     Quran: FullQuran,
+    Manzil: Manzil,
+    Hizb: Hizb,
+    HifzDashboard: HifzDashboard,
     
     ResetPointsAdmin: ResetPointsAdmin,
     
@@ -319,6 +325,9 @@ function PagesContent() {
                 <Route path="/FullQuran" element={<FullQuran />} />
                 <Route path="/Quran" element={<FullQuran />} />
                 <Route path="/quran" element={<FullQuran />} />
+                <Route path="/Manzil" element={<Manzil />} />
+                <Route path="/Hizb" element={<Hizb />} />
+                <Route path="/HifzDashboard" element={<HifzDashboard />} />
                 
                 <Route path="/ResetPointsAdmin" element={<ResetPointsAdmin />} />
                 

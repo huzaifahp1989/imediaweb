@@ -26,6 +26,7 @@ import {
   doc,
   deleteDoc,
   getDoc,
+  setLogLevel,
 } from 'firebase/firestore';
 import {
   getStorage,
@@ -56,20 +57,14 @@ export function getFirebase() {
       app = initializeApp(config);
       auth = getAuth(app);
       const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-      // In development, force long-polling to reduce Listen abort noise
-      db = initializeFirestore(app, isDev ? {
-        experimentalForceLongPolling: true,
-        useFetchStreams: false,
-      } : {
-        experimentalAutoDetectLongPolling: true,
-        useFetchStreams: false,
-      });
+      // Reduce Firestore console verbosity in dev
+      try {
+        setLogLevel(isDev ? 'error' : 'silent');
+      } catch (_) {}
       if (isDev) {
         try {
-          console.info('[Firebase] Firestore initialized', {
+          console.info('[Firebase] App/Auth initialized', {
             projectId: config.projectId,
-            experimentalForceLongPolling: true,
-            useFetchStreams: false,
           });
         } catch (_) {
           // no-op
@@ -78,6 +73,33 @@ export function getFirebase() {
     }
   }
   return { app, auth, db };
+}
+
+// Initialize Firestore on-demand to avoid opening long-polling Listen channels
+// on public pages that only need Auth. Call this in any function that needs `db`.
+export function getDb() {
+  const { app } = getFirebase();
+  if (!app) throw new Error('Firebase not configured');
+  if (!db) {
+    const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+    db = initializeFirestore(app, isDev ? {
+      experimentalForceLongPolling: true,
+      useFetchStreams: false,
+    } : {
+      experimentalAutoDetectLongPolling: true,
+      useFetchStreams: false,
+    });
+    if (isDev) {
+      try {
+        console.info('[Firebase] Firestore initialized (on-demand)', {
+          projectId: config.projectId,
+          experimentalForceLongPolling: true,
+          useFetchStreams: false,
+        });
+      } catch (_) {}
+    }
+  }
+  return db;
 }
 
 export async function adminSignIn(email, password) {
@@ -111,8 +133,7 @@ export async function signUp(email, password) {
 
 // Save user profile details to Firestore under `users/{uid}`
 export async function saveUserProfile(uid, profile) {
-  const { db } = getFirebase();
-  if (!db) throw new Error('Firebase not configured');
+  const db = getDb();
   const ref = doc(db, 'users', uid);
   // Ensure the document id equals uid; merge to preserve existing fields
   await setDoc(ref, { uid, ...(profile || {}), updatedAt: new Date() }, { merge: true });
@@ -120,8 +141,7 @@ export async function saveUserProfile(uid, profile) {
 
 // Fetch a single user profile from Firestore
 export async function getUserProfile(uid) {
-  const { db } = getFirebase();
-  if (!db) throw new Error('Firebase not configured');
+  const db = getDb();
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
@@ -168,8 +188,7 @@ export const messagesApi = {
         console.warn('Backend add failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const { db } = getFirebase();
-    if (!db) throw new Error('Firebase not configured');
+    const db = getDb();
     const col = collection(db, 'messages');
     return addDoc(col, message);
   },
@@ -189,8 +208,7 @@ export const messagesApi = {
         console.warn('Backend list failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const { db } = getFirebase();
-    if (!db) throw new Error('Firebase not configured');
+    const db = getDb();
     const col = collection(db, 'messages');
     const q = query(col, orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
@@ -214,8 +232,7 @@ export const messagesApi = {
         console.warn('Backend markRead failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const { db } = getFirebase();
-    if (!db) throw new Error('Firebase not configured');
+    const db = getDb();
     const ref = doc(db, 'messages', id);
     await updateDoc(ref, { read });
   },
@@ -241,8 +258,7 @@ export const usersApi = {
       }
     }
     // Fallback: read directly from Firestore (requires admin read in rules)
-    const { db } = getFirebase();
-    if (!db) throw new Error('Firebase not configured');
+    const db = getDb();
     const col = collection(db, 'users');
     const snap = await getDocs(col);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -269,7 +285,10 @@ const genLocalId = () => (globalThis.crypto?.randomUUID?.() || `local_${Date.now
 
 export const sponsorsApi = {
   async add(sponsor) {
-    const { db } = getFirebase();
+    let db;
+    try {
+      db = getDb();
+    } catch (_) {}
     if (!db) {
       const items = readLocalSponsors();
       const id = genLocalId();
@@ -282,7 +301,10 @@ export const sponsorsApi = {
     return { id: ref.id };
   },
   async list() {
-    const { db } = getFirebase();
+    let db;
+    try {
+      db = getDb();
+    } catch (_) {}
     if (!db) {
       return readLocalSponsors();
     }
@@ -297,7 +319,10 @@ export const sponsorsApi = {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   },
   async update(id, patch) {
-    const { db } = getFirebase();
+    let db;
+    try {
+      db = getDb();
+    } catch (_) {}
     if (!db) {
       const items = readLocalSponsors();
       const next = items.map(it => {
@@ -311,7 +336,10 @@ export const sponsorsApi = {
     await updateDoc(ref, patch);
   },
   async remove(id) {
-    const { db } = getFirebase();
+    let db;
+    try {
+      db = getDb();
+    } catch (_) {}
     if (!db) {
       const items = readLocalSponsors().filter(it => (it.id !== id && it._localId !== id));
       writeLocalSponsors(items);

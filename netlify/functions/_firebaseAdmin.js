@@ -1,25 +1,20 @@
-import admin from 'firebase-admin';
+const admin = require("firebase-admin");
+const path = require("path");
 
-let initialized = false;
+// Load service account key from project root
+const serviceAccount = require(path.resolve(__dirname, "../../serviceAccountKey.json"));
 
-export function getAdmin() {
-  if (!initialized) {
-    if (!admin.apps.length) {
-      const projectId = process.env.FIREBASE_PROJECT_ID;
-      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+let _adminInstance = null;
+let _dbInstance = null;
 
-      if (!projectId || !clientEmail || !privateKey) {
-        throw new Error('Missing Firebase Admin credentials (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY)');
-      }
-
-      admin.initializeApp({
-        credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
-      });
-    }
-    initialized = true;
+function getAdmin() {
+  if (!_adminInstance) {
+    _adminInstance = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    _dbInstance = admin.firestore();
   }
-  const db = admin.firestore();
-  return { admin, db };
+  return { admin: _adminInstance, db: _dbInstance };
 }
 
+module.exports = { getAdmin };
