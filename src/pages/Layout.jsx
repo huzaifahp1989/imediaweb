@@ -203,10 +203,10 @@ export default function Layout({ children, currentPageName }) {
     ...navItems,
     { name: "Privacy Policy", icon: Shield, external: true, url: "https://studio--studio-653801381-47983.us-central1.hosted.app/privacy" }
   ];
-  // On mobile, the top quick icon bar should not show the Quran parent item
-  // because it has a dropdown and no direct path (tap does nothing). Keep Quran
-  // accessible via the side menu (drawer) only.
-  const mobileIconNavItems = navItemsWithPrivacy.filter((item) => item.name !== "Quran");
+  // On mobile, the top quick icon bar should not show parent items with dropdowns
+  // (e.g., Quran, Learn) because they have no direct path and taps do nothing.
+  // Keep these accessible via the side menu (drawer) only.
+  const mobileIconNavItems = navItemsWithPrivacy.filter((item) => item.name !== "Quran" && item.name !== "Learn");
 
   const handleMobileLinkClick = () => {
     setMobileMenuOpen(false);
