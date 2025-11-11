@@ -7,7 +7,10 @@ export default defineConfig({
   // (e.g., /games) in production deployments like Netlify.
   // Relative base can cause requests like /games/assets/*.js which
   // return index.html instead of the actual asset, breaking the page.
-  base: '/',
+  // For GitHub Pages project site (username.github.io/imediaweb),
+  // assets must be served under /imediaweb/. Setting base ensures
+  // built asset URLs include the repo name and avoid blank pages.
+  base: '/imediaweb/',
   build: {
     rollupOptions: {
       output: {
