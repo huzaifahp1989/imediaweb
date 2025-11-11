@@ -47,13 +47,7 @@ const features = [
     link: "CreativeCorner",
     color: "from-pink-500 to-rose-500"
   },
-  {
-    title: "Record & Share",
-    description: "Record Quran recitations and nasheeds",
-    icon: Mic,
-    link: "RecordAndShare",
-    color: "from-cyan-500 to-blue-500"
-  }
+  // Removed "Record & Share" feature tile from Home page as requested
 ];
 
 const islamicValues = [
