@@ -105,14 +105,7 @@ export default function AdminDashboard() {
       color: "from-amber-500 to-yellow-500",
       stats: `${stats.totalQuestions} questions`
     },
-    {
-      title: "Learning Paths",
-      description: "Create and manage learning paths",
-      icon: GraduationCap,
-      path: "AdminLearningPaths",
-      color: "from-indigo-500 to-purple-500",
-      stats: `${stats.totalPaths} paths`
-    },
+    // Learning Paths admin card removed as the feature is hidden
     {
       title: "Homepage Banners",
       description: "Manage rotating homepage banners",

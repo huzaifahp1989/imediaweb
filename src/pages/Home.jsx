@@ -209,7 +209,7 @@ export default function Home() {
               Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Islam Kids Zone</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 mb-6 md:mb-8 max-w-3xl mx-auto">
-              A comprehensive Islamic learning platform designed for children. Learn through interactive games, stories, and structured learning paths.
+              A comprehensive Islamic learning platform designed for children. Learn through interactive games, stories, and engaging activities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={createPageUrl("Games")}>
@@ -340,7 +340,7 @@ export default function Home() {
             >
               <div className="text-5xl mb-4">📚</div>
               <h3 className="text-3xl font-bold text-gray-900 mb-2">7</h3>
-              <p className="text-gray-600 font-medium">Learning Paths</p>
+              <p className="text-gray-600 font-medium">Educational Modules</p>
             </motion.div>
 
             <motion.div
@@ -528,7 +528,7 @@ export default function Home() {
                   </h2>
                   <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto">
                     Compete with learners worldwide! Top 3 students each month win amazing prizes. 
-                    Play games, complete learning paths, and climb the leaderboard.
+                    Play games, complete challenges, and climb the leaderboard.
                   </p>
                   <div className="flex flex-wrap gap-4 justify-center">
                     <Link to={createPageUrl("Leaderboard")}>
