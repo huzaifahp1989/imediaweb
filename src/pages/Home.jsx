@@ -582,33 +582,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WordPress Blog Feed */}
-      <section className="py-12 md:py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Newspaper className="w-10 h-10 text-purple-600" />
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Latest Articles
-              </h2>
-            </div>
-            <p className="text-lg text-gray-600">
-              Educational resources and parenting tips for Muslim families
-            </p>
-          </div>
-          <div className="text-center mt-8">
-            <a
-              href="https://islamkidszone.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold text-lg"
-            >
-              Visit Our Blog
-              <ExternalLink className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* Blog section removed per request: external link not pointing to correct page */}
 
       {/* CTA Section */}
       <section className="py-16 md:py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600">
