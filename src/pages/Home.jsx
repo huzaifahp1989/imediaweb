@@ -34,13 +34,6 @@ const features = [
     color: "from-green-500 to-teal-500"
   },
   {
-    title: "Audio Library",
-    description: "Listen to Quran recitations and Islamic lectures",
-    icon: Headphones,
-    link: "Audio",
-    color: "from-purple-500 to-pink-500"
-  },
-  {
     title: "Videos",
     description: "Watch educational Islamic videos for kids",
     icon: Video,

@@ -85,7 +85,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     // Define public pages that do NOT require authentication
     const publicPages = [
-      "Home", "About", "ContactUs", "Welcome", "ParentZone", "PrivacyPolicy", "Games", "Leaderboard", "Stories", "Audio", "Learn", "Quran", "Duas", "RecordAndShare", "IslamicEncyclopedia", "IslamicFacts", "ColoringPages", "PoetryWriting", "Worksheets", "MonthlyContest", "CreativeCorner", "Videos", "History", "Hadith", "Tajweed", "LearningPaths", "LearningLibrary"
+      "Home", "About", "ContactUs", "Welcome", "ParentZone", "PrivacyPolicy", "Games", "Leaderboard", "Stories", "Learn", "Quran", "Duas", "RecordAndShare", "IslamicEncyclopedia", "IslamicFacts", "ColoringPages", "PoetryWriting", "Worksheets", "MonthlyContest", "CreativeCorner", "Videos", "History", "Hadith", "Tajweed", "LearningPaths", "LearningLibrary"
     ];
     console.log("currentPageName:", currentPageName);
     console.log("publicPages:", publicPages);
@@ -168,7 +168,6 @@ export default function Layout({ children, currentPageName }) {
     { name: "My Points", icon: Star, path: "MyPoints" },
     { name: "Stories", icon: BookOpen, path: "Stories" },
     { name: "Videos", icon: Video, path: "Videos" },
-    { name: "Audio", icon: Music, path: "Audio" },
     {
       name: "Learn",
       icon: GraduationCap,

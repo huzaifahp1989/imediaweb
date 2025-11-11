@@ -9,7 +9,6 @@ import MyPoints from "./MyPoints";
 
 import Stories from "./Stories";
 
-import Audio from "./Audio";
 
 import Learn from "./Learn";
 
@@ -125,7 +124,6 @@ const PAGES = {
     
     Stories: Stories,
     
-    Audio: Audio,
     
     Learn: Learn,
     
@@ -271,7 +269,6 @@ function PagesContent() {
                 
                 <Route path="/Stories" element={<Stories />} />
                 
-                <Route path="/Audio" element={<Audio />} />
                 
                 <Route path="/Learn" element={<Learn />} />
                 
