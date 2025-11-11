@@ -92,7 +92,6 @@ import AdminUsers from "./AdminUsers";
 
 import DeleteAccount from "./DeleteAccount";
 
-import LearningPaths from "./LearningPaths";
 
 import AdminBanners from "./AdminBanners";
 import AdminSponsors from "./AdminSponsors";
@@ -205,7 +204,6 @@ const PAGES = {
     
     DeleteAccount: DeleteAccount,
     
-    LearningPaths: LearningPaths,
     
     AdminBanners: AdminBanners,
     
@@ -354,7 +352,6 @@ function PagesContent() {
                 
                 <Route path="/DeleteAccount" element={<DeleteAccount />} />
                 
-                <Route path="/LearningPaths" element={<LearningPaths />} />
                 
                 <Route path="/AdminBanners" element={<AdminGuard><AdminBanners /></AdminGuard>} />
                 <Route path="/AdminSponsors" element={<AdminGuard><AdminSponsors /></AdminGuard>} />

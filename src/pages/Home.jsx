@@ -20,13 +20,6 @@ const features = [
     color: "from-blue-500 to-purple-500"
   },
   {
-    title: "Learning Paths",
-    description: "Structured journeys through Islamic knowledge",
-    icon: GraduationCap,
-    link: "LearningPaths",
-    color: "from-purple-500 to-pink-500"
-  },
-  {
     title: "Stories",
     description: "Read inspiring stories from Islamic history",
     icon: BookOpen,
@@ -225,12 +218,7 @@ export default function Home() {
                   Start Learning
                 </Button>
               </Link>
-              <Link to={createPageUrl("LearningPaths")}>
-                <Button size="lg" variant="outline" className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-full">
-                  <Target className="mr-2 w-5 h-5 md:w-6 md:h-6" />
-                  Browse Learning Paths
-                </Button>
-              </Link>
+              {/* Learning Paths CTA removed */}
               <Link to={createPageUrl("Signup")}>
                 <Button size="lg" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <UserPlus className="mr-2 w-5 h-5 md:w-6 md:h-6" />
