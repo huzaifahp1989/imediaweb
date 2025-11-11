@@ -77,27 +77,20 @@ export function getFirebase() {
 
 // Initialize Firestore on-demand to avoid opening long-polling Listen channels
 // on public pages that only need Auth. Call this in any function that needs `db`.
+// Disable Firestore in development mode to prevent network errors
+const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+
 export function getDb() {
+  if (isDev) {
+    throw new Error('Firestore is disabled in development mode.');
+  }
   const { app } = getFirebase();
   if (!app) throw new Error('Firebase not configured');
   if (!db) {
-    const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-    db = initializeFirestore(app, isDev ? {
-      experimentalForceLongPolling: true,
-      useFetchStreams: false,
-    } : {
+    db = initializeFirestore(app, {
       experimentalAutoDetectLongPolling: true,
       useFetchStreams: false,
     });
-    if (isDev) {
-      try {
-        console.info('[Firebase] Firestore initialized (on-demand)', {
-          projectId: config.projectId,
-          experimentalForceLongPolling: true,
-          useFetchStreams: false,
-        });
-      } catch (_) {}
-    }
   }
   return db;
 }
@@ -375,3 +368,4 @@ export async function isAdminUser() {
   // If admin email is configured, require exact match; otherwise allow any authenticated user
   return adminEmail ? email === adminEmail : true;
 }
+

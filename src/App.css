@@ -1,0 +1,18 @@
+body {
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8eaff 100%);
+  color: #222;
+}
+
+nav {
+  background: transparent;
+}
+
+/* Improve link and button appearance */
+a, .nav-link, .nav-button {
+  color: #222;
+  transition: color 0.2s, background 0.2s;
+}
+a:hover, .nav-link:hover, .nav-button:hover {
+  color: #2563eb;
+  background: #e0e7ff;
+}

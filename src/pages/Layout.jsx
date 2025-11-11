@@ -473,74 +473,30 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                 )}
 
-                <nav className="space-y-1">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = item.path && currentPageName === item.path;
-                    
-                    if (item.dropdown && item.dropdown.length > 0) {
-                      const isDropdownActive = item.dropdown.some(subItem => currentPageName === subItem.path);
-                      const isOpen = openDropdown === item.name;
-                      
-                      return (
-                        <div key={item.name} className="space-y-1">
-                          <button
-                            onClick={() => toggleDropdown(item.name)}
-                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                              isDropdownActive
-                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Icon className="w-5 h-5" />
-                              <span className="font-medium">{item.name}</span>
-                            </div>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                          </button>
-                          
-                          {isOpen && (
-                            <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-2">
-                              {item.dropdown.map((subItem) => {
-                                const SubIcon = subItem.icon;
-                                return (
-                                  <Link
-                                    key={subItem.path}
-                                    to={createPageUrl(subItem.path)}
-                                    onClick={handleMobileLinkClick}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                                      currentPageName === subItem.path
-                                        ? "bg-blue-50 text-blue-600 font-medium"
-                                        : "text-gray-600 hover:bg-gray-50"
-                                    }`}
-                                  >
-                                    {SubIcon ? <SubIcon className="w-4 h-4" /> : null}
-                                    <span>{subItem.name}</span>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <Link
-                        key={item.path}
-                        to={createPageUrl(item.path)}
-                        onClick={handleMobileLinkClick}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                          isActive
-                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                <nav className="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center py-4">
+                  {navItemsWithPrivacy.map((item, idx) => (
+                    item.external ? (
+                      <a
+                        key={item.name}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
                       >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-medium">{item.name}</span>
+                        <item.icon className="w-5 h-5 text-blue-600" />
+                        {item.name}
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.name}
+                        to={`/${item.path}`}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                      >
+                        <item.icon className="w-5 h-5 text-blue-600" />
+                        {item.name}
                       </Link>
-                    );
-                  })}
+                    )
+                  ))}
                 </nav>
               </div>
             </div>
