@@ -377,19 +377,7 @@ export default function Home() {
       </section>
 
       {/* Sponsors & Ads */}
-      {sponsors.length > 0 && (
-        <section className="py-8 md:py-12 px-4 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Our Sponsors</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {sponsors.map((s) => (
-                <SponsorTile key={s.id || s._localId} item={s} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
+      {/* Removed sponsors section as per request */}
       {/* Islamic Radio Player Section */}
       <section className="py-8 md:py-12 px-4 bg-gradient-to-br from-purple-50 to-blue-50">
         <div className="max-w-4xl mx-auto">

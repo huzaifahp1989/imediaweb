@@ -761,7 +761,6 @@ export default function FullQuran() {
     <div className="min-h-screen py-8 px-4">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap');
-        /* Custom scrollbar for surah selection grid */
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }

@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain, Star, BarChart2, Layers } from "lucide-react";
+import { Home, Gamepad2, BookOpen, Music, GraduationCap, Users, Info, Book, Trophy, ChevronDown, Menu, X, LogOut, User, LogIn, UserPlus, Video, Settings, Play, Pause, Volume2, VolumeX, Radio, Mail, Brain, Star, BarChart2, Layers, Shield } from "lucide-react";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion } from "framer-motion";
 import {
@@ -201,6 +201,12 @@ export default function Layout({ children, currentPageName }) {
     ? [...baseNavItems, { name: "AI Agent / ChatGPT", icon: Brain, path: "Assistant" }]
     : baseNavItems;
 
+  // Add Privacy Policy link to navigation for mobile quick nav
+  const navItemsWithPrivacy = [
+    ...navItems,
+    { name: "Privacy Policy", icon: Shield, external: true, url: "https://studio--studio-653801381-47983.us-central1.hosted.app/privacy" }
+  ];
+
   const handleMobileLinkClick = () => {
     setMobileMenuOpen(false);
     setOpenDropdown(null);
@@ -298,7 +304,7 @@ export default function Layout({ children, currentPageName }) {
         <nav className="md:hidden bg-white/95 backdrop-blur-sm shadow-sm sticky top-[56px] z-40 border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-2">
             <div className="flex items-center overflow-x-auto gap-1 py-1.5 scrollbar-hide">
-              {navItems.map((item) => {
+              {navItemsWithPrivacy.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.path && currentPageName === item.path;
                 return (
@@ -671,5 +677,3 @@ Layout.propTypes = {
   children: PropTypes.node.isRequired,
   currentPageName: PropTypes.string
 };
-
-

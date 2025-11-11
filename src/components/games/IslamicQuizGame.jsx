@@ -585,15 +585,14 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
 
   const completeGame = async () => {
     setGameCompleted(true);
-    
+    setStatusMessage("");
+    setErrorMessage("");
     // Always award 10 points regardless of performance
     const finalAwardedPoints = 10;
-    
     if (user) {
       try {
-        // Award points via centralized helper using backend settings with 10-point fallback
         await awardPointsForGame(user, "islamic_quiz", { fallbackScore: finalAwardedPoints });
-
+        setStatusMessage("Points awarded successfully! Your profile and leaderboard will update shortly.");
         // Update user progress with used questions
         const existingProgress = await base44.entities.UserGameProgress.filter({ 
           user_id: user.id, 
@@ -656,6 +655,7 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
         // Set the component's score state to the final score for display
         setScore(finalAwardedPoints);
       } catch (error) {
+        setErrorMessage("Failed to award points or save progress. Please check your permissions or try again later.");
         console.error("Error saving score or user progress:", error);
       }
     }
@@ -863,3 +863,4 @@ IslamicQuizGame.propTypes = {
   onComplete: PropTypes.func,
   challengeId: PropTypes.string
 };
+
