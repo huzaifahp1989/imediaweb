@@ -206,6 +206,10 @@ export default function Layout({ children, currentPageName }) {
     ...navItems,
     { name: "Privacy Policy", icon: Shield, external: true, url: "https://studio--studio-653801381-47983.us-central1.hosted.app/privacy" }
   ];
+  // On mobile, the top quick icon bar should not show the Quran parent item
+  // because it has a dropdown and no direct path (tap does nothing). Keep Quran
+  // accessible via the side menu (drawer) only.
+  const mobileIconNavItems = navItemsWithPrivacy.filter((item) => item.name !== "Quran");
 
   const handleMobileLinkClick = () => {
     setMobileMenuOpen(false);
@@ -304,7 +308,7 @@ export default function Layout({ children, currentPageName }) {
         <nav className="md:hidden bg-white/95 backdrop-blur-sm shadow-sm sticky top-[56px] z-40 border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-2">
             <div className="flex items-center overflow-x-auto gap-1 py-1.5 scrollbar-hide">
-              {navItemsWithPrivacy.map((item) => {
+              {mobileIconNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.path && currentPageName === item.path;
                 return (
@@ -474,29 +478,56 @@ export default function Layout({ children, currentPageName }) {
                 )}
 
                 <nav className="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center py-4">
-                  {navItemsWithPrivacy.map((item, idx) => (
-                    item.external ? (
-                      <a
-                        key={item.name}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
-                      >
-                        <item.icon className="w-5 h-5 text-blue-600" />
-                        {item.name}
-                      </a>
-                    ) : (
+                  {navItemsWithPrivacy.map((item) => {
+                    // External link (e.g., Privacy Policy)
+                    if (item.external) {
+                      const Icon = item.icon;
+                      return (
+                        <a
+                          key={item.name}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                        >
+                          {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
+                          {item.name}
+                        </a>
+                      );
+                    }
+
+                    // Items with dropdown (e.g., Quran) -> expand into sub-links in side menu
+                    if (item.dropdown && item.dropdown.length > 0) {
+                      return item.dropdown.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        return (
+                          <Link
+                            key={`${item.name}-${subItem.path}`}
+                            to={createPageUrl(subItem.path)}
+                            onClick={handleMobileLinkClick}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                          >
+                            {SubIcon ? <SubIcon className="w-5 h-5 text-blue-600" /> : null}
+                            {subItem.name}
+                          </Link>
+                        );
+                      });
+                    }
+
+                    // Regular nav item
+                    const Icon = item.icon;
+                    return (
                       <Link
                         key={item.name}
-                        to={`/${item.path}`}
+                        to={createPageUrl(item.path)}
+                        onClick={handleMobileLinkClick}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
                       >
-                        <item.icon className="w-5 h-5 text-blue-600" />
+                        {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
                         {item.name}
                       </Link>
-                    )
-                  ))}
+                    );
+                  })}
                 </nav>
               </div>
             </div>
