@@ -165,7 +165,6 @@ export default function Layout({ children, currentPageName }) {
     { name: "Games", icon: Gamepad2, path: "Games" },
     { name: "Learning Paths", icon: GraduationCap, path: "LearningPaths" },
     { name: "Leaderboard", icon: Trophy, path: "Leaderboard" },
-    { name: "My Points", icon: Star, path: "MyPoints" },
     { name: "Stories", icon: BookOpen, path: "Stories" },
     { name: "Videos", icon: Video, path: "Videos" },
     {
@@ -266,12 +265,7 @@ export default function Layout({ children, currentPageName }) {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl("MyPoints")} className="cursor-pointer">
-                            <Star className="w-4 h-4 mr-2" />
-                            My Points
-                          </Link>
-                        </DropdownMenuItem>
+                        {/* My Points removed */}
                         <DropdownMenuItem asChild>
                           <Link to={createPageUrl("DeleteAccount")} className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50">
                             <Settings className="w-4 h-4 mr-2" />
@@ -428,16 +422,7 @@ export default function Layout({ children, currentPageName }) {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Link to={createPageUrl("MyPoints")} onClick={handleMobileLinkClick}>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-white"
-                        >
-                          <Star className="w-4 h-4 mr-2" />
-                          My Points
-                        </Button>
-                      </Link>
+                      {/* My Points removed from mobile drawer */}
                       <Link to={createPageUrl("DeleteAccount")} onClick={handleMobileLinkClick}>
                         <Button
                           variant="outline"
