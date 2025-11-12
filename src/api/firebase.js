@@ -4,20 +4,8 @@ const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() 
 
 export function getFirebase() {
   const authWrapper = {
-    async get currentUser() {
-      // Get the current Supabase user
-      const { data: { user } } = await supabase.auth.getSession()
-      if (user) {
-        return {
-          uid: user.id,
-          email: user.email,
-          displayName: user.user_metadata?.full_name || user.email,
-          async getIdToken() {
-            const { data } = await supabase.auth.getSession()
-            return data?.session?.access_token || null
-          }
-        }
-      }
+    get currentUser() {
+      // This will be populated by the auth state listener
       return null
     }
   }
