@@ -4,19 +4,21 @@ const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() 
 
 export function getFirebase() {
   const authWrapper = {
-    get currentUser() {
-      return {
-        get uid() {
-          return undefined
-        },
-        get email() {
-          return undefined
-        },
-        async getIdToken() {
-          const { data } = await supabase.auth.getSession()
-          return data?.session?.access_token || null
+    async get currentUser() {
+      // Get the current Supabase user
+      const { data: { user } } = await supabase.auth.getSession()
+      if (user) {
+        return {
+          uid: user.id,
+          email: user.email,
+          displayName: user.user_metadata?.full_name || user.email,
+          async getIdToken() {
+            const { data } = await supabase.auth.getSession()
+            return data?.session?.access_token || null
+          }
         }
       }
+      return null
     }
   }
   return { app: true, auth: authWrapper, db: null }

@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Star, RefreshCw, TrendingUp, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
-import { watchAuth, getUserProfile, getFirebase } from "@/api/firebase";
-import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
+import { watchAuth, getUserProfile } from "@/api/firebase";
+import { supabase } from "@/api/supabaseClient";
 
 export default function MyPoints() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -27,20 +27,16 @@ export default function MyPoints() {
       }
       const p = await getUserProfile(u.uid);
       setProfile(p ? { id: u.uid, email: u.email, ...p } : { id: u.uid, email: u.email, points: 0 });
-      // Load recent awards history
+      // Load recent awards history from Supabase
       try {
-        const { db } = getFirebase();
-        if (db) {
-          const ref = doc(db, 'users', u.uid);
-          const col = collection(ref, 'game_scores');
-          const q = query(col, orderBy('at', 'desc'));
-          const snap = await getDocs(q);
-          const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          setScores(items);
-        }
-      } catch (e) {
-        // Non-fatal
-      }
+        const { data, error } = await supabase
+          .from('game_scores')
+          .select('id, game_type, points_awarded, perfect, at')
+          .eq('user_id', u.uid)
+          .order('at', { ascending: false })
+          .limit(10)
+        if (!error) setScores(data || [])
+      } catch (_) {}
     } catch (e) {
       setStatus(`Failed to load profile: ${e?.message || e}`);
     } finally {
@@ -104,11 +100,11 @@ export default function MyPoints() {
                   <div className="text-xs text-gray-500 mt-1">Progress to cap: {progress}%</div>
                 </div>
 
-                {profile?.lastAward ? (
+                {(profile?.lastAward || profile?.last_award) ? (
                   <div className="mb-4 p-3 border rounded bg-gray-50">
                     <div className="text-sm text-gray-700">Last Award</div>
                     <div className="text-sm text-gray-900 font-medium">
-                      {profile.lastAward.game_type || 'Game'} {profile.lastAward.perfect ? '⭐ Perfect!' : ''} (+{profile.lastAward.points_awarded || 0})
+                      {(profile.lastAward || profile.last_award).game_type || 'Game'} {(profile.lastAward || profile.last_award).perfect ? '⭐ Perfect!' : ''} (+{(profile.lastAward || profile.last_award).points_awarded || 0})
                     </div>
                   </div>
                 ) : (
@@ -148,4 +144,3 @@ export default function MyPoints() {
     </div>
   );
 }
-
