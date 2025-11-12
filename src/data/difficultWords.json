@@ -1,0 +1,17 @@
+{
+  "entries": [
+    { "key": "1:1", "indices": [2, 3], "overrides": {
+      "2": { "en": "The Entirely Merciful", "ur": "نہایت مہربان" },
+      "3": { "en": "Especially Merciful", "ur": "بہت مہربان" }
+    }},
+    { "key": "1:2", "indices": [1], "overrides": {
+      "1": { "en": "All praise and thanks", "ur": "تمام تعریفیں" }
+    }},
+    { "key": "1:5", "indices": [1, 2] },
+    { "key": "1:7", "indices": [3, 4, 5] },
+    { "key": "2:255", "indices": [1, 5, 12], "overrides": {
+      "1": { "en": "Allah! There is no deity except Him", "ur": "اللہ؛ اس کے سوا کوئی معبود نہیں" }
+    }}
+  ]
+}
+

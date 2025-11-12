@@ -26,6 +26,30 @@ export function getAudioEdition(reciterId) {
   return RECITER_AUDIO_EDITIONS[reciterId] || RECITER_AUDIO_EDITIONS.alafasy;
 }
 
+export async function fetchAyahAudio({ surahNumber, ayahNumber, audioEdition }) {
+  const primaryEdition = audioEdition || getAudioEdition();
+  const tryFetch = async (editionCode) => {
+    const url = `${API_BASE}/ayah/${surahNumber}:${ayahNumber}/${editionCode}`;
+    const res = await fetch(url);
+    const data = await res.json().catch(() => ({ status: "ERROR" }));
+    if (data.status !== "OK") return null;
+    let audio = data?.data?.audio || null;
+    if (typeof audio === 'string' && audio.startsWith('http://')) {
+      audio = 'https://' + audio.slice('http://'.length);
+    }
+    return audio || null;
+  };
+  let audio = await tryFetch(primaryEdition);
+  if (!audio) {
+    const fallbackEdition = RECITER_AUDIO_EDITIONS.alafasy;
+    if (fallbackEdition && fallbackEdition !== primaryEdition) {
+      audio = await tryFetch(fallbackEdition);
+    }
+  }
+  if (!audio) throw new Error("Failed to fetch ayah audio");
+  return audio;
+}
+
 export async function fetchSurah({ surahNumber, translationId, audioEdition }) {
   // Try uthmani, then fallback to simple
   const url = `${API_BASE}/surah/${surahNumber}/editions/${ARABIC_EDITIONS[0]},${translationId},${audioEdition}`;
@@ -131,4 +155,4 @@ export function searchAyahs(verses, query) {
     v.arabic?.toLowerCase().includes(q) || v.translation?.toLowerCase().includes(q)
   );
 }
-
+

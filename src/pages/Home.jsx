@@ -13,41 +13,47 @@ import { useRadio } from "@/pages/Layout";
 
 const features = [
   {
+    title: "Full Quran",
+    description: "Read and learn the full Qur'an",
+    icon: BookOpen,
+    link: "FullQuran",
+    color: "from-green-600 to-teal-500"
+  },
+  {
+    title: "Quran Dictionary",
+    description: "Word-by-word meanings and transliteration",
+    icon: Sparkles,
+    link: "QuranDictionary",
+    color: "from-purple-600 to-indigo-500"
+  },
+  {
+    title: "Hadith",
+    description: "Explore authentic hadith collections",
+    icon: Newspaper,
+    link: "Hadith",
+    color: "from-amber-600 to-orange-500"
+  },
+  {
+    title: "Duas",
+    description: "Daily duas for kids to learn",
+    icon: Heart,
+    link: "Duas",
+    color: "from-rose-600 to-pink-500"
+  },
+  {
     title: "Islamic Games",
     description: "Fun educational games to learn about Islam",
     icon: Gamepad2,
     link: "Games",
-    color: "from-blue-500 to-purple-500"
+    color: "from-blue-600 to-purple-500"
   },
   {
-    title: "Stories",
-    description: "Read inspiring stories from Islamic history",
-    icon: BookOpen,
-    link: "Stories",
-    color: "from-green-500 to-teal-500"
+    title: "Learning Activities",
+    description: "Printable worksheets and activities",
+    icon: GraduationCap,
+    link: "Worksheets",
+    color: "from-cyan-600 to-blue-500"
   },
-  {
-    title: "Videos",
-    description: "Watch educational Islamic videos for kids",
-    icon: Video,
-    link: "Videos",
-    color: "from-red-500 to-orange-500"
-  },
-  {
-    title: "Leaderboard",
-    description: "Compete with friends and earn badges",
-    icon: Trophy,
-    link: "Leaderboard",
-    color: "from-amber-500 to-yellow-500"
-  },
-  {
-    title: "Creative Corner",
-    description: "Express yourself through Islamic art & poetry",
-    icon: Palette,
-    link: "CreativeCorner",
-    color: "from-pink-500 to-rose-500"
-  },
-  // Removed "Record & Share" feature tile from Home page as requested
 ];
 
 const islamicValues = [
@@ -219,54 +225,18 @@ export default function Home() {
                   Signup
                 </Button>
               </Link>
+              <a href="https://studio--studio-653801381-47983.us-central1.hosted.app/" target="_blank" rel="noopener noreferrer">
+                <Button size="lg" variant="outline" className="border-2 border-blue-400 text-blue-700 bg-white hover:bg-blue-50 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  <ExternalLink className="mr-2 w-5 h-5 md:w-6 md:h-6" />
+                  Open Studio
+                </Button>
+              </a>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Construction Notice Banner */}
-      <section className="py-4 px-4 bg-gradient-to-r from-amber-500 to-orange-500">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-4 border-amber-400"
-          >
-            <div className="p-6 md:p-8">
-              <div className="flex items-start gap-4">
-                <div className="text-4xl md:text-5xl flex-shrink-0 animate-bounce">
-                  🚧
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Sparkles className="w-6 h-6 text-amber-600" />
-                    Website Under Development
-                  </h2>
-                  <div className="space-y-2 text-gray-700">
-                    <p className="text-base md:text-lg font-semibold">
-                      🌟 We are currently working on exciting website improvements!
-                    </p>
-                    <p className="text-sm md:text-base">
-                      Our team is enhancing your experience with new features, better performance, and more Islamic content. 
-                      The website is under construction and testing for the next <strong className="text-amber-600">two weeks</strong>.
-                    </p>
-                    <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mt-4">
-                      <p className="text-sm md:text-base font-semibold text-amber-900 flex items-center gap-2">
-                        <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-                        Please kindly support us during this time!
-                      </p>
-                      <p className="text-xs md:text-sm text-amber-800 mt-2">
-                        If you encounter any issues or have suggestions, please use the WhatsApp button or contact us. 
-                        Thank you for your patience and understanding! 💚
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      
 
       {/* Animated Text Slider Banner */}
       <section className="py-8 md:py-12 px-4">

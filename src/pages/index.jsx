@@ -62,6 +62,7 @@ import FullQuran from "./FullQuran";
 import Manzil from "./Manzil";
 import Hizb from "./Hizb";
 import HifzDashboard from "./HifzDashboard";
+import QuranDictionary from "./QuranDictionary";
 
 import ResetPointsAdmin from "./ResetPointsAdmin";
 
@@ -174,6 +175,7 @@ const PAGES = {
     
     FullQuran: FullQuran,
     Quran: FullQuran,
+    QuranDictionary: QuranDictionary,
     Manzil: Manzil,
     Hizb: Hizb,
     HifzDashboard: HifzDashboard,
@@ -252,7 +254,7 @@ function PagesContent() {
         <Layout currentPageName={currentPage}>
             <Routes>            
                 
-                    <Route path="/" element={<Landing />} />
+                    <Route path="/" element={<Home />} />
                 
                 
                 <Route path="/Home" element={<Home />} />
@@ -318,6 +320,8 @@ function PagesContent() {
                 <Route path="/FullQuran" element={<FullQuran />} />
                 <Route path="/Quran" element={<FullQuran />} />
                 <Route path="/quran" element={<FullQuran />} />
+                <Route path="/QuranDictionary" element={<QuranDictionary />} />
+                <Route path="/dictionary" element={<QuranDictionary />} />
                 <Route path="/Manzil" element={<Manzil />} />
                 <Route path="/Hizb" element={<Hizb />} />
                 <Route path="/HifzDashboard" element={<HifzDashboard />} />
@@ -382,7 +386,7 @@ function PagesContent() {
                 {/* Assistant routes: bypass guard in local dev for faster testing */}
                 <Route path="/Assistant" element={assistantElement} />
                 <Route path="/assistant" element={assistantElement} />
-                <Route path="*" element={<Landing />} />
+                <Route path="*" element={<Home />} />
             </Routes>
         </Layout>
     );

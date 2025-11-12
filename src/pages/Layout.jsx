@@ -181,6 +181,7 @@ export default function Layout({ children, currentPageName }) {
       dropdown: [
         { name: "Learn Quran", path: "Quran", icon: BookOpen },
         { name: "Full Quran", path: "FullQuran", icon: Book },
+        { name: "Quran Dictionary", path: "QuranDictionary", icon: BookOpen },
         { name: "Manzil (1–7)", path: "Manzil", icon: Layers },
         { name: "Hizb (1–240)", path: "Hizb", icon: Layers },
         { name: "Hifz Dashboard", path: "HifzDashboard", icon: BarChart2 },
