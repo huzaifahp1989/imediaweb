@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:docs": "vite build --outDir docs",
+    "build:docs": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/imediaweb/'; vite build --outDir docs; Copy-Item -Path 'docs/index.html' -Destination 'docs/404.html' -Force\"",
     "preview:docs": "vite preview --outDir docs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
