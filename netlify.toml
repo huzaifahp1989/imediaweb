@@ -22,3 +22,7 @@
   VITE_ADMIN_EMAIL = "huzaify786@gmail.com"
   # Also provide server-side variable for functions
   ADMIN_EMAIL = "huzaify786@gmail.com"
+  VITE_SUPABASE_URL = "https://pmxahrmjxbfzuyqeoraz.supabase.co"
+  VITE_SUPABASE_ANON_KEY = ""
+  SUPABASE_URL = "https://pmxahrmjxbfzuyqeoraz.supabase.co"
+  SUPABASE_SERVICE_ROLE_KEY = ""

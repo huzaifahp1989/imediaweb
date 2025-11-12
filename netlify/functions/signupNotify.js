@@ -1,4 +1,4 @@
-import { getAdmin } from './_firebaseAdmin.js';
+import { getSupabase } from './_supabaseAdmin.js'
 
 export async function handler(event) {
   try {
@@ -6,16 +6,16 @@ export async function handler(event) {
       return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
-    const { admin, db } = getAdmin();
+    const { supabase } = getSupabase()
 
     const authHeader = event.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return { statusCode: 401, body: 'Missing auth token' };
 
-    // Verify the token belongs to the newly signed-up user
-    const decoded = await admin.auth().verifyIdToken(token);
-    const uid = decoded.uid;
-    const emailFromToken = (decoded.email || '').toLowerCase();
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token)
+    if (userErr || !userData?.user) return { statusCode: 401, body: 'Invalid token' }
+    const uid = userData.user.id
+    const emailFromToken = String(userData.user.email || '').toLowerCase()
     if (!uid || !emailFromToken) return { statusCode: 400, body: 'Invalid user token' };
 
     const body = JSON.parse(event.body || '{}');
@@ -27,16 +27,14 @@ export async function handler(event) {
       return { statusCode: 403, body: 'Email mismatch' };
     }
 
-    // Write/merge user in Firestore users collection (backend authoritative)
-    const userRef = db.collection('users').doc(uid);
-    await userRef.set({
-      uid,
+    await supabase.from('users').upsert({
+      id: uid,
       email: emailFromToken,
-      fullName,
+      full_name: fullName,
       role: 'user',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
 
     // Attempt to notify admin via email if a provider is configured
     const adminEmail = process.env.SIGNUP_ADMIN_EMAIL || 'imedia786@gmail.com';
@@ -90,4 +88,3 @@ export async function handler(event) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
   }
 }
-

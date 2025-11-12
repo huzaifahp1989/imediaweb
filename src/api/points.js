@@ -1,6 +1,5 @@
 import { base44 } from "@/api/base44Client";
 import { getFirebase } from "@/api/firebase";
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Centralized helper to award points based on backend GameSettings
 // Usage: await awardPointsForGame(user, gameType, { isPerfect, fallbackScore })
@@ -24,8 +23,8 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     awarded = Math.max(min, Math.min(awarded, max));
 
     // Persist points to Firebase via Netlify function (server-side authoritative)
-    const { auth } = getFirebase();
-    const token = await auth?.currentUser?.getIdToken?.();
+    const { data: session } = await (await import('@/api/supabaseClient')).supabase.auth.getSession()
+    const token = session?.session?.access_token
     if (token) {
       const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
       try {
@@ -43,38 +42,24 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     }
 
     // Fallback: update Firestore client-side if backend not available
-    const { db, auth: fbAuth } = getFirebase();
-    const uid = fbAuth?.currentUser?.uid;
-    const email = fbAuth?.currentUser?.email || null;
-    if (db && uid) {
-      try {
-        const ref = doc(db, 'users', uid);
-        const snap = await getDoc(ref);
-        const currentPoints = Number(snap.exists() ? (snap.data()?.points || 0) : 0);
-        const maxCap = 1500;
-        const nextTotal = Math.min(currentPoints + awarded, maxCap);
-        await setDoc(ref, {
-          uid,
-          email,
-          points: nextTotal,
-          lastAward: {
-            game_type: gameType || null,
-            points_awarded: awarded,
-            perfect: isPerfect,
-            at: new Date(),
-          },
-          updatedAt: new Date(),
-          createdAt: snap.exists() ? (snap.data()?.createdAt || new Date()) : new Date(),
-        }, { merge: true });
-      } catch (_) {
-        // ignore
-      }
-    }
+    
 
     return awarded;
   } catch (error) {
     console.error("awardPointsForGame error:", error);
     // Fall back to local awarding on error
     return fallbackScore;
+  }
+}
+
+export async function checkPointsEndpointHealth() {
+  try {
+    const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
+    const res = await fetch(endpoint, { method: 'OPTIONS' });
+    if (res.ok) return true;
+    if (res.status === 405) return true;
+    return false;
+  } catch {
+    return false;
   }
 }

@@ -1,164 +1,80 @@
-// Minimal Firebase client setup. Configure env vars in `.env`:
-// VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID,
-// VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID
-// Optional: VITE_ADMIN_EMAIL for gating admin access.
+import { supabase } from '@/api/supabaseClient'
 
-import { initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-} from 'firebase/auth';
-import {
-  getFirestore,
-  initializeFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  updateDoc,
-  setDoc,
-  doc,
-  deleteDoc,
-  getDoc,
-  setLogLevel,
-} from 'firebase/firestore';
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from 'firebase/storage';
+const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() === 'true' || String(import.meta.env.VITE_USE_BACKEND || '') === '1'
 
-let app;
-let auth;
-let db;
-const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() === 'true' || String(import.meta.env.VITE_USE_BACKEND || '') === '1';
-
-const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
-
-// Initialize lazily to avoid crashing if not configured
 export function getFirebase() {
-  if (!app) {
-    // Only initialize if minimum config exists
-    if (config.apiKey && config.projectId) {
-      app = initializeApp(config);
-      auth = getAuth(app);
-      const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-      // Reduce Firestore console verbosity in dev
-      try {
-        setLogLevel(isDev ? 'error' : 'silent');
-      } catch (_) {}
-      if (isDev) {
-        try {
-          console.info('[Firebase] App/Auth initialized', {
-            projectId: config.projectId,
-          });
-        } catch (_) {
-          // no-op
+  const authWrapper = {
+    get currentUser() {
+      return {
+        get uid() {
+          return undefined
+        },
+        get email() {
+          return undefined
+        },
+        async getIdToken() {
+          const { data } = await supabase.auth.getSession()
+          return data?.session?.access_token || null
         }
       }
     }
   }
-  return { app, auth, db };
+  return { app: true, auth: authWrapper, db: null }
 }
 
-// Initialize Firestore on-demand to avoid opening long-polling Listen channels
-// on public pages that only need Auth. Call this in any function that needs `db`.
-// Disable Firestore in development mode to prevent network errors
-const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-
-export function getDb() {
-  if (isDev) {
-    throw new Error('Firestore is disabled in development mode.');
-  }
-  const { app } = getFirebase();
-  if (!app) throw new Error('Firebase not configured');
-  if (!db) {
-    db = initializeFirestore(app, {
-      experimentalAutoDetectLongPolling: true,
-      useFetchStreams: false,
-    });
-  }
-  return db;
+export async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+  return data.user
 }
 
 export async function adminSignIn(email, password) {
-  const { auth } = getFirebase();
-  if (!auth) throw new Error('Firebase not configured');
-  const cred = await signInWithEmailAndPassword(auth, email, password);
-  return cred.user;
-}
-
-// Generic user sign-in (email/password)
-export async function signIn(email, password) {
-  const { auth } = getFirebase();
-  if (!auth) throw new Error('Firebase not configured');
-  const cred = await signInWithEmailAndPassword(auth, email, password);
-  return cred.user;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+  return data.user
 }
 
 export async function adminSignOut() {
-  const { auth } = getFirebase();
-  if (!auth) return;
-  await signOut(auth);
+  await supabase.auth.signOut()
 }
 
-// Generic user sign-up (email/password)
 export async function signUp(email, password) {
-  const { auth } = getFirebase();
-  if (!auth) throw new Error('Firebase not configured');
-  const cred = await createUserWithEmailAndPassword(auth, email, password);
-  return cred.user;
+  const { data, error } = await supabase.auth.signUp({ email, password })
+  if (error) throw error
+  return data.user
 }
 
-// Save user profile details to Firestore under `users/{uid}`
 export async function saveUserProfile(uid, profile) {
-  const db = getDb();
-  const ref = doc(db, 'users', uid);
-  // Ensure the document id equals uid; merge to preserve existing fields
-  await setDoc(ref, { uid, ...(profile || {}), updatedAt: new Date() }, { merge: true });
+  const patch = { id: uid, ...(profile || {}), updated_at: new Date().toISOString() }
+  const { error } = await supabase.from('users').upsert(patch)
+  if (error) throw error
 }
 
-// Fetch a single user profile from Firestore
 export async function getUserProfile(uid) {
-  const db = getDb();
-  const ref = doc(db, 'users', uid);
-  const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
+  const { data, error } = await supabase.from('users').select('*').eq('id', uid).maybeSingle()
+  if (error) throw error
+  return data
 }
 
 export function watchAuth(callback) {
-  const { auth } = getFirebase();
-  if (!auth) return () => {};
-  return onAuthStateChanged(auth, callback);
+  const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const u = session?.user || null
+    if (u) {
+      callback({ uid: u.id, email: u.email || '' })
+    } else {
+      callback(null)
+    }
+  })
+  return () => { try { sub.subscription?.unsubscribe?.() } catch {} }
 }
 
-// Password reset helper
 export async function resetPassword(email) {
-  const { auth } = getFirebase();
-  if (!auth) throw new Error('Firebase not configured');
-  return sendPasswordResetEmail(auth, email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
+  if (error) throw error
 }
 
-// Send email verification to the currently signed-in user
 export async function sendVerification() {
-  const { auth } = getFirebase();
-  const user = auth?.currentUser;
-  if (!user) throw new Error('No authenticated user to verify');
-  await sendEmailVerification(user);
+  return
 }
 
 // Messages helpers
@@ -166,8 +82,8 @@ export const messagesApi = {
   async add(message) {
     if (useBackend) {
       try {
-        const { auth } = getFirebase();
-        const token = await auth?.currentUser?.getIdToken?.();
+        const { data: session } = await supabase.auth.getSession()
+        const token = session?.session?.access_token
         const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -181,15 +97,13 @@ export const messagesApi = {
         console.warn('Backend add failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const db = getDb();
-    const col = collection(db, 'messages');
-    return addDoc(col, message);
+    return { ok: false }
   },
   async list() {
     if (useBackend) {
       try {
-        const { auth } = getFirebase();
-        const token = await auth?.currentUser?.getIdToken?.();
+        const { data: session } = await supabase.auth.getSession()
+        const token = session?.session?.access_token
         const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
         const res = await fetch(endpoint, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -201,17 +115,13 @@ export const messagesApi = {
         console.warn('Backend list failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const db = getDb();
-    const col = collection(db, 'messages');
-    const q = query(col, orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return []
   },
   async markRead(id, read = true) {
     if (useBackend) {
       try {
-        const { auth } = getFirebase();
-        const token = await auth?.currentUser?.getIdToken?.();
+        const { data: session } = await supabase.auth.getSession()
+        const token = session?.session?.access_token
         const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
         const res = await fetch(endpoint, {
           method: 'PATCH',
@@ -225,9 +135,7 @@ export const messagesApi = {
         console.warn('Backend markRead failed, falling back to Firestore:', e?.message || e);
       }
     }
-    const db = getDb();
-    const ref = doc(db, 'messages', id);
-    await updateDoc(ref, { read });
+    return { ok: false }
   },
 };
 
@@ -237,8 +145,8 @@ export const usersApi = {
     // Try backend (requires VITE_USE_BACKEND and admin auth token)
     if (useBackend) {
       try {
-        const { auth } = getFirebase();
-        const token = await auth?.currentUser?.getIdToken?.();
+        const { data: session } = await supabase.auth.getSession()
+        const token = session?.session?.access_token
         const endpoint = import.meta.env?.DEV ? '/.netlify/functions/users' : '/api/users';
         const res = await fetch(endpoint, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -250,11 +158,7 @@ export const usersApi = {
         console.warn('Backend users list failed, falling back to Firestore:', e?.message || e);
       }
     }
-    // Fallback: read directly from Firestore (requires admin read in rules)
-    const db = getDb();
-    const col = collection(db, 'users');
-    const snap = await getDocs(col);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return []
   }
 };
 
@@ -345,27 +249,16 @@ export const sponsorsApi = {
 
 // Upload an image file to Firebase Storage and return a public download URL
 export async function uploadSponsorImage(file, name = '') {
-  const { app } = getFirebase();
-  if (!app) throw new Error('Firebase not configured');
-  if (!file) throw new Error('No file provided');
-
-  const storage = getStorage(app);
-  const safeName = String(name || file.name || 'image').replace(/[^a-z0-9._-]+/gi, '-').toLowerCase();
-  const path = `sponsors/${Date.now()}_${safeName}`;
-  const ref = storageRef(storage, path);
-  await uploadBytes(ref, file);
-  const url = await getDownloadURL(ref);
-  return { url, path };
+  throw new Error('Not supported')
 }
 
 // Utility: check if current user is the admin email in env
 export async function isAdminUser() {
-  const { auth } = getFirebase();
-  const user = auth?.currentUser;
-  if (!user) return false;
+  const { data: session } = await supabase.auth.getSession()
+  const user = session?.session?.user
+  if (!user) return false
   const adminEmail = String(import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase();
   const email = String(user.email || '').toLowerCase();
-  // If admin email is configured, require exact match; otherwise allow any authenticated user
-  return adminEmail ? email === adminEmail : true;
+  return adminEmail ? email === adminEmail : true
 }
-
+

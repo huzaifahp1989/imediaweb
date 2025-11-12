@@ -8,6 +8,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { watchAuth, getUserProfile, getFirebase } from "@/api/firebase";
+import { checkPointsEndpointHealth } from "@/api/points";
 
 // Lazy load game components
 const WordScrambleGame = lazy(() => import("../components/games/WordScrambleGame"));
@@ -148,19 +150,36 @@ export default function Games() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [backendOnline, setBackendOnline] = useState(false);
   const [showMonthlyLeaderboard, setShowMonthlyLeaderboard] = useState(false);
 
   useEffect(() => {
-    // Local-only authentication logic
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
-    }
-    setIsLoading(false);
+    let unsubscribe = () => {};
+    (async () => {
+      try { setBackendOnline(await checkPointsEndpointHealth()); } catch {}
+      unsubscribe = watchAuth(async (fbUser) => {
+        if (fbUser) {
+          setIsAuthenticated(true);
+          try {
+            const profile = await getUserProfile(fbUser.uid);
+            setUser({ id: fbUser.uid, email: fbUser.email || '', points: Number(profile?.points || 0), full_name: profile?.fullName || 'Anonymous', badges: profile?.badges || [] });
+          } catch {
+            setUser({ id: fbUser.uid, email: fbUser.email || '', points: 0, full_name: 'Anonymous', badges: [] });
+          }
+        } else {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            setIsAuthenticated(true);
+            setUser(JSON.parse(storedUser));
+          } else {
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        }
+        setIsLoading(false);
+      });
+    })();
+    return () => { try { unsubscribe && unsubscribe(); } catch {} };
   }, [navigate]);
 
   const { data: monthlyLeaderboard = [] } = useQuery({
@@ -216,28 +235,32 @@ export default function Games() {
   };
 
   const handleGameComplete = async (score) => {
+    const { auth } = getFirebase();
+    const fbUser = auth?.currentUser;
     if (isAuthenticated && user && selectedGame) {
-      try {
-        // Save score to localStorage
-        const gameScores = JSON.parse(localStorage.getItem('gameScores') || '[]');
-        gameScores.push({
-          user_id: user.id,
-          game_type: selectedGame.id,
-          score: score,
-          created_date: new Date().toISOString()
-        });
-        localStorage.setItem('gameScores', JSON.stringify(gameScores));
-        // Update user points
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const idx = users.findIndex(u => u.id === user.id);
-        let newTotalPoints = Math.min((user.points || 0) + score, 1500);
-        if (idx !== -1) {
-          users[idx].points = newTotalPoints;
-          localStorage.setItem('users', JSON.stringify(users));
+      if (fbUser) {
+        setTimeout(async () => {
+          try {
+            const profile = await getUserProfile(fbUser.uid);
+            setUser(prev => ({ ...prev, points: Number(profile?.points || prev?.points || 0) }));
+          } catch {}
+        }, 1200);
+      } else {
+        try {
+          const gameScores = JSON.parse(localStorage.getItem('gameScores') || '[]');
+          gameScores.push({ user_id: user.id, game_type: selectedGame.id, score: score, created_date: new Date().toISOString() });
+          localStorage.setItem('gameScores', JSON.stringify(gameScores));
+          const users = JSON.parse(localStorage.getItem('users') || '[]');
+          const idx = users.findIndex(u => u.id === user.id);
+          let newTotalPoints = Math.min((user.points || 0) + score, 1500);
+          if (idx !== -1) {
+            users[idx].points = newTotalPoints;
+            localStorage.setItem('users', JSON.stringify(users));
+          }
+          setUser(prevUser => ({ ...prevUser, points: newTotalPoints }));
+        } catch (error) {
+          console.error("Error saving game score:", error);
         }
-        setUser(prevUser => ({ ...prevUser, points: newTotalPoints }));
-      } catch (error) {
-        console.error("Error saving game score:", error);
       }
     }
     setTimeout(() => setSelectedGame(null), 3000);
@@ -301,6 +324,9 @@ export default function Games() {
               ? " Each game earns you 10 points." 
               : " Email us at imediac786@gmail.com to create your account and track your progress!"}
           </p>
+          <div className="mt-2 text-sm text-gray-500">
+            Backend: {backendOnline ? <span className="text-green-600 font-semibold">Online</span> : <span className="text-red-600 font-semibold">Offline</span>}
+          </div>
         </motion.div>
 
         {/* Guest User Prompt - Encourage signup */}
@@ -521,7 +547,7 @@ export default function Games() {
             </div>
             <div>
               <Star className="w-8 h-8 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{user?.points || 0}</div>
+              <div className="text-2xl font-bold">{Number(user?.points || 0)}</div>
               <div className="text-sm text-blue-100">Your Points</div>
             </div>
             <div>

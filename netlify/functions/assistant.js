@@ -1,4 +1,4 @@
-import { getAdmin } from './_firebaseAdmin.js';
+import { getSupabase } from './_supabaseAdmin.js'
 
 export async function handler(event) {
   try {
@@ -6,9 +6,9 @@ export async function handler(event) {
       return { statusCode: 405, body: 'Method Not Allowed' };
     }
     // Initialize Firebase Admin. If credentials are missing, attempt OpenAI reply in local dev
-    let admin;
+    let supabase;
     try {
-      ({ admin } = getAdmin());
+      ({ supabase } = getSupabase());
     } catch (initErr) {
       const apiKey = process.env.OPENAI_API_KEY || '';
       const body = JSON.parse(event.body || '{}');
@@ -106,8 +106,9 @@ export async function handler(event) {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return { statusCode: 401, body: 'Missing auth token' };
 
-    const decoded = await admin.auth().verifyIdToken(token);
-    const email = (decoded.email || '').toLowerCase();
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token)
+    if (userErr || !userData?.user) return { statusCode: 401, body: 'Invalid token' }
+    const email = String(userData.user.email || '').toLowerCase()
     if (!email) return { statusCode: 403, body: 'Forbidden' };
     const adminEmail = String(process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase();
     if (adminEmail && email !== adminEmail) {
