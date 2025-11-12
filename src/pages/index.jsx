@@ -110,6 +110,7 @@ import Assistant from "./Assistant";
 import CompleteProfile from "./CompleteProfile";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import Landing from "./Landing";
 
 const PAGES = {
     
@@ -251,10 +252,11 @@ function PagesContent() {
         <Layout currentPageName={currentPage}>
             <Routes>            
                 
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<Landing />} />
                 
                 
                 <Route path="/Home" element={<Home />} />
+                <Route path="/kids" element={<Home />} />
                 
                 <Route path="/Games" element={<Games />} />
                 <Route path="/games" element={<Games />} />
@@ -380,7 +382,7 @@ function PagesContent() {
                 {/* Assistant routes: bypass guard in local dev for faster testing */}
                 <Route path="/Assistant" element={assistantElement} />
                 <Route path="/assistant" element={assistantElement} />
-                <Route path="*" element={<Home />} />
+                <Route path="*" element={<Landing />} />
             </Routes>
         </Layout>
     );

@@ -161,7 +161,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const baseNavItems = [
-    { name: "Home", icon: Home, path: "Home" },
+    { name: "Kids Home", icon: Home, path: "Home" },
     { name: "Games", icon: Gamepad2, path: "Games" },
     { name: "Leaderboard", icon: Trophy, path: "Leaderboard" },
     { name: "Stories", icon: BookOpen, path: "Stories" },
