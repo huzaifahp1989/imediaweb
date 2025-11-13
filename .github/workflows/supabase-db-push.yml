@@ -1,0 +1,28 @@
+name: Supabase Migrations
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  db-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Supabase CLI
+        run: npm i -g supabase
+      - name: Supabase Login
+        run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+      - name: Supabase Link
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+      - name: Push Migrations
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push

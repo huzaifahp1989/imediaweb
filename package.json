@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:docs": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/imediaweb/'; vite build --outDir docs; Copy-Item -Path 'docs/index.html' -Destination 'docs/404.html' -Force\"",
+    "build:docs-domain": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/'; vite build --outDir docs; Copy-Item -Path 'docs/index.html' -Destination 'docs/404.html' -Force\"",
     "preview:docs": "vite preview --outDir docs",
     "predeploy": "npm run build:gh-domain",
     "deploy": "gh-pages -d dist --cname imediackids.com",
