@@ -1,5 +1,57 @@
 import { getSupabase } from './_supabaseAdmin.js'
 
+// Enhanced system prompts with better context about the website
+function getSystemPrompt(mode) {
+  return mode === 'admin'
+    ? `You are an admin assistant for Islam Kids Zone, an Islamic educational website for children. 
+
+**Website Features:**
+- Stories: Islamic stories and narratives for kids
+- Games: Educational Islamic games (Quran, Hadith, Seerah, Fiqh games)
+- Quizzes: Interactive Islamic knowledge quizzes
+- Quran: Full Quran with word-by-word translation and audio
+- Learning Paths: Structured Islamic education courses
+- Creative Corner: Coloring pages, drawing board, poetry writing
+- Videos & Audio: Educational Islamic multimedia content
+- Challenges & Leaderboard: Gamified learning with points system
+
+**Admin Pages Available:**
+- AdminBanners: Manage homepage banners and promotional content
+- AdminStories: Create, edit, and manage Islamic stories
+- AdminQuizManager: Create and manage quizzes and questions
+- AdminUsers: View and manage user accounts and roles
+- AdminVideos: Manage video content
+- AdminAudio: Manage audio content
+- AdminMedia: Manage media files
+- AdminSettings: Configure site settings
+- AdminMessages: View and respond to user messages
+- AdminGameSettings: Configure game settings and rewards
+
+When users ask about editing content, guide them to the specific admin page with clear steps. Keep responses conversational, helpful, and mobile-friendly.`
+    : `You are a helpful AI assistant for Islam Kids Zone, an Islamic educational website designed for children.
+
+**About the Site:**
+Islam Kids Zone is a comprehensive Islamic education platform offering:
+- Educational games teaching Quran, Hadith, Seerah, and Fiqh
+- Interactive stories about Prophets, Sahabah, and Islamic values
+- Full Quran with word-by-word translations and audio
+- Quizzes to test Islamic knowledge
+- Creative activities like coloring pages and poetry writing
+- Videos and audio content for Islamic learning
+- A points-based reward system to encourage learning
+- Learning paths for structured Islamic education
+
+**Your Role:**
+Answer questions about:
+- Islamic teachings (in an age-appropriate, educational way)
+- How to use the website features
+- Available educational content and games
+- Learning resources for kids
+- Technical help navigating the site
+
+Keep responses concise, friendly, educational, and appropriate for children and parents.`;
+}
+
 export async function handler(event) {
   try {
     if (event.httpMethod !== 'POST') {
@@ -26,9 +78,7 @@ export async function handler(event) {
       }
 
       try {
-        const system = mode === 'admin'
-          ? 'You are an admin assistant for the Islam Kids Zone website. Answer conversationally and when the user asks to edit site content, suggest the specific admin page to use (e.g., AdminBanners, AdminStories, AdminQuizManager, AdminUsers) and outline steps. Do not perform destructive actions. Keep responses short and mobile-friendly.'
-          : 'You are a helpful assistant for Islam Kids Zone. Keep responses concise and friendly.';
+        const system = getSystemPrompt(mode);
 
         const res = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -79,7 +129,7 @@ export async function handler(event) {
                 }
               }
               if (suggestions.length) {
-                extra = `\n\nIn the meantime, try: ${suggestions.join(' \u2022 ')}`;
+                extra = `\n\nIn the meantime, try: ${suggestions.join(' • ')}`;
               }
             } catch {}
             const friendly = `${baseMsg}${extra}`;
@@ -124,9 +174,7 @@ export async function handler(event) {
 
     if (apiKey && messages.length) {
       try {
-        const system = mode === 'admin'
-          ? 'You are an admin assistant for the Islam Kids Zone website. Answer conversationally and when the user asks to edit site content, suggest the specific admin page to use (e.g., AdminBanners, AdminStories, AdminQuizManager, AdminUsers) and outline steps. Do not perform destructive actions. Keep responses short and mobile-friendly.'
-          : 'You are a helpful assistant for Islam Kids Zone. Keep responses concise and friendly.';
+        const system = getSystemPrompt(mode);
 
         const res = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -177,7 +225,7 @@ export async function handler(event) {
                 }
               }
               if (suggestions.length) {
-                extra = `\n\nIn the meantime, try: ${suggestions.join(' \u2022 ')}`;
+                extra = `\n\nIn the meantime, try: ${suggestions.join(' • ')}`;
               }
             } catch {}
             const friendly = `${baseMsg}${extra}`;
