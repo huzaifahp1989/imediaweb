@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import PropTypes from 'prop-types';
 import { watchAuth, getUserProfile } from "@/api/firebase";
 // Base44 auth removed from public UI; email-only access in place
@@ -166,6 +167,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Leaderboard", icon: Trophy, path: "Leaderboard" },
     { name: "Stories", icon: BookOpen, path: "Stories" },
     { name: "Videos", icon: Video, path: "Videos" },
+    { name: "Kids Recording Studio", icon: Radio, path: "KidsRecordingStudio" },
     {
       name: "Learn",
       icon: GraduationCap,
@@ -173,6 +175,7 @@ export default function Layout({ children, currentPageName }) {
         { name: "Hadith", path: "Hadith", icon: BookOpen },
         { name: "History", path: "History", icon: Book },
         { name: "Tajweed", path: "Tajweed", icon: GraduationCap },
+        { name: "99 Names of Allah", path: "LearningLibrary", icon: Star },
       ]
     },
     {
@@ -185,7 +188,6 @@ export default function Layout({ children, currentPageName }) {
         { name: "Hifz Dashboard", path: "HifzDashboard", icon: BarChart2 },
       ]
     },
-    { name: "Challenges", icon: Trophy, path: "Challenges" },
     { name: "Parents", icon: Users, path: "ParentZone" },
     { name: "Signup", icon: UserPlus, path: "Signup" },
     { name: "About", icon: Info, path: "About" },
@@ -215,6 +217,29 @@ export default function Layout({ children, currentPageName }) {
   const toggleDropdown = (itemName) => {
     setOpenDropdown(openDropdown === itemName ? null : itemName);
   };
+
+  const [menuQuery, setMenuQuery] = useState("");
+  const normalizedQuery = menuQuery.trim().toLowerCase();
+  const kidsNames = ["Kids Home", "Games", "Stories", "Videos", "Leaderboard"];
+  const quranItem = navItemsWithPrivacy.find((i) => i.name === "Quran");
+  const learnItem = navItemsWithPrivacy.find((i) => i.name === "Learn");
+  const baseLinks = navItemsWithPrivacy.filter((i) => !i.dropdown && !i.external && i.name !== "Quran" && i.name !== "Learn");
+  const kidsLinks = baseLinks.filter((i) => kidsNames.includes(i.name));
+  const moreLinks = baseLinks.filter((i) => !kidsNames.includes(i.name));
+  const externalLinks = navItemsWithPrivacy.filter((i) => i.external);
+  const groups = [
+    { title: "Kids", entries: kidsLinks },
+    { title: "Quran", entries: quranItem?.dropdown || [] },
+    { title: "Learn", entries: learnItem?.dropdown || [] },
+    { title: "More", entries: [...moreLinks, ...externalLinks] },
+  ];
+  const flatEntries = [
+    ...kidsLinks,
+    ...((quranItem?.dropdown || []).map((e) => ({ ...e, _isSub: true }))),
+    ...((learnItem?.dropdown || []).map((e) => ({ ...e, _isSub: true }))),
+    ...moreLinks,
+    ...externalLinks,
+  ];
 
   const radioContextValue = {
     isPlaying,
@@ -257,7 +282,9 @@ export default function Layout({ children, currentPageName }) {
                           <User className="w-4 h-4" />
                           <div className="text-sm text-left">
                             <div className="font-semibold">{user.full_name || 'User'}</div>
-                            <div className="text-xs text-blue-100">{user.points || 0} points</div>
+                            <div className="text-lg font-bold text-amber-600 mb-1">
+                              ⭐ {user.points || 0} points
+                            </div>
                           </div>
                           <ChevronDown className="w-4 h-4" />
                         </button>
@@ -391,8 +418,8 @@ export default function Layout({ children, currentPageName }) {
               onClick={() => setMobileMenuOpen(false)}
             />
             
-            <div className="absolute top-0 right-0 h-full w-[280px] bg-white shadow-2xl overflow-y-auto z-[1001]">
-              <div className="p-4">
+            <div className="absolute top-0 right-0 h-full w-[85vw] max-w-[360px] bg-white shadow-2xl overflow-y-auto z-[1001]">
+              <div className="p-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900">Menu</h2>
                   <Button
@@ -414,7 +441,7 @@ export default function Layout({ children, currentPageName }) {
                       <div className="flex-1">
                         <div className="font-bold text-gray-900">{user.full_name || 'User'}</div>
                         <div className="text-sm text-gray-600">{user.email}</div>
-                        <div className="text-xs text-blue-600 font-semibold mt-1">
+                        <div className="text-lg font-bold text-amber-600 mb-1">
                           ⭐ {user.points || 0} points
                         </div>
                       </div>
@@ -459,57 +486,82 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                 )}
 
-                <nav className="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center py-4">
-                  {navItemsWithPrivacy.map((item) => {
-                    // External link (e.g., Privacy Policy)
-                    if (item.external) {
-                      const Icon = item.icon;
-                      return (
-                        <a
-                          key={item.name}
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
-                        >
-                          {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
-                          {item.name}
-                        </a>
-                      );
-                    }
+                <div className="mb-3">
+                  <Input
+                    value={menuQuery}
+                    onChange={(e) => setMenuQuery(e.target.value)}
+                    placeholder="Search menu"
+                  />
+                </div>
 
-                    // Items with dropdown (e.g., Quran) -> expand into sub-links in side menu
-                    if (item.dropdown && item.dropdown.length > 0) {
-                      return item.dropdown.map((subItem) => {
-                        const SubIcon = subItem.icon;
+                <nav className="flex flex-col gap-2 py-4">
+                  {normalizedQuery ? (
+                    flatEntries
+                      .filter((it) => it.name?.toLowerCase().includes(normalizedQuery))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        if (item.url) {
+                          return (
+                            <a
+                              key={`ext-${item.name}`}
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                            >
+                              {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
+                              {item.name}
+                            </a>
+                          );
+                        }
                         return (
                           <Link
-                            key={`${item.name}-${subItem.path}`}
-                            to={createPageUrl(subItem.path)}
+                            key={`link-${item.name}`}
+                            to={createPageUrl(item.path)}
                             onClick={handleMobileLinkClick}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
                           >
-                            {SubIcon ? <SubIcon className="w-5 h-5 text-blue-600" /> : null}
-                            {subItem.name}
+                            {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
+                            {item.name}
                           </Link>
                         );
-                      });
-                    }
-
-                    // Regular nav item
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.name}
-                        to={createPageUrl(item.path)}
-                        onClick={handleMobileLinkClick}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
-                      >
-                        {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
-                        {item.name}
-                      </Link>
-                    );
-                  })}
+                      })
+                  ) : (
+                    groups.map((group) => (
+                      <div key={group.title} className="flex flex-col gap-2">
+                        <div className="px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">{group.title}</div>
+                        {group.entries.map((item) => {
+                          if (item.url) {
+                            const Icon = item.icon;
+                            return (
+                              <a
+                                key={`ext-${group.title}-${item.name}`}
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                              >
+                                {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
+                                {item.name}
+                              </a>
+                            );
+                          }
+                          const Icon = item.icon;
+                          return (
+                            <Link
+                              key={`link-${group.title}-${item.name}`}
+                              to={createPageUrl(item.path)}
+                              onClick={handleMobileLinkClick}
+                              className="flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium text-gray-800 bg-white hover:bg-blue-100 shadow transition-all duration-150"
+                            >
+                              {Icon ? <Icon className="w-5 h-5 text-blue-600" /> : null}
+                              {item.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ))
+                  )}
                 </nav>
               </div>
             </div>

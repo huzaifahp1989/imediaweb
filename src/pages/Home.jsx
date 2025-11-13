@@ -13,6 +13,21 @@ import { useRadio } from "@/pages/Layout";
 
 const features = [
   {
+    title: "Arabic Learning",
+    description: "Learn Arabic letters, vocabulary and pronunciation",
+    icon: GraduationCap,
+    link: "ArabicLearning",
+    color: "from-indigo-600 to-violet-500"
+  },
+  {
+    title: "99 Names of Allah",
+    description: "Asma’ul Husna with meanings and audio",
+    icon: Star,
+    link: "LearningLibrary",
+    query: "?section=names",
+    color: "from-purple-600 to-indigo-500"
+  },
+  {
     title: "Full Quran",
     description: "Read and learn the full Qur'an",
     icon: BookOpen,
@@ -459,7 +474,7 @@ export default function Home() {
                 transition={{ delay: 0.1 * index }}
                 whileHover={{ scale: 1.05 }}
               >
-                <Link to={createPageUrl(feature.link)}>
+                <Link to={feature.query ? (createPageUrl(feature.link) + feature.query) : createPageUrl(feature.link)}>
                   <Card className="h-full hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 hover:border-purple-300">
                     <CardContent className="p-6 text-center">
                       <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${feature.color} flex items-center justify-center`}>

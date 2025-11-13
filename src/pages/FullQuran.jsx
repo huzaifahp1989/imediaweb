@@ -222,6 +222,8 @@ export default function FullQuran() {
   const [pendingJuzAutoplay, setPendingJuzAutoplay] = useState(false);
   const [isJuzSequence, setIsJuzSequence] = useState(false);
   const [juzPlayIndex, setJuzPlayIndex] = useState(null);
+  const [isSurahSequence, setIsSurahSequence] = useState(false);
+  const [surahPlayIndex, setSurahPlayIndex] = useState(null);
   const [sajdaSet, setSajdaSet] = useState(new Set());
   const [selectedQuarter, setSelectedQuarter] = useState(null); // 1..8 within a Juz
 
@@ -298,40 +300,43 @@ export default function FullQuran() {
   // Highlight state for QA: which verse to visually emphasize after deep-link scroll
   const [highlightVerse, setHighlightVerse] = useState(null);
 
-  // New state to manage the currently playing Audio object
-  const [currentAudio, setCurrentAudio] = useState(null);
+  const audioRef = useRef(null);
   const isStartingRef = useRef(false);
 
   // Function to stop any currently playing audio
   const stopCurrentAudio = () => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0; // Reset audio to beginning
-      setCurrentAudio(null); // Clear the reference
+    const a = audioRef.current;
+    if (a) {
+      try { a.pause(); } catch {}
+      try { a.currentTime = 0; } catch {}
+      a.src = '';
       setIsPlaying(false);
     }
     setIsJuzSequence(false);
     setJuzPlayIndex(null);
+    setIsSurahSequence(false);
+    setSurahPlayIndex(null);
   };
 
   // Enhanced stop function that preserves the current position for resume
   const stopAudioAndPreservePosition = () => {
-    if (currentAudio) {
-      currentAudio.pause();
-      // Don't reset currentTime - preserve position for resume
-      setCurrentAudio(null);
+    const a = audioRef.current;
+    if (a) {
+      try { a.pause(); } catch {}
       setIsPlaying(false);
     }
     // Keep juzPlayIndex for resume functionality
     setIsJuzSequence(false);
   };
 
-  // Cleanup audio on component unmount
   useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
     return () => {
       stopCurrentAudio();
     };
-  }, [currentAudio]); // Dependency ensures cleanup for the specific audio instance
+  }, []);
 
   // Load Sajda list once
   useEffect(() => {
@@ -562,23 +567,25 @@ export default function FullQuran() {
     }
     isStartingRef.current = true;
     try {
-      stopCurrentAudio(); // Stop any currently playing audio
-      const audio = new Audio(audioUrl);
-      audio.loop = repeat;
-      setCurrentAudio(audio); // Store the audio object in state
-
-      await audio.play();
+      stopCurrentAudio();
+      const a = audioRef.current;
+      if (!a) {
+        isStartingRef.current = false;
+        return;
+      }
+      a.loop = repeat;
+      a.src = audioUrl;
+      await a.play();
       setIsPlaying(true);
       setPlayingVerseNumber(verseNumber);
 
-      audio.onended = () => {
+      a.onended = () => {
         if (typeof onEnded === "function") {
           onEnded();
           return;
         }
         if (!repeat) {
           setIsPlaying(false);
-          setCurrentAudio(null);
           setPlayingVerseNumber(null);
         }
       };
@@ -597,29 +604,59 @@ export default function FullQuran() {
     }
   };
 
-  const playFullSurahAudio = () => {
+  const playFullSurahAudio = async () => {
     if (!selectedReciter || !selectedSurah) {
       toast.error("Please select a Surah and Reciter first.");
       return;
     }
     const surahNumber = selectedSurah.number.toString().padStart(3, "0");
-    const audioUrl = `${selectedReciter.url}${surahNumber}.mp3`;
-    handlePlayAudio(audioUrl);
+    const primary = `${selectedReciter.url}${surahNumber}.mp3`;
+    let url = primary;
+    let ok = true;
+    try {
+      const res = await fetch(primary, { method: 'HEAD' });
+      ok = !!res.ok;
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      const fallbackReciter = reciters.find(r => r.id === 'alafasy');
+      if (fallbackReciter) {
+        const fb = `${fallbackReciter.url}${surahNumber}.mp3`;
+        url = fb;
+      }
+    }
+    handlePlayAudio(url);
   };
 
   const pauseAudio = () => {
     // Stop current audio, but preserve juzPlayIndex so we can resume later
     stopCurrentAudio();
     setIsJuzSequence(false);
+    setIsSurahSequence(false);
   };
 
   const toggleRepeat = () => {
     const next = !repeat;
     setRepeat(next);
-    if (currentAudio) currentAudio.loop = next;
+    if (audioRef.current) audioRef.current.loop = next;
   };
 
   const onPlayVerse = (verse) => {
+    if (isJuzMode && Array.isArray(juzVerses) && juzVerses.length > 0) {
+      const idx = juzVerses.findIndex(v => v.surahNumber === verse.surahNumber && v.numberInSurah === verse.numberInSurah);
+      if (idx >= 0) {
+        startJuzSequenceAt(idx);
+        return;
+      }
+    }
+    if (!isJuzMode && Array.isArray(surahVerses) && surahVerses.length > 0) {
+      const idx = surahVerses.findIndex(v => v.numberInSurah === verse.numberInSurah);
+      if (idx >= 0) {
+        startSurahSequenceAt(idx);
+        return;
+      }
+    }
     if (verse?.audio) {
       handlePlayAudio(verse.audio, verse.numberInSurah);
     } else {
@@ -688,13 +725,62 @@ export default function FullQuran() {
 
       setPlayingVerseNumber(verse.numberInSurah);
       if (verse.audio) {
-        // Preferred: play verse-level audio if available
         handlePlayAudio(verse.audio, verse.numberInSurah, onVerseEnded);
       } else {
-        // Fallback: play full surah audio for this verse's surah
         const surahNumberStr = String(verse.surahNumber).padStart(3, "0");
         const surahAudioUrl = `${selectedReciter.url}${surahNumberStr}.mp3`;
-        toast.info(`Verse-level audio unavailable; playing Surah ${verse.surahNumber} audio as fallback.`);
+        handlePlayAudio(surahAudioUrl, verse.numberInSurah, onVerseEnded);
+      }
+    };
+
+    playAtIndex(startIdx);
+  };
+
+  // Surah sequence playback starting at given index
+  const startSurahSequenceAt = (startIdx = 0) => {
+    if (isJuzMode) return; // only for Surah mode
+    if (!selectedSurah) {
+      toast.error("Please select a Surah first.");
+      return;
+    }
+    if (!surahVerses || surahVerses.length === 0) {
+      toast.error("No ayat loaded for this Surah yet. Please wait or reselect the Surah.");
+      return;
+    }
+    setIsSurahSequence(true);
+    setSurahPlayIndex(startIdx);
+
+    const playAtIndex = (idx) => {
+      const verse = surahVerses[idx];
+      if (!verse) {
+        setIsSurahSequence(false);
+        setPlayingVerseNumber(null);
+        setCurrentAudio(null);
+        setIsPlaying(false);
+        return;
+      }
+
+      const onVerseEnded = () => {
+        if (repeat) return; // audio.loop handles repeat
+        const next = idx + 1;
+        if (next < surahVerses.length) {
+          setSurahPlayIndex(next);
+          playAtIndex(next);
+        } else {
+          setIsSurahSequence(false);
+          setPlayingVerseNumber(null);
+          setCurrentAudio(null);
+          setIsPlaying(false);
+        }
+      };
+
+      setPlayingVerseNumber(verse.numberInSurah);
+      if (verse.audio) {
+        handlePlayAudio(verse.audio, verse.numberInSurah, onVerseEnded);
+      } else {
+        const surahNumberStr = String(selectedSurah.number).padStart(3, "0");
+        const surahAudioUrl = `${selectedReciter.url}${surahNumberStr}.mp3`;
+        toast.info("Verse-level audio unavailable; playing full surah audio as fallback.");
         handlePlayAudio(surahAudioUrl, verse.numberInSurah, onVerseEnded);
       }
     };
@@ -704,6 +790,19 @@ export default function FullQuran() {
 
   const playJuzFromStart = () => {
     startJuzSequenceAt(0);
+  };
+
+  const stopJuzSequence = () => {
+    setIsJuzSequence(false);
+    stopCurrentAudio();
+  };
+
+  const resumeJuzSequence = () => {
+    if (juzPlayIndex != null) {
+      startJuzSequenceAt(juzPlayIndex);
+    } else {
+      toast.info("No Juz position to resume.");
+    }
   };
 
   const handleReciterChange = (reciter) => {
@@ -907,7 +1006,7 @@ export default function FullQuran() {
                       if (verse) {
                         const ref = verseRefs.current[verse.numberInSurah];
                         if (ref && ref.scrollIntoView) ref.scrollIntoView({ behavior: "smooth", block: "center" });
-                        onPlayVerse(verse);
+                        startJuzSequenceAt(idx);
                       }
                     }} disabled={!selectedJuz}>
                       <SelectTrigger className="w-full">

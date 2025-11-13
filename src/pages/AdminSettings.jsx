@@ -232,6 +232,24 @@ export default function AdminSettings() {
                     onChange={(e) => setSettings({ ...settings, radioUrl: e.target.value })}
                   />
                 </div>
+                <div className="space-y-3 md:col-span-2">
+                  <Label>Asma Audio Base URL (99 Names)</Label>
+                  <Input
+                    value={settings.asmaAudioBase || ''}
+                    onChange={(e) => setSettings({ ...settings, asmaAudioBase: e.target.value })}
+                    placeholder="e.g., /asma/ or https://cdn.example.com/asma/"
+                  />
+                  <p className="text-xs text-gray-500">Folder containing 1.mp3 .. 99.mp3. For local hosting, place files under <code>public/asma/</code> and set to <code>/asma/</code>. For GitHub Pages, use the full URL.</p>
+                </div>
+                <div className="space-y-3 md:col-span-2">
+                  <Label>Asma Combined URL (single MP3)</Label>
+                  <Input
+                    value={settings.asmaCombinedUrl || ''}
+                    onChange={(e) => setSettings({ ...settings, asmaCombinedUrl: e.target.value })}
+                    placeholder="e.g., https://.../lyric-99-names.mp3"
+                  />
+                  <p className="text-xs text-gray-500">If you have one MP3 with all names, paste it here. The app will play segments using timestamps when Professional Audio is off.</p>
+                </div>
                 <div className="space-y-3">
                   <Label>Maintenance Mode</Label>
                   <div className="flex items-center gap-3">

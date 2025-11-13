@@ -116,19 +116,17 @@ export default function Hadith() {
   });
   const [currentWeekHadith, setCurrentWeekHadith] = useState(null);
 
-  // Get week number of the year
-  const getWeekNumber = () => {
+  const getDayOfYear = () => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
+    const start = new Date(now.getFullYear(), 0, 0);
     const diff = now - start;
-    const oneWeek = 1000 * 60 * 60 * 24 * 7;
-    return Math.floor(diff / oneWeek);
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
   };
 
   useEffect(() => {
-    // Rotate hadith based on week number
-    const weekNumber = getWeekNumber();
-    const hadithIndex = weekNumber % weeklyHadiths.length;
+    const dayNum = getDayOfYear();
+    const hadithIndex = dayNum % weeklyHadiths.length;
     setCurrentWeekHadith(weeklyHadiths[hadithIndex]);
   }, []);
 
@@ -182,7 +180,7 @@ export default function Hadith() {
             Hadith Library
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Learn authentic hadiths from Prophet Muhammad (ﷺ) - Changes every week!
+            Learn authentic hadiths from Prophet Muhammad (ﷺ) - Changes every day!
           </p>
         </motion.div>
 
@@ -197,10 +195,10 @@ export default function Hadith() {
               <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                 <CardTitle className="text-2xl flex items-center gap-2 justify-center">
                   <Star className="w-6 h-6" />
-                  Hadith of This Week
+                  Hadith of Today
                   <Star className="w-6 h-6" />
                 </CardTitle>
-                <p className="text-center text-amber-100 text-sm mt-2">Changes every Monday!</p>
+                <p className="text-center text-amber-100 text-sm mt-2">Updates daily</p>
               </CardHeader>
               <CardContent className="p-8">
                 {/* Arabic Text */}

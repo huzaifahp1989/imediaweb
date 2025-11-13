@@ -6,12 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:gh": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/imediaweb/'; vite build; Copy-Item -Path 'dist/index.html' -Destination 'dist/404.html' -Force\"",
+    "build:gh-domain": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/'; vite build; Copy-Item -Path 'dist/index.html' -Destination 'dist/404.html' -Force\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "build:docs": "powershell -NoProfile -Command \"$env:VITE_BASE_PATH='/imediaweb/'; vite build --outDir docs; Copy-Item -Path 'docs/index.html' -Destination 'docs/404.html' -Force\"",
     "preview:docs": "vite preview --outDir docs",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "predeploy": "npm run build:gh-domain",
+    "deploy": "gh-pages -d dist --cname imediackids.com",
+    "predeploy:gh": "npm run build:gh",
+    "deploy:gh": "gh-pages -d dist",
+    "predeploy:docs": "npm run build:docs",
+    "deploy:docs": "gh-pages -d docs",
+    "split:asma": "node scripts/split-asma-audio.js"
   },
   "dependencies": {
     "@base44/sdk": "^0.1.2",

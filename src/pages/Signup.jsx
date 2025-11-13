@@ -3,18 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { signUp, saveUserProfile, resetPassword, getFirebase, sendVerification } from "@/api/firebase";
 
 // Simple, dependency-free signup form that:
-// 1) Prefills an email to imedia786@gmail.com with all submitted details
+// 1) Creates account with just name, email and password
 // 2) Optionally posts the submission to a Google Sheet via an Apps Script Web App endpoint
 //    - Configure: VITE_GOOGLE_APPS_SCRIPT_URL in your .env (e.g., https://script.google.com/macros/s/AKfycb.../exec)
-//    - Payload: { fullName, age, city, madrasah, email, submittedAt }
+//    - Payload: { fullName, email, submittedAt }
 
 export default function Signup() {
   const [fullName, setFullName] = useState("");
-  const [age, setAge] = useState("");
-  const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [madrasah, setMadrasah] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -29,12 +26,8 @@ export default function Signup() {
   function validate() {
     const errs = {};
     if (!fullName.trim()) errs.fullName = "Full name is required";
-    if (!age.trim()) errs.age = "Age is required";
-    else if (!/^\d+$/.test(age.trim())) errs.age = "Age must be a number";
-    if (!city.trim()) errs.city = "City is required";
     if (!email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = "Invalid email format";
-    if (!madrasah.trim()) errs.madrasah = "Madrasah name is required";
     if (!password.trim() || password.length < 6) errs.password = "Password must be at least 6 characters";
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -59,9 +52,6 @@ export default function Signup() {
       try {
         await saveUserProfile(user.uid, {
           fullName: fullName.trim(),
-          age: age.trim(),
-          city: city.trim(),
-          madrasah: madrasah.trim(),
           email: normalizedEmail,
         });
         setProfileSaved(true);
@@ -148,44 +138,7 @@ export default function Signup() {
           {errors.fullName && <div className="text-red-600 text-xs mt-1">{errors.fullName}</div>}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="age">Age</label>
-          <input
-            id="age"
-            type="text"
-            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            placeholder="e.g., 10"
-          />
-          {errors.age && <div className="text-red-600 text-xs mt-1">{errors.age}</div>}
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="madrasah">Madrasah Name</label>
-          <input
-            id="madrasah"
-            type="text"
-            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
-            value={madrasah}
-            onChange={(e) => setMadrasah(e.target.value)}
-            placeholder="e.g., Darul Uloom Karachi"
-          />
-          {errors.madrasah && <div className="text-red-600 text-xs mt-1">{errors.madrasah}</div>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="city">City</label>
-          <input
-            id="city"
-            type="text"
-            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="e.g., Karachi"
-          />
-          {errors.city && <div className="text-red-600 text-xs mt-1">{errors.city}</div>}
-        </div>
 
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="email">Email</label>

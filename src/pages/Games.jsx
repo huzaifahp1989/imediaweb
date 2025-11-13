@@ -37,6 +37,7 @@ const SacredSitesJigsaw = lazy(() => import("../components/games/SacredSitesJigs
 const SahabahStoriesGame = lazy(() => import("../components/games/SahabahStoriesGame"));
 const SeerahAdventureGame = lazy(() => import("../components/games/SeerahAdventureGame"));
 const SpinToWinWheel = lazy(() => import("../components/games/SpinToWinWheel"));
+const TriviaGame = lazy(() => import("../components/games/TriviaGame"));
 
 const gamesList = [
   {
@@ -114,6 +115,15 @@ const gamesList = [
     difficulty: "All Levels",
     points: "10 pts per game",
     component: HadithGame
+  },
+  {
+    id: "trivia",
+    title: "❓ Islamic Trivia Challenge",
+    description: "Answer more questions across easy, medium, hard modes",
+    emoji: "❓",
+    difficulty: "Easy/Medium/Hard",
+    points: "10–20 pts per game",
+    component: TriviaGame
   },
   {
     id: "fiqh_game",

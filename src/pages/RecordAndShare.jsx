@@ -181,7 +181,7 @@ export default function RecordAndShare() {
       try {
         await base44.integrations.Core.SendEmail({
           from_name: "Islam Kids Zone",
-          to: "huzaify786@gmail.com",
+          to: "imediac786@gmail.com",
           subject: "🎙️ New Audio Recording Submitted",
           body: `
             <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f3f4f6; border-radius: 10px;">

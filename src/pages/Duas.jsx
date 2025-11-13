@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Volume2, Heart } from "lucide-react";
+import { Volume2, VolumeX, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const duas = [
   {
@@ -13,7 +14,8 @@ const duas = [
     arabic: "بِسْمِ اللهِ",
     transliteration: "Bismillah",
     translation: "In the name of Allah",
-    audio: null
+    audio: null,
+    reference: "Sunan Abu Dawud"
   },
   {
     id: "alhamdulillah",
@@ -22,7 +24,8 @@ const duas = [
     arabic: "الْحَمْدُ لِلَّهِ",
     transliteration: "Alhamdulillah",
     translation: "All praise is for Allah",
-    audio: null
+    audio: null,
+    reference: "Sahih Muslim"
   },
   {
     id: "morning",
@@ -31,7 +34,8 @@ const duas = [
     arabic: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
     transliteration: "Allahumma bika asbahna, wa bika amsayna, wa bika nahya, wa bika namutu, wa ilayka an-nushur",
     translation: "O Allah, by You we enter the morning, by You we enter the evening, by You we live, by You we die, and to You is the resurrection",
-    audio: null
+    audio: null,
+    reference: "Tirmidhi"
   },
   {
     id: "sleep",
@@ -40,7 +44,8 @@ const duas = [
     arabic: "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
     transliteration: "Bismika Allahumma amutu wa ahya",
     translation: "In Your name O Allah, I die and I live",
-    audio: null
+    audio: null,
+    reference: "Bukhari"
   },
   {
     id: "travel",
@@ -49,7 +54,8 @@ const duas = [
     arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ",
     transliteration: "Subhanal-ladhi sakhkhara lana hadha wa ma kunna lahu muqrinin",
     translation: "Glory to Him who has subjected this to us, and we could not have done it ourselves",
-    audio: null
+    audio: null,
+    reference: "Muslim"
   },
   {
     id: "entering_home",
@@ -58,15 +64,45 @@ const duas = [
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ الْمَوْلِجِ وَخَيْرَ الْمَخْرَجِ",
     transliteration: "Allahumma inni as'aluka khayra al-mawliji wa khayra al-makhraji",
     translation: "O Allah, I ask You for the best entering and the best leaving",
-    audio: null
+    audio: null,
+    reference: "Abu Dawud"
+  },
+  {
+    id: "protection",
+    category: "Protection",
+    title: "Protection from harm",
+    arabic: "بِسْمِ ٱللّٰهِ ٱلَّذِى لَا يَضُرُّ مَعَ اسْمِهِ شَىْءٌ فِى ٱلْأَرْضِ وَلَا فِى ٱلسَّمَآءِ وَهُوَ ٱلسَّمِيعُ ٱلْعَلِيمُ",
+    transliteration: "Bismillahil-ladhi la yadurru ma'asmihi shay'un fil-ardi wa la fis-sama'i wa huwas-Sami'ul-'Aleem",
+    translation: "In the name of Allah with whose name nothing on earth or in heaven can cause harm, and He is the All-Hearing, All-Knowing",
+    audio: null,
+    reference: "Abu Dawud"
+  },
+  {
+    id: "mosque_entry",
+    category: "Daily",
+    title: "Entering the Mosque",
+    arabic: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+    transliteration: "Allahumma iftah li abwaba rahmatik",
+    translation: "O Allah, open for me the doors of Your mercy",
+    audio: null,
+    reference: "Muslim"
   }
 ];
 
-const categories = ["All", "Daily", "Morning", "Bedtime", "Travel"];
+const categories = ["All", "Daily", "Morning", "Bedtime", "Travel", "Protection"];
 
 export default function Duas() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [favorites, setFavorites] = useState([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const speakRef = useRef(null);
+
+  useEffect(() => {
+    speakRef.current = window?.speechSynthesis || null;
+    return () => {
+      try { speakRef.current?.cancel?.(); } catch {}
+    };
+  }, []);
 
   const filteredDuas = selectedCategory === "All" 
     ? duas 
@@ -78,6 +114,26 @@ export default function Duas() {
     } else {
       setFavorites([...favorites, duaId]);
     }
+  };
+
+  const stopSpeaking = () => {
+    try { speakRef.current?.cancel?.(); setIsSpeaking(false); } catch {}
+  };
+
+  const speakText = (text, lang = "en-US") => {
+    try {
+      if (!speakRef.current) return;
+      stopSpeaking();
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = speakRef.current.getVoices?.() || [];
+      const match = voices.find(v => v.lang?.toLowerCase().startsWith(lang.toLowerCase().split('-')[0]));
+      if (match) utter.voice = match;
+      utter.lang = match?.lang || lang;
+      utter.rate = 0.95;
+      utter.onend = () => setIsSpeaking(false);
+      setIsSpeaking(true);
+      speakRef.current.speak(utter);
+    } catch {}
   };
 
   return (
@@ -97,19 +153,16 @@ export default function Duas() {
           </p>
         </motion.div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              variant={selectedCategory === category ? "default" : "outline"}
-              className={selectedCategory === category ? "bg-blue-600" : ""}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
+        {/* Category Tabs */}
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
+          <TabsList className="flex flex-wrap gap-2 justify-center">
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category}>
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Duas List */}
         <div className="space-y-6">
@@ -157,6 +210,34 @@ export default function Duas() {
                   <div className="bg-green-50 rounded-lg p-4">
                     <p className="font-semibold text-gray-700 mb-1">Translation:</p>
                     <p className="text-gray-800">{dua.translation}</p>
+                    {dua.reference && (
+                      <div className="mt-2">
+                        <Badge variant="outline" className="text-xs">{dua.reference}</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Audio Controls */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={() => speakText(dua.arabic, 'ar')}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Volume2 className="w-4 h-4" /> Play Arabic
+                    </Button>
+                    <Button
+                      onClick={() => speakText(dua.transliteration, 'en-US')}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Volume2 className="w-4 h-4" /> Play Transliteration
+                    </Button>
+                    {isSpeaking && (
+                      <Button onClick={stopSpeaking} variant="ghost" className="flex items-center gap-2">
+                        <VolumeX className="w-4 h-4" /> Stop
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

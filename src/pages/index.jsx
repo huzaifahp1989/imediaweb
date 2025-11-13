@@ -109,6 +109,8 @@ import Login from "./Login";
 import AdminMessages from "./AdminMessages";
 import Assistant from "./Assistant";
 import CompleteProfile from "./CompleteProfile";
+import ArabicLearning from "./ArabicLearning";
+import KidsRecordingStudio from "./KidsRecordingStudio";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Landing from "./Landing";
@@ -138,6 +140,7 @@ const PAGES = {
     
     RecordAndShare: RecordAndShare,
     RecordingStudio: RecordingStudio,
+    KidsRecordingStudio: KidsRecordingStudio,
     
     RecordingsAdmin: RecordingsAdmin,
     
@@ -221,6 +224,7 @@ const PAGES = {
     Login: Login,
     Assistant: Assistant,
     CompleteProfile: CompleteProfile,
+    ArabicLearning: ArabicLearning,
 
 }
 
@@ -282,6 +286,7 @@ function PagesContent() {
                 
                 <Route path="/RecordAndShare" element={<RecordAndShare />} />
                 <Route path="/RecordingStudio" element={<RecordingStudio />} />
+                <Route path="/KidsRecordingStudio" element={<KidsRecordingStudio />} />
                 
                 <Route path="/RecordingsAdmin" element={<AdminGuard><RecordingsAdmin /></AdminGuard>} />
                 
@@ -383,6 +388,9 @@ function PagesContent() {
                 {/* Profile completion */}
                 <Route path="/CompleteProfile" element={<CompleteProfile />} />
                 <Route path="/completeprofile" element={<CompleteProfile />} />
+                {/* Arabic Learning */}
+                <Route path="/ArabicLearning" element={<ArabicLearning />} />
+                <Route path="/arabiclearning" element={<ArabicLearning />} />
                 {/* Assistant routes: bypass guard in local dev for faster testing */}
                 <Route path="/Assistant" element={assistantElement} />
                 <Route path="/assistant" element={assistantElement} />

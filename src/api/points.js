@@ -44,8 +44,11 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
       console.error('Session error:', sessionError);
     }
 
-    // Try backend first if token is available
-    if (token) {
+    // Check if backend is enabled
+    const useBackend = String(import.meta.env.VITE_USE_BACKEND || '').toLowerCase() === 'true' || String(import.meta.env.VITE_USE_BACKEND || '') === '1';
+    
+    // Try backend first if enabled and token is available
+    if (useBackend && token) {
       const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
       try {
         console.log('Calling updatePoints endpoint:', endpoint);
@@ -65,7 +68,7 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
         console.error('Backend call failed:', e);
       }
     } else {
-      console.log('No token available, using client-side fallback');
+      console.log(useBackend ? 'No token available' : 'Backend disabled', ', using client-side fallback');
     }
 
     // Fallback: update Supabase client-side
