@@ -473,10 +473,10 @@ const questionBank = {
     {
       id: "expert_1",
       category: "Quran",
-      question: "Which Surah is known as 'Aroos al-Quran' (The Bride of the Quran)?",
-      options: ["Surah Ar-Rahman", "Surah Al-Baqarah", "Surah Yasin", "Surah Al-Kahf"],
+      question: "Which Surah contains the verse known as 'Ayat al-Kursi' (The Throne Verse)?",
+      options: ["Surah Al-Baqarah", "Surah Al-Imran", "Surah An-Nisa", "Surah Al-Fatiha"],
       correct: 0,
-      explanation: "Surah Ar-Rahman is called 'The Bride of the Quran' due to its beautiful descriptions of Allah's blessings and the repeated verse 'Which of your Lord's favors will you deny?'"
+      explanation: "Ayat al-Kursi is verse 255 of Surah Al-Baqarah and is considered one of the most powerful verses in the Quran."
     },
     {
       id: "expert_2",
