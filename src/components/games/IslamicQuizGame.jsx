@@ -387,6 +387,168 @@ const questionBank = {
       options: ["Fasting", "Prayer", "Charity", "Good character"],
       correct: 1,
       explanation: "The Prophet ﷺ said: 'Prayer is the key to Paradise.'"
+    },
+    {
+      id: "hard_16",
+      category: "Quran",
+      question: "Which Surah contains two Bismillahs?",
+      options: ["Surah Al-Baqarah", "Surah An-Naml", "Surah Al-Fatiha", "Surah Yasin"],
+      correct: 1,
+      explanation: "Surah An-Naml (The Ant) contains Bismillah at the beginning and in verse 30 as part of Prophet Sulaiman's letter."
+    },
+    {
+      id: "hard_17",
+      category: "History",
+      question: "What was the Treaty of Hudaybiyyah mainly about?",
+      options: ["Trade agreement", "Ten-year peace treaty", "Alliance against enemies", "Division of land"],
+      correct: 1,
+      explanation: "The Treaty of Hudaybiyyah was a pivotal peace treaty between Muslims and Quraysh that lasted 10 years."
+    },
+    {
+      id: "hard_18",
+      category: "Fiqh",
+      question: "What is the minimum nisab (threshold) for Zakat on gold?",
+      options: ["50 grams", "612 grams", "85 grams", "100 grams"],
+      correct: 2,
+      explanation: "The nisab for gold is 85 grams (or 7.5 tolas), and 2.5% must be given as Zakat."
+    },
+    {
+      id: "hard_19",
+      category: "Prophets",
+      question: "Which prophet is mentioned most in the Quran?",
+      options: ["Prophet Muhammad ﷺ", "Prophet Ibrahim", "Prophet Musa", "Prophet Isa"],
+      correct: 2,
+      explanation: "Prophet Musa (Moses) is mentioned approximately 136 times in the Quran, more than any other prophet."
+    },
+    {
+      id: "hard_20",
+      category: "Beliefs",
+      question: "What is the name of the book that records good deeds?",
+      options: ["Sijjin", "Illiyyin", "Lawh al-Mahfuz", "Mushaf"],
+      correct: 1,
+      explanation: "Illiyyin is the book where the records of the righteous are kept, while Sijjin records the deeds of the wicked."
+    },
+    {
+      id: "hard_21",
+      category: "Quran",
+      question: "How many times is the word 'Jannah' (Paradise) mentioned in the Quran?",
+      options: ["77 times", "147 times", "66 times", "99 times"],
+      correct: 1,
+      explanation: "The word 'Jannah' is mentioned 147 times in the Quran, emphasizing Allah's promise to the believers."
+    },
+    {
+      id: "hard_22",
+      category: "History",
+      question: "Who was the companion known as 'Al-Farooq' (the one who distinguishes)?",
+      options: ["Abu Bakr", "Umar ibn Al-Khattab", "Uthman ibn Affan", "Ali ibn Abi Talib"],
+      correct: 1,
+      explanation: "Umar ibn Al-Khattab was given the title 'Al-Farooq' because he distinguished between truth and falsehood."
+    },
+    {
+      id: "hard_23",
+      category: "Seerah",
+      question: "How many children did Prophet Muhammad ﷺ have?",
+      options: ["5", "7", "9", "11"],
+      correct: 1,
+      explanation: "The Prophet ﷺ had 7 children: 3 sons (Qasim, Abdullah, Ibrahim) and 4 daughters (Zainab, Ruqayyah, Umm Kulthum, Fatimah)."
+    },
+    {
+      id: "hard_24",
+      category: "Fiqh",
+      question: "What is the Arabic term for the pre-dawn meal during Ramadan?",
+      options: ["Iftar", "Suhoor", "Taraweeh", "Qiyam"],
+      correct: 1,
+      explanation: "Suhoor is the pre-dawn meal eaten before beginning the fast, while Iftar is the meal to break the fast."
+    },
+    {
+      id: "hard_25",
+      category: "Beliefs",
+      question: "What are the two types of revelation (Wahy) given to prophets?",
+      options: ["Direct and Indirect", "Wahy Matlu and Wahy Ghair Matlu", "Open and Hidden", "Written and Spoken"],
+      correct: 1,
+      explanation: "Wahy Matlu (recited revelation - Quran) and Wahy Ghair Matlu (non-recited revelation - Sunnah) are the two types."
+    }
+  ],
+  expert: [
+    {
+      id: "expert_1",
+      category: "Quran",
+      question: "Which Surah contains the verse known as 'Ayat al-Kursi' (The Throne Verse)?",
+      options: ["Surah Al-Baqarah", "Surah Al-Imran", "Surah An-Nisa", "Surah Al-Fatiha"],
+      correct: 0,
+      explanation: "Ayat al-Kursi is verse 255 of Surah Al-Baqarah and is considered one of the most powerful verses in the Quran."
+    },
+    {
+      id: "expert_2",
+      category: "History",
+      question: "During which Hijri year did the Battle of Khandaq (Trench) occur?",
+      options: ["3 AH", "5 AH", "7 AH", "9 AH"],
+      correct: 1,
+      explanation: "The Battle of Khandaq occurred in 5 AH (627 CE) when the Muslims dug a trench to defend Madinah from the confederate forces."
+    },
+    {
+      id: "expert_3",
+      category: "Fiqh",
+      question: "What is the minimum duration for I'tikaf to be valid?",
+      options: ["One day", "One night", "Any amount of time with intention", "Three days"],
+      correct: 2,
+      explanation: "According to many scholars, I'tikaf can be for any duration with proper intention, though longer periods (especially last 10 days of Ramadan) are more meritorious."
+    },
+    {
+      id: "expert_4",
+      category: "Quran",
+      question: "How many verses of prostration (Sajdah) are in the Quran?",
+      options: ["11", "14", "15", "17"],
+      correct: 2,
+      explanation: "There are 15 places of prostration (Sajdah Tilawah) in the Quran according to the majority of scholars."
+    },
+    {
+      id: "expert_5",
+      category: "Beliefs",
+      question: "What is the Arabic term for the resurrection on the Day of Judgment?",
+      options: ["Qiyamah", "Ba'ath", "Hashr", "Mizan"],
+      correct: 1,
+      explanation: "Ba'ath specifically refers to the resurrection of all people from their graves, while Qiyamah refers to the Day of Judgment itself."
+    },
+    {
+      id: "expert_6",
+      category: "Hadith",
+      question: "Who compiled Sahih Muslim?",
+      options: ["Imam Bukhari", "Imam Muslim ibn al-Hajjaj", "Imam Ahmad ibn Hanbal", "Imam Abu Dawud"],
+      correct: 1,
+      explanation: "Imam Muslim ibn al-Hajjaj al-Naysaburi compiled Sahih Muslim, one of the six major hadith collections (Kutub al-Sittah)."
+    },
+    {
+      id: "expert_7",
+      category: "Prophets",
+      question: "Which prophet was given the Zabur (Psalms)?",
+      options: ["Prophet Musa", "Prophet Isa", "Prophet Dawud", "Prophet Sulaiman"],
+      correct: 2,
+      explanation: "Prophet Dawud (David) was given the Zabur (Psalms), one of the four major revealed books."
+    },
+    {
+      id: "expert_8",
+      category: "History",
+      question: "Who was the first martyr (Shaheed) in Islam?",
+      options: ["Hamza ibn Abdul-Muttalib", "Sumayyah bint Khayyat", "Mus'ab ibn Umayr", "Yasir ibn Amir"],
+      correct: 1,
+      explanation: "Sumayyah bint Khayyat was the first martyr in Islam, killed for refusing to renounce her faith during the early persecution in Makkah."
+    },
+    {
+      id: "expert_9",
+      category: "Fiqh",
+      question: "What is the Arabic term for the consensus of Islamic scholars?",
+      options: ["Qiyas", "Ijma", "Ijtihad", "Istihsan"],
+      correct: 1,
+      explanation: "Ijma refers to the consensus of qualified Islamic scholars on a particular matter and is considered a source of Islamic law."
+    },
+    {
+      id: "expert_10",
+      category: "Quran",
+      question: "Which Surah is named after a metal?",
+      options: ["Surah Al-Hadid", "Surah An-Nahl", "Surah Al-Hijr", "Surah Al-Qamar"],
+      correct: 0,
+      explanation: "Surah Al-Hadid (Chapter 57) is named after iron (Hadid), which is mentioned in verse 25 as something sent down by Allah with great strength."
     }
   ]
 };
@@ -414,11 +576,14 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
   const [challenge, setChallenge] = useState(null);
   const [isChallengeMode, setIsChallengeMode] = useState(false);
   const [usedQuestionIds, setUsedQuestionIds] = useState([]);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const difficulties = [
     { id: "easy", name: "Easy", icon: "🌱", color: "from-green-500 to-green-600", count: 5 },
     { id: "medium", name: "Medium", icon: "⚡", color: "from-yellow-500 to-orange-500", count: 5 },
-    { id: "hard", name: "Hard", icon: "🔥", color: "from-red-500 to-red-600", count: 5 }
+    { id: "hard", name: "Hard", icon: "🔥", color: "from-red-500 to-red-600", count: 5 },
+    { id: "expert", name: "Expert", icon: "💎", color: "from-purple-600 to-indigo-700", count: 5 }
   ];
 
   useEffect(() => {
@@ -675,7 +840,7 @@ export default function IslamicQuizGame({ onComplete, challengeId }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-8">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {difficulties.map((diff, index) => (
               <motion.button
                 key={diff.id}
