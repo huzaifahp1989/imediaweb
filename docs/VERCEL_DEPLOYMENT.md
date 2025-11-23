@@ -25,7 +25,7 @@ Your Vercel organization/team ID.
 4. Run `vercel link` to link the project
 5. Check the `.vercel/project.json` file for the `orgId`
 
-Alternatively, you can find it in your Vercel team settings URL: `https://vercel.com/teams/[YOUR_ORG_ID]`
+Alternatively, you can find it in your Vercel team settings URL: `https://vercel.com/teams/[YOUR_ORG_ID]` (Note: This applies to team/organization accounts. For personal accounts, use the CLI method above or check your dashboard settings.)
 
 ### 3. VERCEL_PROJECT_ID
 Your Vercel project ID.
