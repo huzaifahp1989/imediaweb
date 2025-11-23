@@ -17,4 +17,10 @@ npm run dev
 npm run build
 ```
 
+## Deployment
+
+This project is configured for automatic deployment to Vercel on every push to the `main` branch.
+
+For deployment setup instructions, see [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md).
+
 For more information and support, please contact Base44 support at app@base44.com.
