@@ -350,7 +350,7 @@ export default function LearningLibrary() {
 
   const generateCloudTts = async (idx, text) => {
     try {
-      const endpoint = import.meta.env?.DEV ? '/.netlify/functions/asmaTts' : '/api/asmaTts'
+      const endpoint = '/api/asmaTts'
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

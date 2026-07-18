@@ -145,7 +145,7 @@ export default function AdminUsers() {
                           try {
                             const { auth } = getFirebase();
                             const token = await auth?.currentUser?.getIdToken?.();
-                            const endpoint = import.meta.env?.DEV ? '/.netlify/functions/deleteUser' : '/api/deleteUser';
+                            const endpoint = '/api/deleteUser';
                             const res = await fetch(endpoint, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },

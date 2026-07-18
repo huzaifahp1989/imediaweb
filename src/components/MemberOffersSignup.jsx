@@ -14,9 +14,7 @@ async function notifySignup({ email, fullName, wantsOffers }) {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) return;
-    const endpoint = import.meta.env?.DEV
-      ? "/.netlify/functions/signupNotify"
-      : "/api/signupNotify";
+    const endpoint = "/api/signupNotify";
     await fetch(endpoint, {
       method: "POST",
       headers: {

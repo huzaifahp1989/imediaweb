@@ -277,7 +277,7 @@ export default function AdminSettings() {
                       checked={settings.enableMessages}
                       onCheckedChange={(v) => setSettings({ ...settings, enableMessages: v })}
                     />
-                    <span className="text-sm text-gray-600">Toggle AdminMessages/Netlify function usage</span>
+                    <span className="text-sm text-gray-600">Toggle AdminMessages/backend function usage</span>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -311,7 +311,7 @@ export default function AdminSettings() {
                 Reset to Defaults
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Stored locally for now. For production, persist in Firestore or your backend (Netlify functions), with secure server-side enforcement.</p>
+            <p className="text-xs text-gray-500 mt-2">Stored locally for now. For production, persist in Firestore or your backend (Vercel API routes), with secure server-side enforcement.</p>
 
             <div className="pt-8 border-t">
               <h2 className="text-xl font-semibold mb-4">Admin Auth Tools</h2>
@@ -333,7 +333,7 @@ export default function AdminSettings() {
                         const { auth } = (await import("@/api/firebase")).getFirebase();
                         const token = await auth?.currentUser?.getIdToken?.();
                         if (!token) throw new Error("Admin login required");
-                        const res = await fetch("/.netlify/functions/authLookup", {
+                        const res = await fetch("/api/authLookup", {
                           method: "POST",
                           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                           body: JSON.stringify({ email: lookupEmail.trim().toLowerCase() }),
@@ -378,7 +378,7 @@ export default function AdminSettings() {
                         const token = await auth?.currentUser?.getIdToken?.();
                         if (!token) throw new Error("Admin login required");
                         const isEmail = /@/.test(id);
-                        const res = await fetch("/.netlify/functions/deleteUser", {
+                        const res = await fetch("/api/deleteUser", {
                           method: "POST",
                           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                           body: JSON.stringify(isEmail ? { email: id.toLowerCase() } : { uid: id }),

@@ -1,8 +1,6 @@
-# Base44 App
+# Islam Kids Zone
 
-
-This app was created automatically by Base44.
-It's a Vite+React app that communicates with the Base44 API.
+Vite + React app with Supabase auth and Vercel serverless API routes under `/api`.
 
 ## Running the app
 
@@ -11,10 +9,20 @@ npm install
 npm run dev
 ```
 
+To exercise `/api/*` locally (signup notify, points, admin helpers, etc.):
+
+```bash
+npx vercel dev
+```
+
 ## Building the app
 
 ```bash
 npm run build
 ```
 
-For more information and support, please contact Base44 support at app@base44.com.
+## Deploy (Vercel)
+
+1. Import the repo in Vercel (framework: Vite, output: `dist`).
+2. Copy server env vars from `.env.example` (especially `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`).
+3. Set `VITE_*` build env vars and redeploy after changes.

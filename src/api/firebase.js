@@ -86,7 +86,7 @@ export const messagesApi = {
       try {
         const { data: session } = await supabase.auth.getSession()
         const token = session?.session?.access_token
-        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const endpoint = '/api/messages';
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -106,7 +106,7 @@ export const messagesApi = {
       try {
         const { data: session } = await supabase.auth.getSession()
         const token = session?.session?.access_token
-        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const endpoint = '/api/messages';
         const res = await fetch(endpoint, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         });
@@ -124,7 +124,7 @@ export const messagesApi = {
       try {
         const { data: session } = await supabase.auth.getSession()
         const token = session?.session?.access_token
-        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/messages' : '/api/messages';
+        const endpoint = '/api/messages';
         const res = await fetch(endpoint, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -149,7 +149,7 @@ export const usersApi = {
       try {
         const { data: session } = await supabase.auth.getSession()
         const token = session?.session?.access_token
-        const endpoint = import.meta.env?.DEV ? '/.netlify/functions/users' : '/api/users';
+        const endpoint = '/api/users';
         const res = await fetch(endpoint, {
           headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         });

@@ -60,7 +60,7 @@ export default function Signup() {
           const { auth } = getFirebase();
           const token = await auth?.currentUser?.getIdToken?.();
           if (token) {
-            const endpoint = import.meta.env?.DEV ? "/.netlify/functions/signupNotify" : "/api/signupNotify";
+            const endpoint = "/api/signupNotify";
             const res = await fetch(endpoint, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -84,7 +84,7 @@ export default function Signup() {
           const { auth } = getFirebase();
           const token = await auth?.currentUser?.getIdToken?.();
           if (token) {
-            const endpoint = import.meta.env?.DEV ? "/.netlify/functions/signupNotify" : "/api/signupNotify";
+            const endpoint = "/api/signupNotify";
             const res = await fetch(endpoint, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
