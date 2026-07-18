@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { sponsorsApi } from "@/api/firebase";
 import React from "react";
 import { useRadio } from "@/pages/Layout";
+import MemberOffersSignup from "@/components/MemberOffersSignup";
 
 const features = [
   {
@@ -568,6 +569,8 @@ export default function Home() {
       </section>
 
       {/* Blog section removed per request: external link not pointing to correct page */}
+
+      <MemberOffersSignup />
 
       {/* CTA Section */}
       <section className="py-16 md:py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600">

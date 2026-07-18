@@ -49,7 +49,7 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
     
     // Try backend first if enabled and token is available
     if (useBackend && token) {
-      const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
+      const endpoint = '/api/updatePoints';
       try {
         console.log('Calling updatePoints endpoint:', endpoint);
         const res = await fetch(endpoint, {
@@ -147,7 +147,7 @@ export async function awardPointsForGame(user, gameType, opts = {}) {
 
 export async function checkPointsEndpointHealth() {
   try {
-    const endpoint = import.meta.env?.DEV ? '/.netlify/functions/updatePoints' : '/api/updatePoints';
+    const endpoint = '/api/updatePoints';
     const res = await fetch(endpoint, { method: 'OPTIONS' });
     if (res.ok) return true;
     if (res.status === 405) return true;

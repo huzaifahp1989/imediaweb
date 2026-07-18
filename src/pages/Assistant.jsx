@@ -41,29 +41,17 @@ export default function Assistant() {
         navigate(createPageUrl("Login"));
         return;
       }
-      // Prefer functions endpoint in local dev to avoid proxy issues
-      const endpoints = import.meta.env?.DEV
-        ? ['/.netlify/functions/assistant', '/api/assistant']
-        : ['/api/assistant', '/.netlify/functions/assistant'];
-      let res;
-      for (const url of endpoints) {
-        try {
-          res = await fetch(url, {
-            method: 'POST',
-            headers: token
-              ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-              : { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              mode,
-              messages: [...messages, { role: 'user', content: text }],
-            }),
-          });
-          if (res.ok) break;
-        } catch (_) {
-          // Continue to next endpoint
-        }
-      }
-      if (!res || !res.ok) throw new Error(`Assistant error: ${res ? res.status : 'no response'}`);
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: token
+          ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          : { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode,
+          messages: [...messages, { role: 'user', content: text }],
+        }),
+      });
+      if (!res.ok) throw new Error(`Assistant error: ${res.status}`);
       const data = await res.json();
       if (data?.error) {
         const code = data.error?.code;
