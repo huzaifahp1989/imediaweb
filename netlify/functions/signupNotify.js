@@ -21,24 +21,38 @@ export async function handler(event) {
     const body = JSON.parse(event.body || '{}');
     const fullName = String(body.fullName || '').trim();
     const emailFromClient = String(body.email || emailFromToken).toLowerCase();
+    const wantsOffers = Boolean(body.wantsOffers);
 
     // Prevent spoofing: ensure client email matches token email
     if (emailFromClient !== emailFromToken) {
       return { statusCode: 403, body: 'Email mismatch' };
     }
 
-    await supabase.from('users').upsert({
+    const userRow = {
       id: uid,
       email: emailFromToken,
       full_name: fullName,
       role: 'user',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    };
+    if (wantsOffers) userRow.wants_offers = true;
+
+    let { error: upsertErr } = await supabase.from('users').upsert(userRow);
+    if (upsertErr && wantsOffers) {
+      // Fallback if wants_offers column is not migrated yet
+      delete userRow.wants_offers;
+      ({ error: upsertErr } = await supabase.from('users').upsert(userRow));
+    }
+    if (upsertErr) throw upsertErr;
 
     // Attempt to notify admin via email if a provider is configured
     const adminEmail = process.env.SIGNUP_ADMIN_EMAIL || 'imedia786@gmail.com';
     const siteName = process.env.SITE_NAME || 'Islam Kids Zone';
+    const offersLine = wantsOffers
+      ? '<li>Opted in for exclusive member offers: <strong>yes</strong></li>'
+      : '';
+    const emailHtml = `<p>A new user signed up:</p><ul><li>Email: <strong>${emailFromToken}</strong></li><li>Name: ${fullName || '(not provided)'}</li><li>UID: ${uid}</li>${offersLine}</ul>`;
     let emailed = false;
     let provider = '';
 
@@ -54,7 +68,7 @@ export async function handler(event) {
             from: `no-reply@${(process.env.ADMIN_EMAIL_DOMAIN || 'example.com').replace(/^@/, '')}`,
             to: [adminEmail],
             subject: `[${siteName}] New signup: ${emailFromToken}`,
-            html: `<p>A new user signed up:</p><ul><li>Email: <strong>${emailFromToken}</strong></li><li>Name: ${fullName || '(not provided)'}</li><li>UID: ${uid}</li></ul>`,
+            html: emailHtml,
           }),
         });
         emailed = res.ok;
@@ -74,7 +88,7 @@ export async function handler(event) {
               personalizations: [{ to: [{ email: adminEmail }] }],
               from: { email: `no-reply@${(process.env.ADMIN_EMAIL_DOMAIN || 'example.com').replace(/^@/, '')}` },
               subject: `[${siteName}] New signup: ${emailFromToken}`,
-              content: [{ type: 'text/html', value: `<p>A new user signed up:</p><ul><li>Email: <strong>${emailFromToken}</strong></li><li>Name: ${fullName || '(not provided)'}</li><li>UID: ${uid}</li></ul>` }],
+              content: [{ type: 'text/html', value: emailHtml }],
             }),
           });
           emailed = res.ok;
