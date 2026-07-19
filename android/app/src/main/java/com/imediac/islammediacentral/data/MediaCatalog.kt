@@ -9,12 +9,30 @@ import com.imediac.islammediacentral.BuildConfig
  */
 object MediaCatalog {
 
+    /**
+     * Featured live stations from https://traet2lhw4m4.vercel.app/ plus popular Quran radios.
+     * Full Quran-radio list (150+) ships in assets and is loaded into preferences at startup.
+     */
     val radioStations: List<RadioStation> = listOf(
         RadioStation(
             id = "imc_live",
-            name = "Islam Media Central Live",
-            description = "Islamic Radio 24/7",
+            name = "Islam Media Central",
+            description = "Official live stream · IMC",
             streamUrl = BuildConfig.DEFAULT_RADIO_URL,
+            artworkUrl = null
+        ),
+        RadioStation(
+            id = "radio_seerah",
+            name = "Radio Seerah",
+            description = "Live · traet2lhw4m4.vercel.app",
+            streamUrl = "https://icecast.maxxwave.co.uk/radioseerah",
+            artworkUrl = null
+        ),
+        RadioStation(
+            id = "markaz_sahaba",
+            name = "Markaz Sahaba Radio",
+            description = "Live talk radio · IMC streams",
+            streamUrl = "https://zas4.ndx.co.za:9088/stream",
             artworkUrl = null
         ),
         RadioStation(

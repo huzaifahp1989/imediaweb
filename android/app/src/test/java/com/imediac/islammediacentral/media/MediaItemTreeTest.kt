@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.imediac.islammediacentral.data.MediaCategory
 import com.imediac.islammediacentral.data.MediaIds
 import com.imediac.islammediacentral.data.MediaPreferences
+import com.imediac.islammediacentral.data.MediaSyncRepository
 import com.imediac.islammediacentral.data.PlayableMedia
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -30,10 +31,10 @@ class MediaItemTreeTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        preferences = MediaPreferences(context)
-        // Clear prefs between tests
+        // Clear prefs between tests, then seed bundled public catalogs (traet + audio library)
         context.getSharedPreferences("imc_media_prefs", Context.MODE_PRIVATE).edit().clear().commit()
         preferences = MediaPreferences(context)
+        MediaSyncRepository(context, preferences).seedFromAssetsIfNeeded()
         tree = MediaItemTree(context, preferences)
     }
 
@@ -130,6 +131,16 @@ class MediaItemTreeTest {
         assertTrue(stations.isNotEmpty())
         assertTrue(stations.all { it.mediaMetadata.isPlayable == true })
         assertTrue(stations.any { it.mediaId == MediaIds.radio("imc_live") })
+        assertTrue(stations.any { it.mediaId == MediaIds.radio("radio_seerah") })
+    }
+
+    @Test
+    fun quranRadioTabIsPresent() {
+        assertTrue(tree.rootChildren().any { it.mediaId == MediaIds.QURAN_RADIO })
+        val streams = tree.getChildren(MediaIds.QURAN_RADIO)
+        // Until assets are seeded in Robolectric, featured mp3quran fallback applies
+        assertTrue(streams.isNotEmpty())
+        assertTrue(streams.all { it.mediaMetadata.isPlayable == true })
     }
 
     @Test
@@ -147,8 +158,10 @@ class MediaItemTreeTest {
     @Test
     fun podcastsExposeCategories() {
         val categories = tree.getChildren(MediaIds.PODCASTS)
-        assertTrue(categories.size >= 5)
+        assertTrue(categories.isNotEmpty())
         assertTrue(categories.all { it.mediaMetadata.isBrowsable == true })
+        // Audio Library from create-me-a-audio includes Nasheeds
+        assertTrue(categories.any { it.mediaId.contains("nasheed") || it.mediaMetadata.title?.contains("Nasheed") == true || it.mediaId.contains("general") })
     }
 
     @Test

@@ -74,6 +74,7 @@ class MediaItemTree(
         MediaIds.ROOT -> rootChildren()
         MediaIds.CONTINUE_LISTENING -> continueListeningChildren()
         MediaIds.LIVE_RADIO -> radioChildren()
+        MediaIds.QURAN_RADIO -> quranRadioChildren()
         MediaIds.QURAN_RECITERS -> reciterChildren()
         MediaIds.PODCASTS -> podcastCategoryChildren()
         MediaIds.LECTURES -> lectureChildren()
@@ -93,6 +94,7 @@ class MediaItemTree(
         getChildren(MediaIds.ROOT).find { it.mediaId == mediaId }?.let { return it }
         listOf(
             MediaIds.LIVE_RADIO,
+            MediaIds.QURAN_RADIO,
             MediaIds.QURAN_RECITERS,
             MediaIds.PODCASTS,
             MediaIds.LECTURES,
@@ -218,23 +220,31 @@ class MediaItemTree(
         browsable(
             MediaIds.LIVE_RADIO,
             context.getString(R.string.category_live_radio),
-            "Stream stations",
+            "IMC · Seerah · Markaz Sahaba",
             R.drawable.ic_auto_tab_radio,
+            folderType = MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS,
+            isRootTab = true
+        ),
+        browsable(
+            MediaIds.QURAN_RADIO,
+            context.getString(R.string.category_quran_radio),
+            "150+ continuous reciter streams",
+            R.drawable.ic_auto_tab_quran,
             folderType = MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS,
             isRootTab = true
         ),
         browsable(
             MediaIds.QURAN_RECITERS,
             context.getString(R.string.category_quran_reciters),
-            "Choose a reciter",
+            "Choose a reciter · surahs",
             R.drawable.ic_auto_tab_quran,
             folderType = MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS,
             isRootTab = true
         ),
         browsable(
             MediaIds.PODCASTS,
-            context.getString(R.string.category_podcasts),
-            "Categories · resume supported",
+            context.getString(R.string.category_audio_library),
+            "Nasheeds · dua · create-me-a-audio",
             R.drawable.ic_auto_tab_podcast,
             folderType = MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS,
             isRootTab = true
@@ -242,7 +252,7 @@ class MediaItemTree(
         browsable(
             MediaIds.LECTURES,
             context.getString(R.string.category_lectures),
-            "Talks · resume supported",
+            "Talks from IMC streams",
             R.drawable.ic_auto_tab_lecture,
             folderType = MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS,
             isRootTab = true
@@ -335,9 +345,53 @@ class MediaItemTree(
     }
 
     private fun radioChildren(): List<MediaItem> =
-        MediaCatalog.radioStations.mapNotNull { station ->
-            resolvePlayable(MediaIds.radio(station.id))?.let { toPlayableMediaItem(it) }
+        preferences.getLiveStations().map { station ->
+            toPlayableMediaItem(
+                PlayableMedia(
+                    mediaId = MediaIds.radio(station.id),
+                    title = station.name,
+                    subtitle = station.description,
+                    streamUrl = station.streamUrl,
+                    artworkUrl = station.artworkUrl,
+                    isLive = true,
+                    category = MediaCategory.RADIO
+                )
+            )
         }
+
+    private fun quranRadioChildren(): List<MediaItem> {
+        val streams = preferences.getQuranRadioStreams()
+        if (streams.isEmpty()) {
+            // Fallback featured Quran radios until assets are seeded
+            return MediaCatalog.radioStations
+                .filter { it.id.startsWith("mp3quran_") }
+                .map { station ->
+                    toPlayableMediaItem(
+                        PlayableMedia(
+                            mediaId = MediaIds.radio(station.id),
+                            title = station.name,
+                            subtitle = station.description,
+                            streamUrl = station.streamUrl,
+                            isLive = true,
+                            category = MediaCategory.RADIO
+                        )
+                    )
+                }
+        }
+        return streams.map { station ->
+            toPlayableMediaItem(
+                PlayableMedia(
+                    mediaId = MediaIds.radio(station.id),
+                    title = station.name,
+                    subtitle = station.description,
+                    streamUrl = station.streamUrl,
+                    artworkUrl = station.artworkUrl,
+                    isLive = true,
+                    category = MediaCategory.RADIO
+                )
+            )
+        }
+    }
 
     private fun reciterChildren(): List<MediaItem> =
         MediaCatalog.reciters.map { reciter ->
@@ -368,7 +422,7 @@ class MediaItemTree(
     }
 
     private fun podcastCategoryChildren(): List<MediaItem> =
-        MediaCatalog.podcastCategories.map { cat ->
+        preferences.getAudioLibraryCategories().map { cat ->
             browsable(
                 mediaId = MediaIds.podcastCategory(cat.id),
                 title = cat.name,
@@ -456,12 +510,31 @@ class MediaItemTree(
         return resumePositionMs(item.mediaId)
     }
 
-    private fun resolvePlayable(mediaId: String): PlayableMedia? =
+    private fun resolvePlayable(mediaId: String): PlayableMedia? {
         MediaCatalog.resolvePlayable(
             mediaId,
             preferences.getPodcastEpisodes(),
             preferences.getLectures()
-        )
+        )?.let { return it }
+
+        // Dynamic live / Quran-radio stations loaded from IMC stream sites
+        if (mediaId.startsWith("radio:")) {
+            val id = mediaId.removePrefix("radio:")
+            val station = preferences.getLiveStations().find { it.id == id }
+                ?: preferences.getQuranRadioStreams().find { it.id == id }
+                ?: return null
+            return PlayableMedia(
+                mediaId = mediaId,
+                title = station.name,
+                subtitle = station.description,
+                streamUrl = station.streamUrl,
+                artworkUrl = station.artworkUrl,
+                isLive = true,
+                category = MediaCategory.RADIO
+            )
+        }
+        return null
+    }
 
     private fun browsable(
         mediaId: String,
@@ -511,6 +584,7 @@ class MediaItemTree(
         val REQUIRED_ROOT_TAB_IDS = listOf(
             MediaIds.CONTINUE_LISTENING,
             MediaIds.LIVE_RADIO,
+            MediaIds.QURAN_RADIO,
             MediaIds.QURAN_RECITERS,
             MediaIds.PODCASTS,
             MediaIds.LECTURES,

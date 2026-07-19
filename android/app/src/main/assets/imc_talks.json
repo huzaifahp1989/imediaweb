@@ -1,0 +1,74 @@
+[
+  {
+    "id": "talk_3-golden-advices",
+    "categoryId": "lecture",
+    "title": "3 Golden Advices",
+    "description": "Shaykh Sulaiman Moola \u00b7 English",
+    "streamUrl": "https://archive.org/download/3GoldenAdvices/3%20Golden%20Advices.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_a-good-life",
+    "categoryId": "lecture",
+    "title": "A Good Life",
+    "description": "Shaykh Sulaiman Moola \u00b7 English",
+    "streamUrl": "https://archive.org/download/3GoldenAdvices/AGoodLife.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_absence-of-barakah",
+    "categoryId": "lecture",
+    "title": "Absence of Barakah",
+    "description": "Shaykh Sulaiman Moola \u00b7 English",
+    "streamUrl": "https://archive.org/download/3GoldenAdvices/AbsenceOfBarakah.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_a-message-to-muslim-youth",
+    "categoryId": "lecture",
+    "title": "A Message to Muslim Youth",
+    "description": "Shaykh Sulaiman Moola \u00b7 English",
+    "streamUrl": "https://archive.org/download/3GoldenAdvices/AMessageToMuslimYouth.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_allah-ki-aata-aur-insan",
+    "categoryId": "lecture",
+    "title": "Allah Ki Aata Aur Insan",
+    "description": "Maulana Tariq Jameel \u00b7 Urdu",
+    "streamUrl": "https://archive.org/download/TariqJamilsYear2008-09Bayanats/ALLAH%20KI%20AATA%20AYR%20INSAN.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_allah-ki-narazgi-ki-nishaniyan",
+    "categoryId": "lecture",
+    "title": "Allah Ki Narazgi Ki Nishaniyan",
+    "description": "Maulana Tariq Jameel \u00b7 Urdu",
+    "streamUrl": "https://archive.org/download/TariqJamilsYear2008-09Bayanats/ALLAH%20KI%20NARAZGI%20KI%20NISHANIYAN.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_allah-ki-sifat",
+    "categoryId": "lecture",
+    "title": "Allah Ki Sifat",
+    "description": "Maulana Tariq Jameel \u00b7 Urdu",
+    "streamUrl": "https://archive.org/download/TariqJamilsYear2008-09Bayanats/Allah%20ki%20sifat.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  },
+  {
+    "id": "talk_fazaile-namaz-aur-ikhlaq",
+    "categoryId": "lecture",
+    "title": "Fazaile Namaz Aur Ikhlaq",
+    "description": "Maulana Tariq Jameel \u00b7 Urdu",
+    "streamUrl": "https://archive.org/download/TariqJamilsYear2008-09Bayanats/FAZAILE%20NAMAZ%20AUR%20IKHLAQ.mp3",
+    "artworkUrl": null,
+    "durationMs": 0
+  }
+]

@@ -18,6 +18,24 @@ android {
 
         buildConfigField("String", "DEFAULT_RADIO_URL", "\"https://a4.asurahosting.com:7820/radio.mp3\"")
         buildConfigField("String", "SUPABASE_URL", "\"https://pmxahrmjxbfzuyqeoraz.supabase.co\"")
+        // Public Islamic Audio Library (create-me-a-audio.vercel.app) — anon key is client-safe
+        buildConfigField(
+            "String",
+            "AUDIO_LIBRARY_SUPABASE_URL",
+            "\"https://thywxzrrurfhdnhybjdz.supabase.co\""
+        )
+        buildConfigField(
+            "String",
+            "AUDIO_LIBRARY_SUPABASE_ANON_KEY",
+            "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoeXd4enJydXJmaGRuaHliamR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNzYzODMsImV4cCI6MjA4MzY1MjM4M30.ahdaPHhq6UHAx7V8WTCVGV-pp7dw66cZF8rk4FyE8So\""
+        )
+        buildConfigField("String", "IMC_STREAMS_SITE", "\"https://traet2lhw4m4.vercel.app/\"")
+        buildConfigField("String", "AUDIO_LIBRARY_SITE", "\"https://create-me-a-audio.vercel.app/\"")
+        buildConfigField(
+            "String",
+            "ANDROID_AUTO_APK_URL",
+            "\"https://github.com/huzaifahp1989/imediaweb/releases/download/continue-listening-debug-apk/islam-media-central-release.apk\""
+        )
     }
 
     buildTypes {

@@ -13,6 +13,8 @@ class MediaCatalogTest {
         val live = MediaCatalog.radioStations.find { it.id == "imc_live" }
         assertNotNull(live)
         assertTrue(live!!.streamUrl.contains("radio"))
+        assertNotNull(MediaCatalog.radioStations.find { it.id == "radio_seerah" })
+        assertNotNull(MediaCatalog.radioStations.find { it.id == "markaz_sahaba" })
     }
 
     @Test

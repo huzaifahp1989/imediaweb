@@ -156,6 +156,15 @@ Without step 4, a GitHub/sideload APK will never appear in the car media list.
 - **Podcasts**: categories match `AudioNew.jsx` (`story`, `hadith`, `history`, `nasheed`, `tajweed`, `fiqh`, `quran`) with seed episodes; replace via `MediaSyncRepository.applyRemotePodcasts(...)`.
 - **Lectures**: seed talks under `lecture:` media IDs with resume positions; replace via `MediaSyncRepository.applyRemoteLectures(...)`.
 
+## Public stream catalogs (Android Auto)
+
+| Source | What plays in Auto |
+|--------|--------------------|
+| [traet2lhw4m4.vercel.app](https://traet2lhw4m4.vercel.app/) | Live Radio (IMC, Radio Seerah, Markaz Sahaba), **Quran Radio** (150+ continuous reciter streams), lectures/talks |
+| [create-me-a-audio.vercel.app](https://create-me-a-audio.vercel.app/) | **Audio Library** tab — approved public nasheeds/dua/tracks via Supabase (anon) |
+
+Bundled JSON assets ship with the APK; on launch the app seeds them and refreshes the Audio Library from Supabase so every install can play the same public catalog.
+
 ## Continue Listening behavior
 
 | Content | On resume |

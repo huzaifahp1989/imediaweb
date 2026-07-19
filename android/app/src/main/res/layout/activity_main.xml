@@ -139,6 +139,27 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/autoSetupSteps" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOpenStreamsSite"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/btn_open_streams_site"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnOpenAutoSettings" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOpenAudioLibrary"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_open_audio_library"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnOpenStreamsSite" />
+
         <TextView
             android:id="@+id/assistantHint"
             android:layout_width="0dp"
@@ -151,7 +172,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnOpenAutoSettings" />
+            app:layout_constraintTop_toBottomOf="@id/btnOpenAudioLibrary" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

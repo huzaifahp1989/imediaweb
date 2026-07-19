@@ -121,6 +121,39 @@ class MediaPreferences(context: Context) {
         return gson.fromJson(raw, type) ?: MediaCatalog.seedLectures
     }
 
+    fun getLiveStations(): List<RadioStation> {
+        val raw = prefs.getString(KEY_LIVE_STATIONS, null)
+        if (raw.isNullOrBlank()) return MediaCatalog.radioStations
+        val type = object : TypeToken<List<RadioStation>>() {}.type
+        return gson.fromJson(raw, type) ?: MediaCatalog.radioStations
+    }
+
+    fun getQuranRadioStreams(): List<RadioStation> {
+        val raw = prefs.getString(KEY_QURAN_RADIO, null) ?: return emptyList()
+        val type = object : TypeToken<List<RadioStation>>() {}.type
+        return gson.fromJson(raw, type) ?: emptyList()
+    }
+
+    /** Categories derived from the synced Audio Library episodes. */
+    fun getAudioLibraryCategories(): List<PodcastCategory> {
+        val episodes = getPodcastEpisodes()
+        return episodes
+            .map { it.categoryId }
+            .distinct()
+            .sorted()
+            .map { id ->
+                val label = id.split('-').joinToString(" ") { part ->
+                    part.replaceFirstChar { ch -> ch.uppercaseChar() }
+                }
+                PodcastCategory(
+                    id = id,
+                    name = label,
+                    description = "From Islamic Audio Library"
+                )
+            }
+            .ifEmpty { MediaCatalog.podcastCategories }
+    }
+
     /** Import / replace podcast catalog (e.g. from Base44 AudioContent or Supabase). */
     fun importPodcastCatalog(episodes: List<PodcastEpisode>) {
         prefs.edit().putString(KEY_PODCASTS, gson.toJson(episodes)).apply()
@@ -128,6 +161,14 @@ class MediaPreferences(context: Context) {
 
     fun importLectureCatalog(lectures: List<PodcastEpisode>) {
         prefs.edit().putString(KEY_LECTURES, gson.toJson(lectures)).apply()
+    }
+
+    fun importLiveStations(stations: List<RadioStation>) {
+        prefs.edit().putString(KEY_LIVE_STATIONS, gson.toJson(stations)).apply()
+    }
+
+    fun importQuranRadioStreams(stations: List<RadioStation>) {
+        prefs.edit().putString(KEY_QURAN_RADIO, gson.toJson(stations)).apply()
     }
 
     /** Sync favorite IDs from the main app / Supabase without wiping local-only entries. */
@@ -151,6 +192,8 @@ class MediaPreferences(context: Context) {
         private const val KEY_LAST_PLAYED = "last_played"
         private const val KEY_PODCASTS = "podcast_catalog"
         private const val KEY_LECTURES = "lecture_catalog"
+        private const val KEY_LIVE_STATIONS = "live_stations"
+        private const val KEY_QURAN_RADIO = "quran_radio_streams"
         private const val KEY_PENDING_AUTO_RESUME = "pending_auto_resume"
         private const val MAX_RECENT = 40
     }

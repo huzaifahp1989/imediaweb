@@ -1,0 +1,1101 @@
+[
+  {
+    "id": "qr_radio-ibrahim-al-akdar",
+    "name": "Radio Ibrahim Al-Akdar",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ibrahim_alakdar",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-shaik-abu-bakr-al-shatri",
+    "name": "Radio Shaik Abu Bakr Al Shatri",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/shaik_abu_bakr_al_shatri",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmad-al-ajmy",
+    "name": "Radio Ahmad Al-Ajmy",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_alajmy",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmad-al-hawashi",
+    "name": "Radio Ahmad Al-Hawashi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_alhawashi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmad-saber",
+    "name": "Radio Ahmad Saber",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_saber",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmad-nauina",
+    "name": "Radio Ahmad Nauina",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_nauina",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-akram-alalaqmi",
+    "name": "Radio Akram Alalaqmi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/akram_alalaqmi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-idrees-abkr",
+    "name": "Radio Idrees Abkr",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/idrees_abkr",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-alzain-mohammad-ahmad",
+    "name": "Radio Alzain Mohammad Ahmad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/alzain_mohammad_ahmad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-al-qaria-yassen",
+    "name": "Radio Al-Qaria Yassen",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/alqaria_yassen",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-aloyoon-al-koshi",
+    "name": "Radio Aloyoon Al-Koshi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/aloyoon_alkoshi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-tawfeeq-as-sayegh",
+    "name": "Radio Tawfeeq As-Sayegh",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/tawfeeq_assayegh",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-jamal-shaker-abdullah",
+    "name": "Radio Jamal Shaker Abdullah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/jamal_shaker_abdullah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-khaled-al-qahtani",
+    "name": "Radio Khaled Al-Qahtani",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/khaled_alqahtani",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-khalid-abdulkafi",
+    "name": "Radio Khalid Abdulkafi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/khalid_abdulkafi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-khalifa-altunaiji",
+    "name": "Radio Khalifa Altunaiji",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/khalifa_altunaiji",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-saad-al-ghamdi",
+    "name": "Radio Saad Al-Ghamdi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saad_alghamdi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-saud-al-shuraim",
+    "name": "Radio Saud Al-Shuraim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saud_alshuraim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-sahl-yassin",
+    "name": "Radio Sahl Yassin",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/sahl_yassin",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-zaki-daghistani",
+    "name": "Radio Zaki Daghistani",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/zaki_daghistani",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-sayeed-ramadan",
+    "name": "Radio Sayeed Ramadan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/sayeed_ramadan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-shirazad-taher",
+    "name": "Radio Shirazad Taher",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/shirazad_taher",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-saber-abdulhakm",
+    "name": "Radio Saber Abdulhakm",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saber_abdulhakm",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-salah-albudair",
+    "name": "Radio Salah Albudair",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/salah_albudair",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-salah-alhashim",
+    "name": "Radio Salah Alhashim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/salah_alhashim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-slaah-bukhatir",
+    "name": "Radio Slaah Bukhatir",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/slaah_bukhatir",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-adel-ryyan",
+    "name": "Radio Adel Ryyan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/adel_ryyan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdelbari-al-thoubayti",
+    "name": "Radio Abdelbari Al-Thoubayti",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdelbari_altoubayti",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulbari-mohammad",
+    "name": "Radio Abdulbari Mohammad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulbari_mohammad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulbasit-abdulsamad",
+    "name": "Radio Abdulbasit Abdulsamad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulbasit_abdulsamad_mojawwad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulbasit-abdulsamad",
+    "name": "Radio Abdulbasit Abdulsamad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulbasit_abdulsamad_warsh",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulbasit-abdulsamad",
+    "name": "Radio Abdulbasit Abdulsamad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulbasit_abdulsamad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulrahman-alsudaes",
+    "name": "Radio Abdulrahman Alsudaes",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulrahman_alsudaes",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdul-aziz-al-ahmad",
+    "name": "Radio Abdul Aziz Al-Ahmad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdul_aziz_alahmad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdullah-al-mattrod",
+    "name": "Radio Abdullah Al-Mattrod",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_almattrod",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdullah-basfer",
+    "name": "Radio Abdullah Basfer",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_basfer",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdullah-khayyat",
+    "name": "Radio Abdullah Khayyat",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_khayyat",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdullah-al-johany",
+    "name": "Radio Abdullah Al-Johany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_aljohany",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulrasheed-soufi",
+    "name": "Radio Abdulrasheed Soufi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulrasheed_soufi_khalaf",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulrasheed-soufi",
+    "name": "Radio Abdulrasheed Soufi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulrasheed_soufi_assosi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulmohsin-al-harthy",
+    "name": "Radio Abdulmohsin Al-Harthy",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulmohsin_alharthy",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulmohsen-al-qasim",
+    "name": "Radio Abdulmohsen Al-Qasim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulmohsen_alqasim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulmohsin-al-obaikan",
+    "name": "Radio Abdulmohsin Al-Obaikan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulmohsin_alobaikan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulhadi-kanakeri",
+    "name": "Radio Abdulhadi Kanakeri",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulhadi_kanakeri",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulwadood-haneef",
+    "name": "Radio Abdulwadood Haneef",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulwadood_haneef",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ali-alhuthaifi",
+    "name": "Radio Ali Alhuthaifi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ali_alhuthaifi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ali-alhuthaifi",
+    "name": "Radio Ali Alhuthaifi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ali_alhuthaifi_qalon",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ali-jaber",
+    "name": "Radio Ali Jaber",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ali_jaber",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ali-hajjaj-alsouasi",
+    "name": "Radio Ali Hajjaj Alsouasi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ali_hajjaj_alsouasi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-emad-hafez",
+    "name": "Radio Emad Hafez",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/emad_hafez",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-omar-al-qazabri",
+    "name": "Radio Omar Al-Qazabri",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/omar_alqazabri",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-fares-abbad",
+    "name": "Radio Fares Abbad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/fares_abbad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-nasser-alqatami",
+    "name": "Radio Nasser Alqatami",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/nasser_alqatami",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-nabil-al-rifay",
+    "name": "Radio Nabil Al Rifay",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/nabil_al_rifay",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-neamah-al-hassan",
+    "name": "Radio Neamah Al-Hassan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/neamah_alhassan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-hani-arrifai",
+    "name": "Radio Hani Arrifai",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/hani_arrifai",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-waleed-alnaehi",
+    "name": "Radio Waleed Alnaehi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/waleed_alnaehi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yasser-al-dosari",
+    "name": "Radio Yasser Al-Dosari",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yasser_aldosari",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yasser-al-qurashi",
+    "name": "Radio Yasser Al-Qurashi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yasser_alqurashi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yasser-al-mazroyee",
+    "name": "Radio Yasser Al-Mazroyee",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yasser_almazroyee",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yahya-hawwa",
+    "name": "Radio Yahya Hawwa",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yahya_hawwa",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yousef-alshoaey",
+    "name": "Radio Yousef Alshoaey",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yousef_alshoaey",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-maher-al-meaqli",
+    "name": "Radio Maher Al Meaqli",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/maher",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-al-tablaway",
+    "name": "Radio Mohammad Al-Tablaway",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_altablaway",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-al-lohaidan",
+    "name": "Radio Mohammed Al-Lohaidan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_allohaidan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-ayyub",
+    "name": "Radio Mohammed Ayyub",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_ayyub",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-saleh-alim-shah",
+    "name": "Radio Mohammad Saleh Alim Shah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_saleh_alim_shah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-jibreel",
+    "name": "Radio Mohammed Jibreel",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_jibreel",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-siddiq-al-minshawi",
+    "name": "Radio Mohammed Siddiq Al-Minshawi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_siddiq_alminshawi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-siddiq-al-minshawi",
+    "name": "Radio Mohammed Siddiq Al-Minshawi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_siddiq_alminshawi_mojawwad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-abdullkarem",
+    "name": "Radio Mohammad Abdullkarem",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_abdullkarem",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-al-abdullah",
+    "name": "Radio Mohammad Al-Abdullah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_alabdullah_albizi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-al-abdullah",
+    "name": "Radio Mohammad Al-Abdullah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_alabdullah_aldorai",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmoud-khalil-al-hussary",
+    "name": "Radio Mahmoud Khalil Al-Hussary",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmoud-khalil-al-hussary",
+    "name": "Radio Mahmoud Khalil Al-Hussary",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary_mojawwad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmoud-khalil-al-hussary",
+    "name": "Radio Mahmoud Khalil Al-Hussary",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary_warsh",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmoud-ali-albanna",
+    "name": "Radio Mahmoud Ali  Albanna",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmoud_ali__albanna",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmoud-ali-albanna",
+    "name": "Radio Mahmoud Ali  Albanna",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmoud_ali__albanna_mojawwad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mishary-alafasi",
+    "name": "Radio Mishary Alafasi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mishary_alafasi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mustafa-ismail",
+    "name": "Radio Mustafa Ismail",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mustafa_ismail",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mustafa-al-lahoni",
+    "name": "Radio Mustafa Al-Lahoni",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mustafa_allahoni",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mustafa-raad-alazawy",
+    "name": "Radio Mustafa raad Alazawy",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mustafa_raad_alazawy",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-muftah-alsaltany",
+    "name": "Radio Muftah Alsaltany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/muftah_alsaltany_aldori_an_abi_amr",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-maher-shakhashero",
+    "name": "Radio Maher Shakhashero",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/maher_shakhashero",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmood-alsheimy",
+    "name": "Radio Mahmood AlSheimy",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmood_alsheimy",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-khalid-almohana",
+    "name": "Radio Khalid Almohana",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/khalid_almohana",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-adel-al-khalbany",
+    "name": "Radio Adel Al-Khalbany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/adel_alkhalbany",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mousa-bilal",
+    "name": "Radio Mousa Bilal",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mousa_bilal",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-hatem-fareed-alwaer",
+    "name": "Radio Hatem Fareed Alwaer",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/hatem_fareed_alwaer",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mahmood-al-rifai",
+    "name": "Radio Mahmood Al rifai",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mahmood_al_rifai",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ibrahim-aldosari",
+    "name": "Radio Ibrahim Aldosari",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ibrahim_aldosari",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-muftah-alsaltany",
+    "name": "Radio Muftah Alsaltany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/muftah_alsaltany_aldorai",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-jamaan-alosaimi",
+    "name": "Radio Jamaan Alosaimi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/jamaan_alosaimi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-yousef-bin-noah-ahmad",
+    "name": "Radio Yousef Bin Noah Ahmad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/yousef_bin_noah_ahmad",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-muftah-alsaltany",
+    "name": "Radio Muftah Alsaltany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/muftah_alsaltany_ibn_thakwan_an_ibn_amr",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-moeedh-alharthi",
+    "name": "Radio Moeedh Alharthi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/moeedh_alharthi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-rashad-alshareef",
+    "name": "Radio Mohammad Rashad Alshareef",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_rashad_alshareef",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmad-khader-al-tarabulsi",
+    "name": "Radio Ahmad Khader Al-Tarabulsi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_khader_altarabulsi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmed-al-trabulsi",
+    "name": "Radio Ahmed Al-trabulsi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmed_altrabulsi",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdullah-al-kandari",
+    "name": "Radio Abdullah Al-Kandari",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_alkandari",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-ahmed-amer",
+    "name": "Radio Ahmed Amer",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmed_amer",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-osman-khan",
+    "name": "Radio Mohammed Osman Khan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammed_osman_khan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-addokali-mohammad-alalim",
+    "name": "Radio Addokali Mohammad Alalim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/addokali_mohammad_alalim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammad-abdullkarem",
+    "name": "Radio Mohammad Abdullkarem",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mohammad_abdullkarem_alasbahani",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-alfateh-alzubair",
+    "name": "Radio Alfateh Alzubair",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/alfateh_alzubair",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-tareq-abdulgani-daawob",
+    "name": "Radio Tareq Abdulgani daawob",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/tareq_abdulgani_daawob",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_main-radio",
+    "name": "-Main Radio-",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mix",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_beautiful-recitations",
+    "name": "-Beautiful Recitations-",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/salma",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_eid-takbeer",
+    "name": "Eid Takbeer",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/eid",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulrahman-al-majed",
+    "name": "Radio Abdulrahman Al-Majed",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdulrahman_almajed",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_general-fatwa-radio",
+    "name": "General Fatwa Radio",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/fatwa",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_sharia-ruqyah",
+    "name": "Sharia ruqyah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/roqiah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_surah-al-baqarah-many-reciters",
+    "name": "-Surah Al-Baqarah - Many Reciters-",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/albaqarah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-tafseer",
+    "name": "--Quran Tafseer--",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/tafseer",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_khalid-al-jileel",
+    "name": "Khalid Al-Jileel",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/khalid_aljileel",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_nasser-almajed",
+    "name": "Nasser Almajed",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/nasser_almajed",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_haitham-aljudaany",
+    "name": "Haitham Aljudaany",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/hitham_aljadani",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_ahmad-shaheen",
+    "name": "Ahmad Shaheen",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_shaheen",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_abdullah-al-mousa-radio",
+    "name": "Abdullah Al-Mousa - Radio",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_almousa",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_abdullah-al-khalaf",
+    "name": "Abdullah Al-Khalaf",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/abdullah_alkhalaf",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_amazing-short-recitations",
+    "name": "---Amazing short Recitations---",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/tarateel",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-majed-al-zamil",
+    "name": "Radio Majed Al-Zamil",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/majed_alzamel",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-bandar-balilah",
+    "name": "Radio Bandar Balilah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/bandar_balilah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-nasser-alosfor",
+    "name": "Radio Nasser Alosfor",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/nasser_alosfor",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-muhammad-ayoub-distinctive-reading",
+    "name": "Radio Muhammad Ayoub - Distinctive reading",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ayyoub2",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_ahmad-deban",
+    "name": "Ahmad Deban",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ahmad_deban",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-muhammad-abu-sneina",
+    "name": "Radio Muhammad Abu Sneina",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/sneineh",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-mohammed-al-amin-qeniwa",
+    "name": "Radio Mohammed Al-Amin Qeniwa",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/qeniwa",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_radio-abdulrahman-alshahhat",
+    "name": "Radio Abdulrahman Alshahhat",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/a_alshahhat",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_abdulaziz-sheim",
+    "name": "Abdulaziz Sheim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/a_sheim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_verses-of-serenity",
+    "name": "Verses of serenity",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/sakeenah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_stories-from-the-lives-of-the-sahabah-and-tabe-een-may-allah",
+    "name": "Stories from the lives of the SAHABAH and TABE'EEN, may ALLAH be pleased with them",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/sahabah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_a-summary-of-the-interpretation-of-the-holy-quran",
+    "name": "A summary of the interpretation of the Holy Quran",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/mukhtasartafsir",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_words-of-remembrance-for-morning",
+    "name": "Words of remembrance for morning",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/athkar_sabah",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_words-of-remembrance-for-evening",
+    "name": "Words of remembrance for evening",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/athkar_masa",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_in-the-shadows-of-the-prophet-s-pbuh-biography",
+    "name": "In the shadows of the Prophet\u2019s PBUH biography",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/fi_zilal_alsiyra",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_the-abridged-biography-of-the-prophet",
+    "name": "The Abridged Biography of the Prophet",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/almukhtasar_fi_alsiyra",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_the-book-of-jurisprudential-choices-in-matters-of-worship-an",
+    "name": "The book of jurisprudential choices in matters of worship and transactions",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/alaikhtiarat_alfiqhayh_bin_baz",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_interpretation-of-the-holy-qur-an-conclusion-from-tafsir-al-",
+    "name": "Interpretation of the Holy Qur\u2019an - Conclusion from Tafsir al-Tabari",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/tabri",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_saleh-al-habdan",
+    "name": "Saleh Al-Habdan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saleh_alhabdan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-translation-into-urdu-abdulbasit",
+    "name": "Quran translation into Urdu - Abdulbasit",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_urdu_basit",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-in-urdu-al-sharim-and-al-sadis",
+    "name": "Quran in Urdu - Al-Sharim and Al-Sadis",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_urdu_sds_shur",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-in-urdu-qari-muhammad-manshawi",
+    "name": "Quran in Urdu - Qari Muhammad Manshawi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_urdu_minsh",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-translation-into-english-abdulbasit-abdul-samad",
+    "name": "Quran translation into English - AbdulBasit Abdul Samad",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_english_basit",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-translation-into-english-abdullah-basfar",
+    "name": "Quran translation into English - Abdullah Basfar",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_english_bsfr",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_quran-translation-into-english-translated-by-walk",
+    "name": "Quran translation into English - translated by Walk",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/translation_quran_english_walk_basit",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_al-mulk-surah",
+    "name": "Al-Mulk Surah",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/Surah_Al-Mulk",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_the-virtue-of-the-month-of-ramadan",
+    "name": "The virtue of the month of Ramadan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/ramadan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_sahih-muslim",
+    "name": "Sahih Muslim",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saheh-muslim",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_sahih-al-bukhari",
+    "name": "Sahih al-Bukhari",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/saheh-bokharee",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_stories-of-the-prophets",
+    "name": "Stories of the Prophets",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/alanbiya",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_abdullah-albuajan",
+    "name": "Abdullah Albuajan",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/buajan",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_ahmad-talib-bin-humaid",
+    "name": "Ahmad Talib bin Humaid",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/a_binhameed",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_",
+    "name": "\u062a\u0641\u0633\u064a\u0631 \u063a\u0631\u064a\u0628 \u0627\u0644\u0642\u0631\u0622\u0646",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/gareeb-quran",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_bader-alturki",
+    "name": "Bader Alturki",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/bader",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_hazza-al-balushi",
+    "name": "Hazza Al-Balushi",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://backup.qurango.net/radio/hazza",
+    "artworkUrl": null
+  },
+  {
+    "id": "qr_holy-quran-from-saudia-arabia",
+    "name": "Holy Quran from Saudia Arabia",
+    "description": "Quran radio \u00b7 IMC streams",
+    "streamUrl": "https://stream.radiojar.com/0tpy1h0kxtzuv",
+    "artworkUrl": null
+  }
+]

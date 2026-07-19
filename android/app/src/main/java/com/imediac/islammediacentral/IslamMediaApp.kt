@@ -5,16 +5,23 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import com.imediac.islammediacentral.data.MediaPreferences
+import com.imediac.islammediacentral.data.MediaSyncRepository
 
 class IslamMediaApp : Application() {
 
     lateinit var mediaPreferences: MediaPreferences
         private set
 
+    lateinit var mediaSyncRepository: MediaSyncRepository
+        private set
+
     override fun onCreate() {
         super.onCreate()
         instance = this
         mediaPreferences = MediaPreferences(this)
+        mediaSyncRepository = MediaSyncRepository(this, mediaPreferences)
+        // Seed bundled traet + audio-library catalogs, then refresh public streams online
+        mediaSyncRepository.syncPublicCatalogsAsync()
         createNotificationChannel()
     }
 

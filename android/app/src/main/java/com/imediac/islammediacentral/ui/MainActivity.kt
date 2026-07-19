@@ -57,6 +57,12 @@ class MainActivity : AppCompatActivity() {
             if (c.isPlaying) c.pause() else c.play()
         }
         binding.btnOpenAutoSettings.setOnClickListener { openAndroidAutoSettings() }
+        binding.btnOpenStreamsSite.setOnClickListener {
+            openUrl(com.imediac.islammediacentral.BuildConfig.IMC_STREAMS_SITE)
+        }
+        binding.btnOpenAudioLibrary.setOnClickListener {
+            openUrl(com.imediac.islammediacentral.BuildConfig.AUDIO_LIBRARY_SITE)
+        }
 
         updateLastPlayedHint()
         handleVoiceIntent(intent)
@@ -208,5 +214,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         Toast.makeText(this, R.string.toast_auto_settings_missing, Toast.LENGTH_LONG).show()
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (_: Exception) {
+            Toast.makeText(this, url, Toast.LENGTH_SHORT).show()
+        }
     }
 }

@@ -67,7 +67,10 @@ object MediaIds {
     /** Playable shortcut — resumes the last Live Radio / Quran / Podcast / Lecture. */
     const val CONTINUE_LISTENING = "continue_listening"
     const val LIVE_RADIO = "live_radio"
+    /** Continuous Quran radio stations from traet2lhw4m4.vercel.app */
+    const val QURAN_RADIO = "quran_radio"
     const val QURAN_RECITERS = "quran_reciters"
+    /** Islamic Audio Library tracks from create-me-a-audio.vercel.app */
     const val PODCASTS = "podcasts"
     const val LECTURES = "lectures"
     const val FAVORITES = "favorites"
