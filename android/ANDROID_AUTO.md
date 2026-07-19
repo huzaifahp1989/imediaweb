@@ -43,7 +43,7 @@ android/
   ANDROID_AUTO.md                   # this file
 ```
 
-## Build
+## Build signed debug APK
 
 Requirements: JDK 17+, Android SDK 35, Android Studio Ladybug+ (or CLI).
 
@@ -53,12 +53,32 @@ cd android
 ./gradlew :app:assembleDebug
 ```
 
+Output (debug-keystore signed):
+
+```
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Package id: `com.imediac.islammediacentral.debug` · label: **Islam Media Central**
+
 Install on a device/emulator:
 
 ```bash
 ./gradlew :app:installDebug
+# or: adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.imediac.islammediacentral.debug/.ui.MainActivity
 ```
+
+### Static APK checks (no DHU required)
+
+```bash
+aapt dump badging app/build/outputs/apk/debug/app-debug.apk | head
+aapt dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml | grep -E 'MediaBrowserService|car.application|PlaybackService'
+aapt dump xmltree app/build/outputs/apk/debug/app-debug.apk res/xml/automotive_app_desc.xml
+apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk
+```
+
+Expected: `MediaBrowserService` + `MediaLibraryService` intents, `com.google.android.gms.car.application` → `@xml/automotive_app_desc` with `<uses name="media" />`, signed with Android Debug.
 
 ## Test with Android Auto Desktop Head Unit (DHU)
 
