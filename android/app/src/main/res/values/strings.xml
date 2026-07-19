@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Islam Media Central</string>
+    <string name="notification_channel_name">Now Playing</string>
+    <string name="notification_channel_description">Playback controls for radio, Quran, and podcasts</string>
+    <string name="browse_root_title">Islam Media Central</string>
+    <string name="category_live_radio">Live Radio</string>
+    <string name="category_quran_reciters">Quran Reciters</string>
+    <string name="category_podcasts">Podcasts</string>
+    <string name="category_favorites">Favorites</string>
+    <string name="category_recently_played">Recently Played</string>
+    <string name="playing_on_auto">Playing on Android Auto</string>
+    <string name="empty_favorites">No favorites yet. Favorite items in the app to see them here.</string>
+    <string name="empty_recent">Nothing played yet.</string>
+    <string name="assistant_hint">Try: “Play Islam Media Central”, “Play Quran”, or “Play Radio”</string>
+    <string name="phone_subtitle">Phone player · Android Auto ready</string>
+    <string name="btn_play_radio">Play Live Radio</string>
+    <string name="btn_play_quran">Play Quran (Alafasy · Al-Fatihah)</string>
+    <string name="status_idle">Ready — connect Android Auto or tap play</string>
+</resources>

@@ -17,4 +17,14 @@ npm run dev
 npm run build
 ```
 
+## Android Auto (native module)
+
+Full AndroidX Media3 + Android Auto support lives under [`android/`](android/).
+See [`android/ANDROID_AUTO.md`](android/ANDROID_AUTO.md) for build steps and Desktop Head Unit (DHU) testing.
+
+```bash
+cd android
+./gradlew :app:assembleDebug
+```
+
 For more information and support, please contact Base44 support at app@base44.com.

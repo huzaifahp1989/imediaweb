@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.IslamMediaCentral" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/imc_green</item>
+        <item name="colorPrimaryDark">@color/imc_green_dark</item>
+        <item name="colorSecondary">@color/imc_gold</item>
+        <item name="android:statusBarColor">@color/imc_green_dark</item>
+        <item name="android:navigationBarColor">@color/imc_cream</item>
+        <item name="android:windowBackground">@color/imc_cream</item>
+    </style>
+</resources>
