@@ -2,17 +2,20 @@
 
 Native Android module (`android/`) adding **AndroidX Media3** playback and **Android Auto** browse support on top of the existing Islam Media Central experience. The Vite/React web app is unchanged.
 
-## What was added
+## Android Auto media browser checklist
 
-| Area | Implementation |
-|------|----------------|
-| Playback | `MediaLibraryService` + `MediaSession` + `ExoPlayer` + phone `MediaController` |
-| Android Auto | `automotive_app_desc.xml`, Car App metadata, media browser root |
-| Home browse tree | Live Radio · Quran Reciters · Podcasts · Favorites · Recently Played |
-| Notifications | Media3 MediaStyle (artwork, title, play/pause/stop), lock-screen controls |
-| Voice | `MEDIA_PLAY_FROM_SEARCH` + library search (“Play Radio”, “Play Quran”, …) |
-| Resume | Podcast positions in `SharedPreferences`; Auto reconnect via `onPlaybackResumption` |
-| Favorites / Recent | Local prefs with `MediaSyncRepository` hook for Supabase/Base44 sync |
+| Requirement | Status |
+|-------------|--------|
+| `MediaLibraryService` (`PlaybackService`) | Done |
+| Manifest `android.media.browse.MediaBrowserService` intent | Done |
+| `automotive_app_desc.xml` + Car App metadata | Done |
+| Root tabs: Live Radio, Quran Reciters, Podcasts, Favorites, Recently Played | Done |
+| `onGetLibraryRoot` / `onGetChildren` / `onSubscribe` | Done |
+| Content style extras for Auto tabs | Done |
+| ExoPlayer playback (no WebView) | Done |
+| MediaStyle notifications + media buttons | Done |
+| Assistant play-from-search | Done |
+
 
 ## Project layout
 

@@ -3,6 +3,7 @@ package com.imediac.islammediacentral.media
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -20,7 +21,6 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.imediac.islammediacentral.IslamMediaApp
-import com.imediac.islammediacentral.R
 import com.imediac.islammediacentral.data.MediaCatalog
 import com.imediac.islammediacentral.data.MediaIds
 import com.imediac.islammediacentral.data.PlayableMedia
@@ -28,11 +28,8 @@ import com.imediac.islammediacentral.ui.MainActivity
 import com.imediac.islammediacentral.voice.VoiceQueryHelper
 
 /**
- * MediaLibraryService hosting ExoPlayer + MediaSession for:
- * - Android Auto browse / play
- * - MediaStyle notifications & lock-screen controls
- * - Google Assistant play-from-search
- * - Background playback across screen-off / Auto reconnect
+ * MediaLibraryService that exposes the Islam Media Central browse tree to Android Auto
+ * and hosts ExoPlayer + MediaSession for playback, notifications, and Assistant.
  */
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
@@ -41,6 +38,7 @@ class PlaybackService : MediaLibraryService() {
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaTree: MediaItemTree
     private lateinit var voiceHelper: VoiceQueryHelper
+    private lateinit var packageValidator: PackageValidator
 
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -64,6 +62,7 @@ class PlaybackService : MediaLibraryService() {
         val prefs = IslamMediaApp.instance.mediaPreferences
         mediaTree = MediaItemTree(this, prefs)
         voiceHelper = VoiceQueryHelper(mediaTree)
+        packageValidator = PackageValidator(this)
 
         val exoPlayer = ExoPlayer.Builder(this)
             .setAudioAttributes(
@@ -91,10 +90,15 @@ class PlaybackService : MediaLibraryService() {
             .setId("imc_media_session")
             .setSessionActivity(sessionActivity)
             .build()
+
+        Log.i(TAG, "MediaLibraryService ready for Android Auto browse + playback")
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
-        mediaLibrarySession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        // Always expose the session so Auto / Assistant can connect; authorization
+        // for library browsing is enforced in the callback.
+        return mediaLibrarySession
+    }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         val p = player
@@ -137,6 +141,11 @@ class PlaybackService : MediaLibraryService() {
                 ?: mediaItem.requestMetadata.mediaUri?.toString().orEmpty()
         )
         IslamMediaApp.instance.mediaPreferences.recordPlayed(playable)
+        mediaLibrarySession?.notifyChildrenChanged(
+            MediaIds.RECENTLY_PLAYED,
+            /* itemCount= */ Int.MAX_VALUE,
+            /* params= */ null
+        )
     }
 
     private fun playMediaId(mediaId: String, playWhenReady: Boolean = true): Boolean {
@@ -161,7 +170,12 @@ class PlaybackService : MediaLibraryService() {
             session: MediaSession,
             controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult {
-            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
+            if (!packageValidator.isAllowed(controller.packageName, controller.uid)) {
+                Log.w(TAG, "Rejecting media session connection from ${controller.packageName}")
+                return MediaSession.ConnectionResult.reject()
+            }
+            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
+                .buildUpon()
                 .add(customFavorite)
                 .add(SessionCommand(COMMAND_STOP, Bundle.EMPTY))
                 .build()
@@ -175,7 +189,19 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            return Futures.immediateFuture(LibraryResult.ofItem(mediaTree.getRootItem(), params))
+            if (!packageValidator.isAllowed(browser.packageName, browser.uid)) {
+                Log.w(TAG, "Denying library root to ${browser.packageName}")
+                return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_NOT_SUPPORTED))
+            }
+            // Auto "continue listening" requests a recent root
+            val root = if (params?.isRecent == true) {
+                mediaTree.getRecentRootItem()
+            } else {
+                mediaTree.getRootItem()
+            }
+            val responseParams = mediaTree.buildRootLibraryParams(params)
+            Log.i(TAG, "Serving library root=${root.mediaId} to ${browser.packageName}")
+            return Futures.immediateFuture(LibraryResult.ofItem(root, responseParams))
         }
 
         override fun onGetChildren(
@@ -186,11 +212,11 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            // Android Auto does not paginate — return the full child list.
             val children = mediaTree.getChildren(parentId)
-            val from = (page * pageSize).coerceAtMost(children.size)
-            val to = (from + pageSize).coerceAtMost(children.size)
+            Log.d(TAG, "onGetChildren parent=$parentId count=${children.size} caller=${browser.packageName}")
             return Futures.immediateFuture(
-                LibraryResult.ofItemList(ImmutableList.copyOf(children.subList(from, to)), params)
+                LibraryResult.ofItemList(ImmutableList.copyOf(children), params)
             )
         }
 
@@ -205,6 +231,26 @@ class PlaybackService : MediaLibraryService() {
             } else {
                 Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE))
             }
+        }
+
+        override fun onSubscribe(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            parentId: String,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<Void>> {
+            // Acknowledge subscription so Auto receives notifyChildrenChanged updates.
+            val children = mediaTree.getChildren(parentId)
+            session.notifyChildrenChanged(browser, parentId, children.size, params)
+            return Futures.immediateFuture(LibraryResult.ofVoid())
+        }
+
+        override fun onUnsubscribe(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            parentId: String
+        ): ListenableFuture<LibraryResult<Void>> {
+            return Futures.immediateFuture(LibraryResult.ofVoid())
         }
 
         override fun onSearch(
@@ -227,10 +273,8 @@ class PlaybackService : MediaLibraryService() {
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
             val results = mediaTree.search(query)
-            val from = (page * pageSize).coerceAtMost(results.size)
-            val to = (from + pageSize).coerceAtMost(results.size)
             return Futures.immediateFuture(
-                LibraryResult.ofItemList(ImmutableList.copyOf(results.subList(from, to)), params)
+                LibraryResult.ofItemList(ImmutableList.copyOf(results), params)
             )
         }
 
@@ -242,11 +286,8 @@ class PlaybackService : MediaLibraryService() {
             startPositionMs: Long
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             val resolved = mediaItems.map { item ->
-                if (item.localConfiguration != null) {
-                    item
-                } else {
-                    mediaTree.getItem(item.mediaId) ?: item
-                }
+                if (item.localConfiguration != null) item
+                else mediaTree.getItem(item.mediaId) ?: item
             }
             val firstId = resolved.getOrNull(startIndex)?.mediaId
             val resume = if (startPositionMs == C.TIME_UNSET && firstId != null) {
@@ -263,7 +304,6 @@ class PlaybackService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            // Restore last played item after Auto disconnect / process death
             val recent = IslamMediaApp.instance.mediaPreferences.getRecentlyPlayed().firstOrNull()
             val item = recent?.let { mediaTree.toPlayableMediaItem(it) }
                 ?: mediaTree.getItem(MediaIds.radio("imc_live"))
@@ -288,7 +328,11 @@ class PlaybackService : MediaLibraryService() {
                         ?: args.getString(EXTRA_MEDIA_ID)
                     if (mediaId != null) {
                         IslamMediaApp.instance.mediaPreferences.toggleFavorite(mediaId)
-                        mediaLibrarySession?.notifyChildrenChanged(MediaIds.FAVORITES, Int.MAX_VALUE, null)
+                        mediaLibrarySession?.notifyChildrenChanged(
+                            MediaIds.FAVORITES,
+                            Int.MAX_VALUE,
+                            null
+                        )
                     }
                     return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
                 }
@@ -306,23 +350,14 @@ class PlaybackService : MediaLibraryService() {
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
             playerCommand: Int
-        ): Int {
-            // Allow play/pause/stop/seek from Auto, notifications, Assistant
-            return SessionResult.RESULT_SUCCESS
-        }
+        ): Int = SessionResult.RESULT_SUCCESS
     }
 
     companion object {
+        private const val TAG = "ImcPlaybackService"
         const val COMMAND_TOGGLE_FAVORITE = "imc.toggle_favorite"
         const val COMMAND_STOP = "imc.stop"
         const val EXTRA_MEDIA_ID = "media_id"
-
-        fun playIntent(mediaId: String): Intent =
-            Intent(IslamMediaApp.instance, PlaybackService::class.java).apply {
-                action = ACTION_PLAY_MEDIA_ID
-                putExtra(EXTRA_MEDIA_ID, mediaId)
-            }
-
         const val ACTION_PLAY_MEDIA_ID = "com.imediac.islammediacentral.action.PLAY_MEDIA_ID"
         const val ACTION_PLAY_FROM_SEARCH = "com.imediac.islammediacentral.action.PLAY_FROM_SEARCH"
     }
@@ -332,9 +367,6 @@ class PlaybackService : MediaLibraryService() {
             ACTION_PLAY_MEDIA_ID -> {
                 val mediaId = intent.getStringExtra(EXTRA_MEDIA_ID)
                 if (mediaId != null) playMediaId(mediaId)
-            }
-            ACTION_PLAY_FROM_SEARCH, Intent.ACTION_MEDIA_BUTTON -> {
-                // Handled via MediaSession; keep service alive
             }
             Intent.ACTION_SEARCH, "android.media.action.MEDIA_PLAY_FROM_SEARCH" -> {
                 val query = intent.getStringExtra(android.app.SearchManager.QUERY).orEmpty()
