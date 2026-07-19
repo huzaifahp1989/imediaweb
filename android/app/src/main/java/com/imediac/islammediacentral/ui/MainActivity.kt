@@ -78,8 +78,15 @@ class MainActivity : AppCompatActivity() {
             val c = controller ?: return@setOnClickListener
             if (c.isPlaying) c.pause() else c.play()
         }
-        binding.btnPrev.setOnClickListener { controller?.seekToPreviousMediaItem() }
-        binding.btnNext.setOnClickListener { controller?.seekToNextMediaItem() }
+        binding.btnPrev.setOnClickListener {
+            val c = controller ?: return@setOnClickListener
+            // Prefer media-item skip (works for live radio queues too)
+            if (c.hasPreviousMediaItem()) c.seekToPreviousMediaItem() else c.seekToPrevious()
+        }
+        binding.btnNext.setOnClickListener {
+            val c = controller ?: return@setOnClickListener
+            if (c.hasNextMediaItem()) c.seekToNextMediaItem() else c.seekToNext()
+        }
         binding.btnSeekBack.setOnClickListener { controller?.seekBack() }
         binding.btnSeekForward.setOnClickListener { controller?.seekForward() }
         binding.btnVoiceSearch.setOnClickListener { startVoiceSearch() }

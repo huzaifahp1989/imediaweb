@@ -1,6 +1,7 @@
 package com.imediac.islammediacentral.media
 
 import android.content.Context
+import androidx.media3.common.MediaItem
 import androidx.test.core.app.ApplicationProvider
 import com.imediac.islammediacentral.data.MediaCategory
 import com.imediac.islammediacentral.data.MediaIds
@@ -179,6 +180,48 @@ class MediaItemTreeTest {
         assertTrue(queue.size >= 1)
         assertEquals(firstId, queue[index].mediaId)
         assertTrue(queue.all { it.mediaMetadata.isPlayable == true })
+    }
+
+    @Test
+    fun expandSingleLiveRadioBuildsSkippableStationQueue() {
+        val live = tree.getChildren(MediaIds.LIVE_RADIO)
+        assertTrue(live.size > 1)
+        val mid = live[live.size / 2]
+        val (queue, index) = tree.expandRequestToPlaylist(listOf(mid))
+        assertTrue("Expected multi-station queue for Next/Prev, got ${queue.size}", queue.size > 1)
+        assertEquals(mid.mediaId, queue[index].mediaId)
+        assertTrue(queue.all { it.localConfiguration?.uri != null })
+    }
+
+    @Test
+    fun expandContinueListeningUsesUnderlyingCategoryQueue() {
+        val stationId = MediaIds.radio("imc_live")
+        val item = tree.getItem(stationId)
+        assertNotNull(item)
+        preferences.recordPlayed(
+            PlayableMedia(
+                mediaId = stationId,
+                title = "IMC Live",
+                subtitle = "Live",
+                streamUrl = item!!.localConfiguration!!.uri.toString(),
+                isLive = true,
+                category = MediaCategory.RADIO
+            )
+        )
+        val continueItem = MediaItem.Builder().setMediaId(MediaIds.CONTINUE_LISTENING).build()
+        val (queue, index) = tree.expandRequestToPlaylist(listOf(continueItem))
+        assertTrue(queue.size > 1)
+        assertEquals(stationId, queue[index].mediaId)
+    }
+
+    @Test
+    fun expandSingleSurahBuildsReciterQueue() {
+        val surahId = MediaIds.surah("alafasy", 1)
+        val item = tree.getItem(surahId)
+        assertNotNull(item)
+        val (queue, index) = tree.expandRequestToPlaylist(listOf(item!!))
+        assertTrue(queue.size > 1)
+        assertEquals(surahId, queue[index].mediaId)
     }
 
     @Test

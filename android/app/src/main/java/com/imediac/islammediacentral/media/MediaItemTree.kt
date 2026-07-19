@@ -243,15 +243,69 @@ class MediaItemTree(
         return search(q).firstOrNull { it.mediaMetadata.isPlayable == true }
     }
 
+    /** Resolve our catalog mediaId from a browse item that may only carry a stream URI. */
+    fun resolvePlayableMediaId(item: MediaItem): String? {
+        val id = item.mediaId
+        if (id.isNotBlank() && (MediaIds.isPlayable(id) || id == MediaIds.CONTINUE_LISTENING)) {
+            return if (id == MediaIds.CONTINUE_LISTENING) {
+                resolveContinueListening()?.mediaId ?: id
+            } else {
+                id
+            }
+        }
+        val uri = item.localConfiguration?.uri?.toString()
+            ?: item.requestMetadata.mediaUri?.toString()
+            ?: return id.takeIf { it.isNotBlank() }
+        return findMediaIdByStreamUrl(uri) ?: id.takeIf { it.isNotBlank() }
+    }
+
+    fun findMediaIdByStreamUrl(streamUrl: String): String? {
+        val target = streamUrl.trim().substringBefore('?')
+        if (target.isEmpty()) return null
+        preferences.getLiveStations().forEach { station ->
+            if (urlsMatch(station.streamUrl, target)) return MediaIds.radio(station.id)
+        }
+        preferences.getQuranRadioStreams().forEach { station ->
+            if (urlsMatch(station.streamUrl, target)) return MediaIds.radio(station.id)
+        }
+        MediaCatalog.radioStations.forEach { station ->
+            if (urlsMatch(station.streamUrl, target)) return MediaIds.radio(station.id)
+        }
+        preferences.getPodcastEpisodes().forEach { ep ->
+            if (urlsMatch(ep.streamUrl, target)) return MediaIds.podcastEpisode(ep.id)
+        }
+        preferences.getLectures().forEach { lecture ->
+            if (urlsMatch(lecture.streamUrl, target)) return MediaIds.lecture(lecture.id)
+        }
+        MediaCatalog.reciters.forEach { reciter ->
+            MediaCatalog.allSurahs.forEach { surah ->
+                val url = MediaCatalog.surahUrl(reciter, surah.number)
+                if (urlsMatch(url, target)) return MediaIds.surah(reciter.id, surah.number)
+            }
+        }
+        return null
+    }
+
+    private fun urlsMatch(a: String, b: String): Boolean {
+        val left = a.trim().substringBefore('?')
+        val right = b.trim().substringBefore('?')
+        return left.equals(right, ignoreCase = true)
+    }
+
     /**
      * Builds a skippable playlist around [mediaId] so Android Auto / the phone can
      * move next/previous across sibling tracks (same category, reciter, or station list).
      */
     fun buildQueueAround(mediaId: String): Pair<List<MediaItem>, Int> {
-        val resolvedId = when (mediaId) {
-            MediaIds.CONTINUE_LISTENING -> resolveContinueListening()?.mediaId ?: mediaId
+        val resolvedId = when {
+            mediaId == MediaIds.CONTINUE_LISTENING ->
+                resolveContinueListening()?.mediaId ?: mediaId
+            mediaId.startsWith("http://") || mediaId.startsWith("https://") ->
+                findMediaIdByStreamUrl(mediaId) ?: mediaId
             else -> mediaId
         }
+        val favorites = favoriteChildren()
+        val recent = recentChildren()
         val queue: List<MediaItem> = when {
             resolvedId.startsWith("podcast:") -> {
                 val episode = preferences.getPodcastEpisodes()
@@ -273,11 +327,28 @@ class MediaItemTree(
                     else -> listOfNotNull(getItem(resolvedId))
                 }
             }
+            // Prefer the list the user was browsing when the id appears in both.
+            favorites.any { it.mediaId == resolvedId } && favorites.size > 1 -> favorites
+            recent.any { it.mediaId == resolvedId } && recent.size > 1 -> recent
             else -> listOfNotNull(getItem(resolvedId))
         }.ifEmpty { listOfNotNull(getItem(resolvedId)) }
 
         val index = queue.indexOfFirst { it.mediaId == resolvedId }.let { if (it >= 0) it else 0 }
         return queue to index.coerceIn(0, (queue.size - 1).coerceAtLeast(0))
+    }
+
+    /** Expand a controller/Auto request (often a single item) into a full skippable playlist. */
+    fun expandRequestToPlaylist(items: List<MediaItem>): Pair<List<MediaItem>, Int> {
+        if (items.isEmpty()) return emptyList<MediaItem>() to 0
+        if (items.size > 1) {
+            val resolved = items.map { item ->
+                val id = resolvePlayableMediaId(item)
+                if (id != null) getItem(id) ?: item else item
+            }
+            return resolved to 0
+        }
+        val mediaId = resolvePlayableMediaId(items.first()) ?: return items to 0
+        return buildQueueAround(mediaId)
     }
 
     /**

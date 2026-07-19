@@ -119,7 +119,9 @@ Expected: `MediaBrowserService` + `MediaLibraryService` intents, `com.google.and
    - Last played is shown under the button (type + title + position).
 
 9. **Transport controls**
-   - Next / Previous moves across the current queue (stations, surahs, library tracks, talks)
+   - Next / Previous moves across the current queue (stations, surahs, library tracks, talks).
+     Tapping one item expands to its sibling playlist so Auto/car controls stay enabled,
+     including for live radio.
    - Seek back 15s / forward 30s on on-demand tracks (not live radio)
 
 10. **Voice / Assistant** (phone mic, Auto, or Google Assistant):

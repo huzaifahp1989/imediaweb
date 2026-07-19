@@ -40,7 +40,8 @@ import com.imediac.islammediacentral.voice.VoiceQueryHelper
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
 
-    private var player: ExoPlayer? = null
+    private var exoPlayer: ExoPlayer? = null
+    private var player: Player? = null
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaTree: MediaItemTree
     private lateinit var voiceHelper: VoiceQueryHelper
@@ -87,7 +88,7 @@ class PlaybackService : MediaLibraryService() {
         voiceHelper = VoiceQueryHelper(mediaTree)
         packageValidator = PackageValidator(this)
 
-        val exoPlayer = ExoPlayer.Builder(this)
+        val builtPlayer = ExoPlayer.Builder(this)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -101,9 +102,14 @@ class PlaybackService : MediaLibraryService() {
             .setSeekForwardIncrementMs(SEEK_FORWARD_MS)
             .setMaxSeekToPreviousPositionMs(3_000L)
             .build()
-            .also { it.addListener(playerListener) }
+            .also {
+                it.repeatMode = Player.REPEAT_MODE_ALL
+                it.addListener(playerListener)
+            }
 
-        player = exoPlayer
+        exoPlayer = builtPlayer
+        // Wrap so Auto / steering-wheel Next·Prev always change tracks when a queue exists
+        player = QueueSkippingPlayer(builtPlayer)
 
         val sessionActivity = PendingIntent.getActivity(
             this,
@@ -112,7 +118,11 @@ class PlaybackService : MediaLibraryService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        mediaLibrarySession = MediaLibrarySession.Builder(this, exoPlayer, LibrarySessionCallback())
+        mediaLibrarySession = MediaLibrarySession.Builder(
+            this,
+            player as Player,
+            LibrarySessionCallback()
+        )
             .setId("imc_media_session")
             .setSessionActivity(sessionActivity)
             .build()
@@ -140,11 +150,10 @@ class PlaybackService : MediaLibraryService() {
             release()
             mediaLibrarySession = null
         }
-        player?.run {
-            removeListener(playerListener)
-            release()
-            player = null
-        }
+        player?.removeListener(playerListener)
+        exoPlayer?.release()
+        player = null
+        exoPlayer = null
         super.onDestroy()
     }
 
@@ -231,55 +240,28 @@ class PlaybackService : MediaLibraryService() {
             val hit = voiceHelper.resolve(searchQuery)
             if (hit != null) {
                 val (queue, index) = mediaTree.buildQueueAround(hit.mediaId)
+                Log.i(TAG, "Voice queue size=${queue.size} start=$index query=\"$searchQuery\"")
                 val resume = resumePositionFor(queue[index].mediaId, queue[index])
                 return MediaSession.MediaItemsWithStartPosition(queue, index, resume)
             }
         }
 
-        if (mediaItems.size == 1) {
-            val only = mediaItems.first()
-            val id = when {
-                only.mediaId == MediaIds.CONTINUE_LISTENING ->
-                    mediaTree.resolveContinueListening()?.mediaId ?: only.mediaId
-                only.mediaId.isNotBlank() -> only.mediaId
-                else -> only.requestMetadata.mediaUri?.toString().orEmpty()
-            }
-            if (id.isNotBlank() && (MediaIds.isPlayable(id) || id == MediaIds.CONTINUE_LISTENING)) {
-                val (queue, index) = mediaTree.buildQueueAround(id)
-                if (queue.isNotEmpty()) {
-                    val resume = when {
-                        startPositionMs != C.TIME_UNSET -> startPositionMs
-                        else -> resumePositionFor(queue[index].mediaId, queue[index])
-                    }
-                    return MediaSession.MediaItemsWithStartPosition(queue, index, resume)
-                }
-            }
+        // Android Auto usually sends a single browsed item — expand to sibling playlist
+        val (queue, index) = mediaTree.expandRequestToPlaylist(mediaItems)
+        if (queue.isEmpty()) {
+            return MediaSession.MediaItemsWithStartPosition(mediaItems, startIndex, startPositionMs)
         }
-
-        val resolved = mediaItems.map { item ->
-            when {
-                item.mediaId == MediaIds.CONTINUE_LISTENING -> {
-                    val last = mediaTree.resolveContinueListening()
-                    if (last != null) {
-                        mediaTree.toPlayableMediaItem(last, mediaTree.resumePositionMs(last.mediaId))
-                    } else if (item.localConfiguration != null) {
-                        item
-                    } else {
-                        mediaTree.getItem(item.mediaId) ?: item
-                    }
-                }
-                item.localConfiguration != null -> item
-                else -> mediaTree.getItem(item.mediaId) ?: item
-            }
-        }
-        val firstId = resolved.getOrNull(startIndex)?.mediaId
+        val start = if (mediaItems.size == 1) index else startIndex.coerceIn(0, queue.lastIndex)
+        val startItem = queue[start]
         val resume = when {
             startPositionMs != C.TIME_UNSET -> startPositionMs
-            firstId != null && MediaIds.supportsResumePosition(firstId) ->
-                IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(firstId)
-            else -> 0L
+            else -> resumePositionFor(startItem.mediaId, startItem)
         }
-        return MediaSession.MediaItemsWithStartPosition(resolved, startIndex, resume)
+        Log.i(
+            TAG,
+            "Expanded playlist size=${queue.size} start=$start id=${startItem.mediaId}"
+        )
+        return MediaSession.MediaItemsWithStartPosition(queue, start, resume)
     }
 
     /** Resume last played content (radio reconnect or position restore). */
@@ -333,11 +315,12 @@ class PlaybackService : MediaLibraryService() {
                 .add(customResumeLast)
                 .add(SessionCommand(COMMAND_STOP, Bundle.EMPTY))
                 .build()
-            // Seek ± and next/previous track for Auto / notifications / steering wheel
+            maybeAutoResumeAfterAutoReconnect(controller)
+            // Always advertise Next/Previous to Android Auto / notifications / car controls.
+            // QueueSkippingPlayer maps these to media-item skips when a playlist is loaded.
             val playerCommands = Player.Commands.Builder()
                 .addAllCommands()
                 .build()
-            maybeAutoResumeAfterAutoReconnect(controller)
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(sessionCommands)
                 .setAvailablePlayerCommands(playerCommands)
@@ -451,15 +434,17 @@ class PlaybackService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
-            val resolved = mediaItems.map { item ->
+            // Critical for Android Auto: returning only the tapped item disables Next/Prev.
+            val (queue, _) = mediaTree.expandRequestToPlaylist(mediaItems)
+            val resolved = if (queue.isNotEmpty()) queue else mediaItems.map { item ->
                 val query = item.requestMetadata.searchQuery
                 when {
                     !query.isNullOrBlank() -> voiceHelper.resolve(query) ?: item
-                    item.localConfiguration != null -> item
                     else -> mediaTree.getItem(item.mediaId) ?: item
                 }
-            }.toMutableList()
-            return Futures.immediateFuture(resolved)
+            }
+            Log.i(TAG, "onAddMediaItems expanded to ${resolved.size} items")
+            return Futures.immediateFuture(resolved.toMutableList())
         }
 
         override fun onSetMediaItems(
@@ -477,13 +462,10 @@ class PlaybackService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             val recent = mediaTree.resolveContinueListening()
-            val item = recent?.let {
-                mediaTree.toPlayableMediaItem(
-                    it,
-                    if (it.isLive) 0L
-                    else IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(it.mediaId)
-                )
-            } ?: mediaTree.getItem(MediaIds.radio("imc_live"))
+            val seedId = recent?.mediaId ?: MediaIds.radio("imc_live")
+            val (queue, index) = mediaTree.buildQueueAround(seedId)
+            val startItem = queue.getOrNull(index)
+                ?: mediaTree.getItem(seedId)
                 ?: mediaTree.getRootItem()
             val position = recent?.let {
                 if (it.isLive) 0L
@@ -491,8 +473,11 @@ class PlaybackService : MediaLibraryService() {
             } ?: 0L
             // Clear pending flag — system resumption fulfills the Auto reconnect contract
             IslamMediaApp.instance.mediaPreferences.setPendingAutoResume(false)
+            val playlist = if (queue.isNotEmpty()) queue else listOf(startItem)
+            val start = index.coerceIn(0, (playlist.size - 1).coerceAtLeast(0))
+            Log.i(TAG, "onPlaybackResumption queue=${playlist.size} start=$start")
             return Futures.immediateFuture(
-                MediaSession.MediaItemsWithStartPosition(listOf(item), 0, position)
+                MediaSession.MediaItemsWithStartPosition(playlist, start, position)
             )
         }
 
