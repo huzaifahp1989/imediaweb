@@ -127,20 +127,22 @@ Expected: `MediaBrowserService` + `MediaLibraryService` intents, `com.google.and
 10. **Reconnect test**
    - Stop DHU while playing, restart DHU — playback auto-resumes via `onDisconnected` pending flag + `onPlaybackResumption` / `onConnect`.
 
-## App not showing in the car? (sideloaded APK)
+## Download the APK (working links)
 
-Android Auto **hides apps that are not from Play Store** until you enable developer Unknown sources:
+- **CDN (works now):** https://cdn.jsdelivr.net/gh/huzaifahp1989/imediaweb@cursor/continue-listening-e5fc/public/downloads/islam-media-central.apk
+- **Site (after deploy):** https://imediackids.com/downloads/islam-media-central.apk
+- **Simple page:** https://imediackids.com/get-android.html (or `/get-android.html` on your deploy)
 
-1. On the phone open **Android Auto settings**  
-   (Settings → search “Android Auto” → Additional settings in the app)
-2. Scroll to **Version** → tap it **10 times** → OK
-3. Top-right **⋮** menu → **Developer settings**
-4. Turn **ON** “Unknown sources”
-5. Back in Auto settings → **Customize launcher** → enable **Islam Media Central**
-6. Open Islam Media Central on the phone once and tap **Play Live Radio**
-7. Disconnect the car / wireless Auto, then reconnect
+## App not showing in the car?
 
-Without step 4, a GitHub/sideload APK will never appear in the car media list.
+Google only auto-lists apps installed from the **Play Store**. For a sideloaded APK you must turn on Unknown sources **once**:
+
+1. Android Auto settings → tap **Version** 10 times  
+2. ⋮ → Developer settings → **Unknown sources** ON  
+3. Reconnect the car  
+
+### Zero ongoing work for users
+Publish the app to **Play Console → Internal testing** (or production). Then users install from Play and Android Auto shows it with **no Unknown sources step**.
 
 ### DHU tips
 

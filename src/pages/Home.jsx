@@ -429,18 +429,23 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
               Add Android Auto
             </h2>
-            <p className="text-base md:text-lg text-white/80 max-w-2xl mx-auto mb-8">
-              Anyone with the Islam Media Central app can play our public streams in the car —
-              Live Radio, Radio Seerah, 150+ Quran radios, nasheeds, and talks. Install the app,
-              enable Android Auto, and listen safely while driving.
+            <p className="text-base md:text-lg text-white/80 max-w-2xl mx-auto mb-6">
+              Install the app on your phone, open it once, connect the car — then play Live Radio,
+              Quran Radio, and the Audio Library while driving.
             </p>
-            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mb-8">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mb-6">
               <a
-                href="https://github.com/huzaifahp1989/imediaweb/releases/download/continue-listening-debug-apk/islam-media-central-release.apk"
+                href="https://cdn.jsdelivr.net/gh/huzaifahp1989/imediaweb@cursor/continue-listening-e5fc/public/downloads/islam-media-central.apk"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 transition-colors"
               >
                 <Download className="w-5 h-5" />
                 Download Android App
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}get-android.html`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 hover:bg-white/10 px-6 py-3 font-semibold transition-colors"
+              >
+                Simple install page
               </a>
               <a
                 href="https://traet2lhw4m4.vercel.app/"
@@ -463,11 +468,20 @@ export default function Home() {
                 <ExternalLink className="w-4 h-4 opacity-70" />
               </a>
             </div>
-            <p className="text-sm text-white/60 max-w-xl mx-auto">
-              After install: open the app once → Android Auto settings → tap Version 10 times →
-              Developer settings → turn on <span className="text-emerald-300 font-semibold">Unknown sources</span> →
-              Customize launcher → enable Islam Media Central.
-            </p>
+            <details className="text-left max-w-xl mx-auto bg-white/5 rounded-xl px-4 py-3 border border-white/10">
+              <summary className="cursor-pointer text-sm font-semibold text-emerald-200">
+                App installed but not in the car? Tap once (one-time setup)
+              </summary>
+              <ol className="mt-3 text-sm text-white/70 list-decimal list-inside space-y-1.5">
+                <li>Phone Settings → Android Auto → Additional settings</li>
+                <li>Tap <strong className="text-white">Version</strong> 10 times</li>
+                <li>Menu ⋮ → Developer settings → turn on <strong className="text-emerald-300">Unknown sources</strong></li>
+                <li>Reconnect the car — done (you won’t need this again)</li>
+              </ol>
+              <p className="mt-3 text-xs text-white/50">
+                Google requires this for apps not from the Play Store. Publishing to Play Internal Testing removes this step for everyone.
+              </p>
+            </details>
           </motion.div>
         </div>
       </section>

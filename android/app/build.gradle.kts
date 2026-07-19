@@ -34,7 +34,7 @@ android {
         buildConfigField(
             "String",
             "ANDROID_AUTO_APK_URL",
-            "\"https://github.com/huzaifahp1989/imediaweb/releases/download/continue-listening-debug-apk/islam-media-central-release.apk\""
+            "\"https://imediackids.com/downloads/islam-media-central.apk\""
         )
     }
 
