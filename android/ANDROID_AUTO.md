@@ -118,11 +118,17 @@ Expected: `MediaBrowserService` + `MediaLibraryService` intents, `com.google.and
    - Open MainActivity → **Resume Last Played** resumes the same item Android Auto would continue.
    - Last played is shown under the button (type + title + position).
 
-9. **Voice / Assistant** (on device or DHU mic if available):
+9. **Transport controls**
+   - Next / Previous moves across the current queue (stations, surahs, library tracks, talks)
+   - Seek back 15s / forward 30s on on-demand tracks (not live radio)
+
+10. **Voice / Assistant** (phone mic, Auto, or Google Assistant):
    - “Play Islam Media Central”
-   - “Play Radio”
+   - “Play Radio Seerah”
    - “Play Quran”
+   - “Play Nasheed”
    - “Continue listening”
+   - Auto browse search + phone **Voice search** button
 
 10. **Reconnect test**
    - Stop DHU while playing, restart DHU — playback auto-resumes via `onDisconnected` pending flag + `onPlaybackResumption` / `onConnect`.

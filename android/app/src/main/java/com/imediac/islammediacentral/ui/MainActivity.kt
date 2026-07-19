@@ -1,11 +1,14 @@
 package com.imediac.islammediacentral.ui
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.speech.RecognizerIntent
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
@@ -21,6 +24,7 @@ import com.imediac.islammediacentral.data.MediaCategory
 import com.imediac.islammediacentral.data.MediaIds
 import com.imediac.islammediacentral.databinding.ActivityMainBinding
 import com.imediac.islammediacentral.media.PlaybackService
+import java.util.Locale
 
 /**
  * Thin phone UI that drives the same MediaLibraryService / ExoPlayer used by Android Auto.
@@ -40,6 +44,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val voiceSearchLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+        val spoken = result.data
+            ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            ?.firstOrNull()
+            .orEmpty()
+        if (spoken.isBlank()) return@registerForActivityResult
+        Toast.makeText(this, "“$spoken”", Toast.LENGTH_SHORT).show()
+        startService(
+            Intent(this, PlaybackService::class.java).apply {
+                action = PlaybackService.ACTION_PLAY_FROM_SEARCH
+                putExtra(android.app.SearchManager.QUERY, spoken)
+            }
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -56,6 +78,11 @@ class MainActivity : AppCompatActivity() {
             val c = controller ?: return@setOnClickListener
             if (c.isPlaying) c.pause() else c.play()
         }
+        binding.btnPrev.setOnClickListener { controller?.seekToPreviousMediaItem() }
+        binding.btnNext.setOnClickListener { controller?.seekToNextMediaItem() }
+        binding.btnSeekBack.setOnClickListener { controller?.seekBack() }
+        binding.btnSeekForward.setOnClickListener { controller?.seekForward() }
+        binding.btnVoiceSearch.setOnClickListener { startVoiceSearch() }
         binding.btnOpenAutoSettings.setOnClickListener { openAndroidAutoSettings() }
         binding.btnOpenStreamsSite.setOnClickListener {
             openUrl(com.imediac.islammediacentral.BuildConfig.IMC_STREAMS_SITE)
@@ -98,15 +125,29 @@ class MainActivity : AppCompatActivity() {
         if (intent == null) return
         when (intent.action) {
             Intent.ACTION_MEDIA_BUTTON,
+            Intent.ACTION_SEARCH,
             "android.media.action.MEDIA_PLAY_FROM_SEARCH" -> {
                 val query = intent.getStringExtra(android.app.SearchManager.QUERY).orEmpty()
                 startService(
                     Intent(this, PlaybackService::class.java).apply {
-                        action = "android.media.action.MEDIA_PLAY_FROM_SEARCH"
+                        action = PlaybackService.ACTION_PLAY_FROM_SEARCH
                         putExtra(android.app.SearchManager.QUERY, query)
                     }
                 )
             }
+        }
+    }
+
+    private fun startVoiceSearch() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.voice_search_prompt))
+        }
+        try {
+            voiceSearchLauncher.launch(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.voice_search_prompt, Toast.LENGTH_LONG).show()
         }
     }
 

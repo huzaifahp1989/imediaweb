@@ -130,14 +130,17 @@ class MediaItemTree(
             buildContinueListeningItem().let { results += it }
             results += continueListeningChildren()
         }
-        if (matches(q, "radio", "live", "islam media", "stream")) {
+        if (matches(q, "radio", "live", "islam media", "stream", "seerah", "markaz")) {
             results += radioChildren()
         }
-        if (matches(q, "quran", "reciter", "surah", "koran")) {
+        if (matches(q, "quran radio", "reciter radio")) {
+            results += quranRadioChildren().take(20)
+        }
+        if (matches(q, "quran", "reciter", "surah", "koran", "alafasy")) {
             results += surahChildren("alafasy").take(5)
             results += reciterChildren()
         }
-        if (matches(q, "podcast", "story", "hadith", "nasheed", "tajweed")) {
+        if (matches(q, "podcast", "story", "hadith", "nasheed", "tajweed", "audio library", "dua")) {
             results += podcastCategoryChildren()
         }
         if (matches(q, "lecture", "khutbah", "talk", "bayaan")) {
@@ -150,11 +153,21 @@ class MediaItemTree(
             results += recentChildren()
         }
 
-        MediaCatalog.radioStations
+        (preferences.getLiveStations() + preferences.getQuranRadioStreams() + MediaCatalog.radioStations)
+            .distinctBy { it.id }
             .filter { it.name.lowercase().contains(q) || it.description.lowercase().contains(q) }
             .forEach { station ->
-                resolvePlayable(MediaIds.radio(station.id))
-                    ?.let { results += toPlayableMediaItem(it) }
+                results += toPlayableMediaItem(
+                    PlayableMedia(
+                        mediaId = MediaIds.radio(station.id),
+                        title = station.name,
+                        subtitle = station.description,
+                        streamUrl = station.streamUrl,
+                        artworkUrl = station.artworkUrl,
+                        isLive = true,
+                        category = MediaCategory.RADIO
+                    )
+                )
             }
         MediaCatalog.reciters
             .filter { it.name.lowercase().contains(q) || it.id.contains(q) }
@@ -192,23 +205,79 @@ class MediaItemTree(
 
     fun resolveVoiceQuery(query: String): MediaItem? {
         val q = query.trim().lowercase()
+            .removePrefix("play ")
+            .removePrefix("listen to ")
+            .removePrefix("put on ")
+            .trim()
         if (matches(q, "continue", "resume", "last played", "continue listening")) {
             return buildContinueListeningItem().takeIf { it.mediaMetadata.isPlayable == true }
                 ?: continueListeningChildren().firstOrNull()
         }
-        if (q.isEmpty() || matches(q, "islam media central", "islam media", "imedia")) {
+        if (q.isEmpty() || matches(q, "islam media central", "islam media", "imedia", "imc")) {
             return radioChildren().firstOrNull()
         }
-        if (matches(q, "radio", "live radio", "stream")) {
+        if (matches(q, "seerah", "radio seerah")) {
+            return getItem(MediaIds.radio("radio_seerah")) ?: radioChildren().firstOrNull()
+        }
+        if (matches(q, "markaz", "sahaba", "talk radio")) {
+            return getItem(MediaIds.radio("markaz_sahaba")) ?: radioChildren().firstOrNull()
+        }
+        if (matches(q, "radio", "live radio", "live stream", "stream")) {
             return radioChildren().firstOrNull()
         }
-        if (matches(q, "quran", "koran", "recitation")) {
+        if (matches(q, "quran radio", "reciter radio", "continuous quran")) {
+            return quranRadioChildren().firstOrNull()
+        }
+        if (matches(q, "quran", "koran", "recitation", "alafasy", "fatihah", "fatiha")) {
             return getItem(MediaIds.surah("alafasy", 1))
         }
-        if (matches(q, "lecture", "khutbah")) {
+        if (matches(q, "nasheed", "nasheeds", "audio library")) {
+            return podcastEpisodeChildren("nasheeds").firstOrNull()
+                ?: podcastCategoryChildren().firstOrNull()?.let { cat ->
+                    getChildren(cat.mediaId).firstOrNull { it.mediaMetadata.isPlayable == true }
+                }
+        }
+        if (matches(q, "lecture", "khutbah", "talk", "bayaan")) {
             return lectureChildren().firstOrNull()
         }
         return search(q).firstOrNull { it.mediaMetadata.isPlayable == true }
+    }
+
+    /**
+     * Builds a skippable playlist around [mediaId] so Android Auto / the phone can
+     * move next/previous across sibling tracks (same category, reciter, or station list).
+     */
+    fun buildQueueAround(mediaId: String): Pair<List<MediaItem>, Int> {
+        val resolvedId = when (mediaId) {
+            MediaIds.CONTINUE_LISTENING -> resolveContinueListening()?.mediaId ?: mediaId
+            else -> mediaId
+        }
+        val queue: List<MediaItem> = when {
+            resolvedId.startsWith("podcast:") -> {
+                val episode = preferences.getPodcastEpisodes()
+                    .find { MediaIds.podcastEpisode(it.id) == resolvedId }
+                if (episode != null) podcastEpisodeChildren(episode.categoryId)
+                else listOfNotNull(getItem(resolvedId))
+            }
+            resolvedId.startsWith("lecture:") -> lectureChildren()
+            resolvedId.startsWith("surah:") -> {
+                val parts = resolvedId.split(":")
+                if (parts.size >= 3) surahChildren(parts[1]) else listOfNotNull(getItem(resolvedId))
+            }
+            resolvedId.startsWith("radio:") -> {
+                val liveQueue = radioChildren()
+                val quranQueue = quranRadioChildren()
+                when {
+                    liveQueue.any { it.mediaId == resolvedId } -> liveQueue
+                    quranQueue.any { it.mediaId == resolvedId } -> quranQueue
+                    else -> listOfNotNull(getItem(resolvedId))
+                }
+            }
+            else -> listOfNotNull(getItem(resolvedId))
+        }.ifEmpty { listOfNotNull(getItem(resolvedId)) }
+
+        val index = queue.indexOfFirst { it.mediaId == resolvedId }.let { if (it >= 0) it else 0 }
+        return queue to index.coerceIn(0, (queue.size - 1).coerceAtLeast(0))
     }
 
     /**

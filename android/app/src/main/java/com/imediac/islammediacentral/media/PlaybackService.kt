@@ -97,6 +97,9 @@ class PlaybackService : MediaLibraryService() {
             )
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
+            .setSeekBackIncrementMs(SEEK_BACK_MS)
+            .setSeekForwardIncrementMs(SEEK_FORWARD_MS)
+            .setMaxSeekToPreviousPositionMs(3_000L)
             .build()
             .also { it.addListener(playerListener) }
 
@@ -196,27 +199,87 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private fun playMediaId(mediaId: String, playWhenReady: Boolean = true): Boolean {
-        val resolvedId = if (mediaId == MediaIds.CONTINUE_LISTENING) {
-            mediaTree.resolveContinueListening()?.mediaId ?: return false
-        } else {
-            mediaId
-        }
-        val item = mediaTree.getItem(resolvedId) ?: return false
-        if (item.mediaMetadata.isPlayable != true) return false
         val p = player ?: return false
-        val resume = if (MediaIds.supportsResumePosition(resolvedId)) {
-            item.mediaMetadata.extras
-                ?.getLong(MediaItemTree.EXTRA_RESUME_POSITION, 0L)
-                ?.takeIf { it > 0L }
-                ?: IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(resolvedId)
-        } else {
-            0L
-        }
-
-        p.setMediaItem(item, /* startPositionMs = */ resume)
+        val (queue, index) = mediaTree.buildQueueAround(mediaId)
+        if (queue.isEmpty()) return false
+        val startItem = queue[index]
+        if (startItem.mediaMetadata.isPlayable != true) return false
+        val startId = startItem.mediaId
+        val resume = resumePositionFor(startId, startItem)
+        p.setMediaItems(queue, index, resume)
         p.prepare()
         p.playWhenReady = playWhenReady
         return true
+    }
+
+    private fun resumePositionFor(mediaId: String, item: MediaItem): Long {
+        if (!MediaIds.supportsResumePosition(mediaId)) return 0L
+        return item.mediaMetadata.extras
+            ?.getLong(MediaItemTree.EXTRA_RESUME_POSITION, 0L)
+            ?.takeIf { it > 0L }
+            ?: IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(mediaId)
+    }
+
+    private fun expandToQueue(
+        mediaItems: List<MediaItem>,
+        startIndex: Int,
+        startPositionMs: Long
+    ): MediaSession.MediaItemsWithStartPosition {
+        // Assistant / Auto voice: MediaItem may carry only a search query
+        val searchQuery = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
+        if (!searchQuery.isNullOrBlank()) {
+            val hit = voiceHelper.resolve(searchQuery)
+            if (hit != null) {
+                val (queue, index) = mediaTree.buildQueueAround(hit.mediaId)
+                val resume = resumePositionFor(queue[index].mediaId, queue[index])
+                return MediaSession.MediaItemsWithStartPosition(queue, index, resume)
+            }
+        }
+
+        if (mediaItems.size == 1) {
+            val only = mediaItems.first()
+            val id = when {
+                only.mediaId == MediaIds.CONTINUE_LISTENING ->
+                    mediaTree.resolveContinueListening()?.mediaId ?: only.mediaId
+                only.mediaId.isNotBlank() -> only.mediaId
+                else -> only.requestMetadata.mediaUri?.toString().orEmpty()
+            }
+            if (id.isNotBlank() && (MediaIds.isPlayable(id) || id == MediaIds.CONTINUE_LISTENING)) {
+                val (queue, index) = mediaTree.buildQueueAround(id)
+                if (queue.isNotEmpty()) {
+                    val resume = when {
+                        startPositionMs != C.TIME_UNSET -> startPositionMs
+                        else -> resumePositionFor(queue[index].mediaId, queue[index])
+                    }
+                    return MediaSession.MediaItemsWithStartPosition(queue, index, resume)
+                }
+            }
+        }
+
+        val resolved = mediaItems.map { item ->
+            when {
+                item.mediaId == MediaIds.CONTINUE_LISTENING -> {
+                    val last = mediaTree.resolveContinueListening()
+                    if (last != null) {
+                        mediaTree.toPlayableMediaItem(last, mediaTree.resumePositionMs(last.mediaId))
+                    } else if (item.localConfiguration != null) {
+                        item
+                    } else {
+                        mediaTree.getItem(item.mediaId) ?: item
+                    }
+                }
+                item.localConfiguration != null -> item
+                else -> mediaTree.getItem(item.mediaId) ?: item
+            }
+        }
+        val firstId = resolved.getOrNull(startIndex)?.mediaId
+        val resume = when {
+            startPositionMs != C.TIME_UNSET -> startPositionMs
+            firstId != null && MediaIds.supportsResumePosition(firstId) ->
+                IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(firstId)
+            else -> 0L
+        }
+        return MediaSession.MediaItemsWithStartPosition(resolved, startIndex, resume)
     }
 
     /** Resume last played content (radio reconnect or position restore). */
@@ -270,9 +333,14 @@ class PlaybackService : MediaLibraryService() {
                 .add(customResumeLast)
                 .add(SessionCommand(COMMAND_STOP, Bundle.EMPTY))
                 .build()
+            // Seek ± and next/previous track for Auto / notifications / steering wheel
+            val playerCommands = Player.Commands.Builder()
+                .addAllCommands()
+                .build()
             maybeAutoResumeAfterAutoReconnect(controller)
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(sessionCommands)
+                .setAvailablePlayerCommands(playerCommands)
                 .build()
         }
 
@@ -378,6 +446,22 @@ class PlaybackService : MediaLibraryService() {
             )
         }
 
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: MutableList<MediaItem>
+        ): ListenableFuture<MutableList<MediaItem>> {
+            val resolved = mediaItems.map { item ->
+                val query = item.requestMetadata.searchQuery
+                when {
+                    !query.isNullOrBlank() -> voiceHelper.resolve(query) ?: item
+                    item.localConfiguration != null -> item
+                    else -> mediaTree.getItem(item.mediaId) ?: item
+                }
+            }.toMutableList()
+            return Futures.immediateFuture(resolved)
+        }
+
         override fun onSetMediaItems(
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
@@ -385,32 +469,7 @@ class PlaybackService : MediaLibraryService() {
             startIndex: Int,
             startPositionMs: Long
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val resolved = mediaItems.map { item ->
-                when {
-                    item.mediaId == MediaIds.CONTINUE_LISTENING -> {
-                        val last = mediaTree.resolveContinueListening()
-                        if (last != null) {
-                            mediaTree.toPlayableMediaItem(last, mediaTree.resumePositionMs(last.mediaId))
-                        } else if (item.localConfiguration != null) {
-                            item
-                        } else {
-                            mediaTree.getItem(item.mediaId) ?: item
-                        }
-                    }
-                    item.localConfiguration != null -> item
-                    else -> mediaTree.getItem(item.mediaId) ?: item
-                }
-            }
-            val firstId = resolved.getOrNull(startIndex)?.mediaId
-            val resume = when {
-                startPositionMs != C.TIME_UNSET -> startPositionMs
-                firstId != null && MediaIds.supportsResumePosition(firstId) ->
-                    IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(firstId)
-                else -> 0L
-            }
-            return Futures.immediateFuture(
-                MediaSession.MediaItemsWithStartPosition(resolved, startIndex, resume)
-            )
+            return Futures.immediateFuture(expandToQueue(mediaItems, startIndex, startPositionMs))
         }
 
         override fun onPlaybackResumption(
@@ -487,6 +546,8 @@ class PlaybackService : MediaLibraryService() {
     companion object {
         private const val TAG = "ImcPlaybackService"
         private const val POSITION_SAVE_INTERVAL_MS = 15_000L
+        private const val SEEK_BACK_MS = 15_000L
+        private const val SEEK_FORWARD_MS = 30_000L
         const val COMMAND_TOGGLE_FAVORITE = "imc.toggle_favorite"
         const val COMMAND_RESUME_LAST = "imc.resume_last"
         const val COMMAND_STOP = "imc.stop"
@@ -505,10 +566,20 @@ class PlaybackService : MediaLibraryService() {
             ACTION_RESUME_LAST -> {
                 resumeLastPlayed(playWhenReady = true)
             }
-            Intent.ACTION_SEARCH, "android.media.action.MEDIA_PLAY_FROM_SEARCH" -> {
-                val query = intent.getStringExtra(android.app.SearchManager.QUERY).orEmpty()
+            Intent.ACTION_SEARCH,
+            "android.media.action.MEDIA_PLAY_FROM_SEARCH",
+            ACTION_PLAY_FROM_SEARCH -> {
+                val query = intent.getStringExtra(android.app.SearchManager.QUERY)
+                    ?: intent.getStringExtra("query")
+                    ?: ""
+                Log.i(TAG, "Voice / play-from-search query=\"$query\"")
                 val item = voiceHelper.resolve(query)
-                if (item != null) playMediaId(item.mediaId)
+                if (item != null) {
+                    playMediaId(item.mediaId)
+                } else {
+                    Log.w(TAG, "No playable match for voice query \"$query\" — falling back to live radio")
+                    playMediaId(MediaIds.radio("imc_live"))
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)

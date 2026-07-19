@@ -171,6 +171,29 @@ class MediaItemTreeTest {
     }
 
     @Test
+    fun queueAroundPodcastSupportsNextPrevious() {
+        val episodes = preferences.getPodcastEpisodes()
+        assertTrue(episodes.isNotEmpty())
+        val firstId = MediaIds.podcastEpisode(episodes.first().id)
+        val (queue, index) = tree.buildQueueAround(firstId)
+        assertTrue(queue.size >= 1)
+        assertEquals(firstId, queue[index].mediaId)
+        assertTrue(queue.all { it.mediaMetadata.isPlayable == true })
+    }
+
+    @Test
+    fun voiceSearchResolvesRadioAndQuran() {
+        assertNotNull(tree.resolveVoiceQuery("Play Radio Seerah"))
+        assertNotNull(tree.resolveVoiceQuery("play quran"))
+        assertNotNull(tree.resolveVoiceQuery("nasheed"))
+        val seerah = tree.resolveVoiceQuery("Radio Seerah")
+        assertTrue(
+            seerah?.mediaId?.contains("seerah") == true ||
+                seerah?.mediaId?.startsWith("radio:") == true
+        )
+    }
+
+    @Test
     fun recentChildrenIncludeResumePosition() {
         val podcastId = MediaIds.podcastEpisode("quran_yasin")
         preferences.recordPlayed(
