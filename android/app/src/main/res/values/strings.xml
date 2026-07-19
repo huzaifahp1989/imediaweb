@@ -24,4 +24,8 @@
     <string name="status_idle">Ready — connect Android Auto or tap play</string>
     <string name="toast_nothing_to_resume">Nothing to resume yet — play radio, Quran, a podcast, or a lecture first</string>
     <string name="toast_resuming">Resuming last played…</string>
+    <string name="auto_setup_title">App not in Android Auto?</string>
+    <string name="auto_setup_steps">Sideloaded apps are hidden until you allow them:\n\n1. Open Android Auto settings (button below)\n2. Scroll to Version → tap it 10 times\n3. Menu ⋮ → Developer settings\n4. Turn ON “Unknown sources”\n5. Go back → Customize launcher → enable Islam Media Central\n6. Disconnect and reconnect the car\n\nAlso open this app once, then play Live Radio here before connecting.</string>
+    <string name="btn_open_auto_settings">Open Android Auto settings</string>
+    <string name="toast_auto_settings_missing">Couldn’t open Android Auto settings — search “Android Auto” in phone Settings</string>
 </resources>

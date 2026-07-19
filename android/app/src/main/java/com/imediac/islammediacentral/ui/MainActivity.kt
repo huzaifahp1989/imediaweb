@@ -2,7 +2,9 @@ package com.imediac.islammediacentral.ui
 
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             val c = controller ?: return@setOnClickListener
             if (c.isPlaying) c.pause() else c.play()
         }
+        binding.btnOpenAutoSettings.setOnClickListener { openAndroidAutoSettings() }
 
         updateLastPlayedHint()
         handleVoiceIntent(intent)
@@ -180,5 +183,30 @@ class MainActivity : AppCompatActivity() {
         binding.lastPlayedHint.text = getString(
             R.string.continue_listening_subtitle
         ) + ": $type — ${last.title}$positionHint"
+    }
+
+    /**
+     * Sideloaded media apps stay hidden on the car until Android Auto → Developer settings →
+     * Unknown sources is enabled. This opens the Auto settings screen so the user can do that.
+     */
+    private fun openAndroidAutoSettings() {
+        val candidates = listOf(
+            Intent("com.google.android.gms.car.APPLICATION_PREFERENCES"),
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:com.google.android.projection.gearhead")
+            },
+            packageManager.getLaunchIntentForPackage("com.google.android.projection.gearhead")
+        )
+        for (intent in candidates) {
+            if (intent == null) continue
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                startActivity(intent)
+                return
+            } catch (_: Exception) {
+                // try next
+            }
+        }
+        Toast.makeText(this, R.string.toast_auto_settings_missing, Toast.LENGTH_LONG).show()
     }
 }

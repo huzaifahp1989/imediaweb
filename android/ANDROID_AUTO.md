@@ -127,11 +127,27 @@ Expected: `MediaBrowserService` + `MediaLibraryService` intents, `com.google.and
 10. **Reconnect test**
    - Stop DHU while playing, restart DHU — playback auto-resumes via `onDisconnected` pending flag + `onPlaybackResumption` / `onConnect`.
 
+## App not showing in the car? (sideloaded APK)
+
+Android Auto **hides apps that are not from Play Store** until you enable developer Unknown sources:
+
+1. On the phone open **Android Auto settings**  
+   (Settings → search “Android Auto” → Additional settings in the app)
+2. Scroll to **Version** → tap it **10 times** → OK
+3. Top-right **⋮** menu → **Developer settings**
+4. Turn **ON** “Unknown sources”
+5. Back in Auto settings → **Customize launcher** → enable **Islam Media Central**
+6. Open Islam Media Central on the phone once and tap **Play Live Radio**
+7. Disconnect the car / wireless Auto, then reconnect
+
+Without step 4, a GitHub/sideload APK will never appear in the car media list.
+
 ### DHU tips
 
-- Use a **debug** build (`applicationIdSuffix .debug`) so you can side-load without Play Console Auto review.
-- For release / production Auto listing you must submit the media app for [Android Auto review](https://developer.android.com/training/cars/media/auto-app-quality).
-- If the app does not appear in Auto: reboot phone, clear Android Auto app data, confirm `automotive_app_desc.xml` is packaged (`aapt dump xmltree app-debug.apk AndroidManifest.xml`).
+- Prefer the **release** sideload APK (`com.imediac.islammediacentral`, no `.debug` suffix) for car testing.
+- Debug builds (`applicationIdSuffix .debug`) also work after Unknown sources is on.
+- For production Play listing you must submit for [Android Auto review](https://developer.android.com/training/cars/media/auto-app-quality).
+- If still missing: force-stop Android Auto, clear its cache, reboot phone, reconnect.
 
 ## Content sources (aligned with web app)
 
