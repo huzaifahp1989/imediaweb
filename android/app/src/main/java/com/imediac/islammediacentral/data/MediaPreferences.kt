@@ -6,8 +6,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 /**
- * Local persistence for favorites, recently played, and podcast resume positions.
- * Designed so a future Supabase sync can read/write the same keys without changing Auto UI.
+ * Local persistence for favorites, recently played, resume positions, and Auto reconnect.
+ * Survives app restarts via SharedPreferences; designed for a future Supabase sync.
  */
 class MediaPreferences(context: Context) {
 
@@ -50,25 +50,61 @@ class MediaPreferences(context: Context) {
         return gson.fromJson(raw, type) ?: emptyList()
     }
 
+    /** Most recent playable item (radio, Quran, podcast, or lecture), or null. */
+    fun getLastPlayed(): PlayableMedia? {
+        val raw = prefs.getString(KEY_LAST_PLAYED, null)
+        if (!raw.isNullOrBlank()) {
+            return gson.fromJson(raw, PlayableMedia::class.java) ?: getRecentlyPlayed().firstOrNull()
+        }
+        return getRecentlyPlayed().firstOrNull()
+    }
+
+    /**
+     * Saves [item] as the last-played entry and prepends it to Recently Played.
+     * Called automatically whenever playback starts a new media item.
+     */
     fun recordPlayed(item: PlayableMedia) {
+        if (item.mediaId == MediaIds.CONTINUE_LISTENING || item.mediaId == MediaIds.ROOT) return
         val current = getRecentlyPlayed().toMutableList()
         current.removeAll { it.mediaId == item.mediaId }
         current.add(0, item)
         val trimmed = current.take(MAX_RECENT)
-        prefs.edit().putString(KEY_RECENT, gson.toJson(trimmed)).apply()
+        // commit() so last-played survives process death before apply() flush
+        prefs.edit()
+            .putString(KEY_RECENT, gson.toJson(trimmed))
+            .putString(KEY_LAST_PLAYED, gson.toJson(item))
+            .commit()
     }
 
-    fun getPlaybackPosition(mediaId: String): Long =
-        prefs.getLong(positionKey(mediaId), 0L)
+    fun getPlaybackPosition(mediaId: String): Long {
+        if (!MediaIds.supportsResumePosition(mediaId)) return 0L
+        return prefs.getLong(positionKey(mediaId), 0L)
+    }
 
     fun savePlaybackPosition(mediaId: String, positionMs: Long) {
-        // Skip live radio and very short positions
-        if (mediaId.startsWith("radio:") || positionMs < 1_500L) return
+        // Skip live radio / continue shortcut and very short positions
+        if (!MediaIds.supportsResumePosition(mediaId) || positionMs < 1_500L) return
         prefs.edit().putLong(positionKey(mediaId), positionMs).apply()
     }
 
     fun clearPlaybackPosition(mediaId: String) {
         prefs.edit().remove(positionKey(mediaId)).apply()
+    }
+
+    /**
+     * When Android Auto disconnects mid-playback, set this so the next Auto connection
+     * automatically resumes the last item.
+     */
+    fun setPendingAutoResume(pending: Boolean) {
+        prefs.edit().putBoolean(KEY_PENDING_AUTO_RESUME, pending).commit()
+    }
+
+    fun isPendingAutoResume(): Boolean = prefs.getBoolean(KEY_PENDING_AUTO_RESUME, false)
+
+    fun consumePendingAutoResume(): Boolean {
+        if (!isPendingAutoResume()) return false
+        prefs.edit().putBoolean(KEY_PENDING_AUTO_RESUME, false).commit()
+        return true
     }
 
     fun getPodcastEpisodes(): List<PodcastEpisode> {
@@ -78,9 +114,20 @@ class MediaPreferences(context: Context) {
         return gson.fromJson(raw, type) ?: MediaCatalog.seedPodcasts
     }
 
+    fun getLectures(): List<PodcastEpisode> {
+        val raw = prefs.getString(KEY_LECTURES, null)
+        if (raw.isNullOrBlank()) return MediaCatalog.seedLectures
+        val type = object : TypeToken<List<PodcastEpisode>>() {}.type
+        return gson.fromJson(raw, type) ?: MediaCatalog.seedLectures
+    }
+
     /** Import / replace podcast catalog (e.g. from Base44 AudioContent or Supabase). */
     fun importPodcastCatalog(episodes: List<PodcastEpisode>) {
         prefs.edit().putString(KEY_PODCASTS, gson.toJson(episodes)).apply()
+    }
+
+    fun importLectureCatalog(lectures: List<PodcastEpisode>) {
+        prefs.edit().putString(KEY_LECTURES, gson.toJson(lectures)).apply()
     }
 
     /** Sync favorite IDs from the main app / Supabase without wiping local-only entries. */
@@ -101,7 +148,10 @@ class MediaPreferences(context: Context) {
         private const val PREFS_NAME = "imc_media_prefs"
         private const val KEY_FAVORITES = "favorites"
         private const val KEY_RECENT = "recently_played"
+        private const val KEY_LAST_PLAYED = "last_played"
         private const val KEY_PODCASTS = "podcast_catalog"
+        private const val KEY_LECTURES = "lecture_catalog"
+        private const val KEY_PENDING_AUTO_RESUME = "pending_auto_resume"
         private const val MAX_RECENT = 40
     }
 }

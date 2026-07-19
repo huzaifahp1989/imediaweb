@@ -4,17 +4,24 @@
     <string name="notification_channel_name">Now Playing</string>
     <string name="notification_channel_description">Playback controls for radio, Quran, and podcasts</string>
     <string name="browse_root_title">Islam Media Central</string>
+    <string name="category_continue_listening">Continue Listening</string>
+    <string name="continue_listening_subtitle">Resume where you left off</string>
     <string name="category_live_radio">Live Radio</string>
     <string name="category_quran_reciters">Quran Reciters</string>
     <string name="category_podcasts">Podcasts</string>
+    <string name="category_lectures">Lectures</string>
     <string name="category_favorites">Favorites</string>
     <string name="category_recently_played">Recently Played</string>
     <string name="playing_on_auto">Playing on Android Auto</string>
     <string name="empty_favorites">No favorites yet. Favorite items in the app to see them here.</string>
     <string name="empty_recent">Nothing played yet.</string>
-    <string name="assistant_hint">Try: “Play Islam Media Central”, “Play Quran”, or “Play Radio”</string>
+    <string name="empty_continue_listening">Play something to resume it here</string>
+    <string name="assistant_hint">Try: “Play Islam Media Central”, “Play Quran”, “Continue listening”, or “Play Radio”</string>
     <string name="phone_subtitle">Phone player · Android Auto ready</string>
+    <string name="btn_resume_last">Resume Last Played</string>
     <string name="btn_play_radio">Play Live Radio</string>
     <string name="btn_play_quran">Play Quran (Alafasy · Al-Fatihah)</string>
     <string name="status_idle">Ready — connect Android Auto or tap play</string>
+    <string name="toast_nothing_to_resume">Nothing to resume yet — play radio, Quran, a podcast, or a lecture first</string>
+    <string name="toast_resuming">Resuming last played…</string>
 </resources>

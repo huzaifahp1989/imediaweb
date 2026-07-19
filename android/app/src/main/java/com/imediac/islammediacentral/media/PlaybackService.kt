@@ -3,6 +3,8 @@ package com.imediac.islammediacentral.media
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
@@ -30,6 +32,10 @@ import com.imediac.islammediacentral.voice.VoiceQueryHelper
 /**
  * MediaLibraryService that exposes the Islam Media Central browse tree to Android Auto
  * and hosts ExoPlayer + MediaSession for playback, notifications, and Assistant.
+ *
+ * Continue Listening: last-played item is persisted automatically and restored with position
+ * (podcasts / Quran / lectures) or by reconnecting the last live radio station.
+ * When Android Auto disconnects mid-playback, the next Auto connection auto-resumes.
  */
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
@@ -40,13 +46,30 @@ class PlaybackService : MediaLibraryService() {
     private lateinit var voiceHelper: VoiceQueryHelper
     private lateinit var packageValidator: PackageValidator
 
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val positionPersistRunnable = object : Runnable {
+        override fun run() {
+            persistCurrentPosition()
+            if (player?.isPlaying == true) {
+                mainHandler.postDelayed(this, POSITION_SAVE_INTERVAL_MS)
+            }
+        }
+    }
+
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             mediaItem?.let { recordRecent(it) }
+            notifyContinueListeningChanged()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (!isPlaying) persistCurrentPosition()
+            if (!isPlaying) {
+                persistCurrentPosition()
+                mainHandler.removeCallbacks(positionPersistRunnable)
+            } else {
+                mainHandler.removeCallbacks(positionPersistRunnable)
+                mainHandler.postDelayed(positionPersistRunnable, POSITION_SAVE_INTERVAL_MS)
+            }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -108,6 +131,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(positionPersistRunnable)
         persistCurrentPosition()
         mediaLibrarySession?.run {
             release()
@@ -124,17 +148,26 @@ class PlaybackService : MediaLibraryService() {
     private fun persistCurrentPosition() {
         val p = player ?: return
         val mediaId = p.currentMediaItem?.mediaId ?: return
-        if (p.duration > 0 && p.currentPosition > 0) {
-            IslamMediaApp.instance.mediaPreferences.savePlaybackPosition(mediaId, p.currentPosition)
+        val resolvedId = resolveMediaId(mediaId)
+        if (p.currentPosition > 0) {
+            IslamMediaApp.instance.mediaPreferences.savePlaybackPosition(resolvedId, p.currentPosition)
         }
     }
 
+    private fun resolveMediaId(mediaId: String): String {
+        if (mediaId != MediaIds.CONTINUE_LISTENING) return mediaId
+        return mediaTree.resolveContinueListening()?.mediaId ?: mediaId
+    }
+
     private fun recordRecent(mediaItem: MediaItem) {
+        val mediaId = resolveMediaId(mediaItem.mediaId)
+        if (mediaId == MediaIds.CONTINUE_LISTENING || mediaId == MediaIds.ROOT) return
         val playable = MediaCatalog.resolvePlayable(
-            mediaItem.mediaId,
-            IslamMediaApp.instance.mediaPreferences.getPodcastEpisodes()
+            mediaId,
+            IslamMediaApp.instance.mediaPreferences.getPodcastEpisodes(),
+            IslamMediaApp.instance.mediaPreferences.getLectures()
         ) ?: PlayableMedia(
-            mediaId = mediaItem.mediaId,
+            mediaId = mediaId,
             title = mediaItem.mediaMetadata.title?.toString() ?: "Islam Media Central",
             subtitle = mediaItem.mediaMetadata.artist?.toString() ?: "",
             streamUrl = mediaItem.localConfiguration?.uri?.toString()
@@ -146,25 +179,82 @@ class PlaybackService : MediaLibraryService() {
             /* itemCount= */ Int.MAX_VALUE,
             /* params= */ null
         )
+        notifyContinueListeningChanged()
+    }
+
+    private fun notifyContinueListeningChanged() {
+        mediaLibrarySession?.notifyChildrenChanged(
+            MediaIds.ROOT,
+            /* itemCount= */ Int.MAX_VALUE,
+            /* params= */ null
+        )
+        mediaLibrarySession?.notifyChildrenChanged(
+            MediaIds.CONTINUE_LISTENING,
+            /* itemCount= */ Int.MAX_VALUE,
+            /* params= */ null
+        )
     }
 
     private fun playMediaId(mediaId: String, playWhenReady: Boolean = true): Boolean {
-        val item = mediaTree.getItem(mediaId) ?: return false
+        val resolvedId = if (mediaId == MediaIds.CONTINUE_LISTENING) {
+            mediaTree.resolveContinueListening()?.mediaId ?: return false
+        } else {
+            mediaId
+        }
+        val item = mediaTree.getItem(resolvedId) ?: return false
         if (item.mediaMetadata.isPlayable != true) return false
         val p = player ?: return false
-        val resume = item.mediaMetadata.extras
-            ?.getLong(MediaItemTree.EXTRA_RESUME_POSITION, 0L)
-            ?: IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(mediaId)
+        val resume = if (MediaIds.supportsResumePosition(resolvedId)) {
+            item.mediaMetadata.extras
+                ?.getLong(MediaItemTree.EXTRA_RESUME_POSITION, 0L)
+                ?.takeIf { it > 0L }
+                ?: IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(resolvedId)
+        } else {
+            0L
+        }
 
-        p.setMediaItem(item, /* startPositionMs = */ if (resume > 0) resume else 0L)
+        p.setMediaItem(item, /* startPositionMs = */ resume)
         p.prepare()
         p.playWhenReady = playWhenReady
         return true
     }
 
+    /** Resume last played content (radio reconnect or position restore). */
+    fun resumeLastPlayed(playWhenReady: Boolean = true): Boolean {
+        val last = mediaTree.resolveContinueListening() ?: return false
+        return playMediaId(last.mediaId, playWhenReady)
+    }
+
+    private fun maybeAutoResumeAfterAutoReconnect(controller: MediaSession.ControllerInfo) {
+        if (!packageValidator.isAndroidAutoPackage(controller.packageName)) return
+        val prefs = IslamMediaApp.instance.mediaPreferences
+        if (!prefs.consumePendingAutoResume()) return
+        mainHandler.post {
+            val p = player
+            if (p != null && p.isPlaying) {
+                Log.i(TAG, "Skipping Auto reconnect resume — already playing")
+                return@post
+            }
+            val resumed = resumeLastPlayed(playWhenReady = true)
+            Log.i(TAG, "Android Auto reconnected — auto-resume last played success=$resumed")
+        }
+    }
+
+    private fun markPendingAutoResumeIfNeeded(controller: MediaSession.ControllerInfo) {
+        if (!packageValidator.isAndroidAutoPackage(controller.packageName)) return
+        val p = player ?: return
+        val hadContent = p.mediaItemCount > 0 && p.currentMediaItem != null
+        val wasActive = p.isPlaying || p.playWhenReady
+        if (!hadContent || !wasActive) return
+        persistCurrentPosition()
+        IslamMediaApp.instance.mediaPreferences.setPendingAutoResume(true)
+        Log.i(TAG, "Android Auto disconnected during playback — will auto-resume on reconnect")
+    }
+
     private inner class LibrarySessionCallback : MediaLibrarySession.Callback {
 
         private val customFavorite = SessionCommand(COMMAND_TOGGLE_FAVORITE, Bundle.EMPTY)
+        private val customResumeLast = SessionCommand(COMMAND_RESUME_LAST, Bundle.EMPTY)
 
         override fun onConnect(
             session: MediaSession,
@@ -177,11 +267,21 @@ class PlaybackService : MediaLibraryService() {
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
                 .buildUpon()
                 .add(customFavorite)
+                .add(customResumeLast)
                 .add(SessionCommand(COMMAND_STOP, Bundle.EMPTY))
                 .build()
+            maybeAutoResumeAfterAutoReconnect(controller)
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(sessionCommands)
                 .build()
+        }
+
+        override fun onDisconnected(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ) {
+            markPendingAutoResumeIfNeeded(controller)
+            super.onDisconnected(session, controller)
         }
 
         override fun onGetLibraryRoot(
@@ -193,7 +293,7 @@ class PlaybackService : MediaLibraryService() {
                 Log.w(TAG, "Denying library root to ${browser.packageName}")
                 return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_NOT_SUPPORTED))
             }
-            // Auto "continue listening" requests a recent root
+            // Auto "continue listening" / recent root
             val root = if (params?.isRecent == true) {
                 mediaTree.getRecentRootItem()
             } else {
@@ -286,14 +386,27 @@ class PlaybackService : MediaLibraryService() {
             startPositionMs: Long
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             val resolved = mediaItems.map { item ->
-                if (item.localConfiguration != null) item
-                else mediaTree.getItem(item.mediaId) ?: item
+                when {
+                    item.mediaId == MediaIds.CONTINUE_LISTENING -> {
+                        val last = mediaTree.resolveContinueListening()
+                        if (last != null) {
+                            mediaTree.toPlayableMediaItem(last, mediaTree.resumePositionMs(last.mediaId))
+                        } else if (item.localConfiguration != null) {
+                            item
+                        } else {
+                            mediaTree.getItem(item.mediaId) ?: item
+                        }
+                    }
+                    item.localConfiguration != null -> item
+                    else -> mediaTree.getItem(item.mediaId) ?: item
+                }
             }
             val firstId = resolved.getOrNull(startIndex)?.mediaId
-            val resume = if (startPositionMs == C.TIME_UNSET && firstId != null) {
-                IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(firstId)
-            } else {
-                startPositionMs
+            val resume = when {
+                startPositionMs != C.TIME_UNSET -> startPositionMs
+                firstId != null && MediaIds.supportsResumePosition(firstId) ->
+                    IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(firstId)
+                else -> 0L
             }
             return Futures.immediateFuture(
                 MediaSession.MediaItemsWithStartPosition(resolved, startIndex, resume)
@@ -304,13 +417,21 @@ class PlaybackService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val recent = IslamMediaApp.instance.mediaPreferences.getRecentlyPlayed().firstOrNull()
-            val item = recent?.let { mediaTree.toPlayableMediaItem(it) }
-                ?: mediaTree.getItem(MediaIds.radio("imc_live"))
+            val recent = mediaTree.resolveContinueListening()
+            val item = recent?.let {
+                mediaTree.toPlayableMediaItem(
+                    it,
+                    if (it.isLive) 0L
+                    else IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(it.mediaId)
+                )
+            } ?: mediaTree.getItem(MediaIds.radio("imc_live"))
                 ?: mediaTree.getRootItem()
             val position = recent?.let {
-                IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(it.mediaId)
+                if (it.isLive) 0L
+                else IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(it.mediaId)
             } ?: 0L
+            // Clear pending flag — system resumption fulfills the Auto reconnect contract
+            IslamMediaApp.instance.mediaPreferences.setPendingAutoResume(false)
             return Futures.immediateFuture(
                 MediaSession.MediaItemsWithStartPosition(listOf(item), 0, position)
             )
@@ -327,7 +448,8 @@ class PlaybackService : MediaLibraryService() {
                     val mediaId = player?.currentMediaItem?.mediaId
                         ?: args.getString(EXTRA_MEDIA_ID)
                     if (mediaId != null) {
-                        IslamMediaApp.instance.mediaPreferences.toggleFavorite(mediaId)
+                        val resolved = resolveMediaId(mediaId)
+                        IslamMediaApp.instance.mediaPreferences.toggleFavorite(resolved)
                         mediaLibrarySession?.notifyChildrenChanged(
                             MediaIds.FAVORITES,
                             Int.MAX_VALUE,
@@ -335,6 +457,15 @@ class PlaybackService : MediaLibraryService() {
                         )
                     }
                     return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                }
+                COMMAND_RESUME_LAST -> {
+                    val ok = resumeLastPlayed(playWhenReady = true)
+                    return Futures.immediateFuture(
+                        SessionResult(
+                            if (ok) SessionResult.RESULT_SUCCESS
+                            else SessionResult.RESULT_ERROR_NOT_SUPPORTED
+                        )
+                    )
                 }
                 COMMAND_STOP -> {
                     player?.stop()
@@ -355,10 +486,13 @@ class PlaybackService : MediaLibraryService() {
 
     companion object {
         private const val TAG = "ImcPlaybackService"
+        private const val POSITION_SAVE_INTERVAL_MS = 15_000L
         const val COMMAND_TOGGLE_FAVORITE = "imc.toggle_favorite"
+        const val COMMAND_RESUME_LAST = "imc.resume_last"
         const val COMMAND_STOP = "imc.stop"
         const val EXTRA_MEDIA_ID = "media_id"
         const val ACTION_PLAY_MEDIA_ID = "com.imediac.islammediacentral.action.PLAY_MEDIA_ID"
+        const val ACTION_RESUME_LAST = "com.imediac.islammediacentral.action.RESUME_LAST"
         const val ACTION_PLAY_FROM_SEARCH = "com.imediac.islammediacentral.action.PLAY_FROM_SEARCH"
     }
 
@@ -367,6 +501,9 @@ class PlaybackService : MediaLibraryService() {
             ACTION_PLAY_MEDIA_ID -> {
                 val mediaId = intent.getStringExtra(EXTRA_MEDIA_ID)
                 if (mediaId != null) playMediaId(mediaId)
+            }
+            ACTION_RESUME_LAST -> {
+                resumeLastPlayed(playWhenReady = true)
             }
             Intent.ACTION_SEARCH, "android.media.action.MEDIA_PLAY_FROM_SEARCH" -> {
                 val query = intent.getStringExtra(android.app.SearchManager.QUERY).orEmpty()

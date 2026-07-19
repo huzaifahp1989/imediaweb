@@ -13,8 +13,11 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.imediac.islammediacentral.databinding.ActivityMainBinding
+import com.imediac.islammediacentral.IslamMediaApp
+import com.imediac.islammediacentral.R
+import com.imediac.islammediacentral.data.MediaCategory
 import com.imediac.islammediacentral.data.MediaIds
+import com.imediac.islammediacentral.databinding.ActivityMainBinding
 import com.imediac.islammediacentral.media.PlaybackService
 
 /**
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private val playerListener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             updateNowPlaying()
+            updateLastPlayedHint()
         }
     }
 
@@ -39,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.btnResumeLast.setOnClickListener { resumeLastPlayed() }
         binding.btnPlayRadio.setOnClickListener {
             playMediaId(MediaIds.radio("imc_live"))
         }
@@ -50,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             if (c.isPlaying) c.pause() else c.play()
         }
 
+        updateLastPlayedHint()
         handleVoiceIntent(intent)
     }
 
@@ -61,6 +67,7 @@ class MainActivity : AppCompatActivity() {
             controller = controllerFuture?.get()
             controller?.addListener(playerListener)
             updateNowPlaying()
+            updateLastPlayedHint()
             handleVoiceIntent(intent)
         }, MoreExecutors.directExecutor())
     }
@@ -94,6 +101,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun resumeLastPlayed() {
+        val last = IslamMediaApp.instance.mediaPreferences.getLastPlayed()
+        if (last == null) {
+            Toast.makeText(this, R.string.toast_nothing_to_resume, Toast.LENGTH_SHORT).show()
+            return
+        }
+        Toast.makeText(this, R.string.toast_resuming, Toast.LENGTH_SHORT).show()
+        val c = controller
+        if (c == null) {
+            startService(
+                Intent(this, PlaybackService::class.java).apply {
+                    action = PlaybackService.ACTION_RESUME_LAST
+                }
+            )
+            return
+        }
+        // Prefer the Continue Listening shortcut so resume position extras are applied
+        val item = MediaItem.Builder().setMediaId(MediaIds.CONTINUE_LISTENING).build()
+        c.setMediaItem(item)
+        c.prepare()
+        c.play()
+    }
+
     private fun playMediaId(mediaId: String) {
         val c = controller
         if (c == null) {
@@ -117,9 +147,38 @@ class MainActivity : AppCompatActivity() {
         val title = c?.mediaMetadata?.title?.toString()
         val artist = c?.mediaMetadata?.artist?.toString()
         binding.nowPlaying.text = when {
-            title.isNullOrBlank() -> getString(com.imediac.islammediacentral.R.string.status_idle)
+            title.isNullOrBlank() -> getString(R.string.status_idle)
             c?.isPlaying == true -> "Playing: $title${if (!artist.isNullOrBlank()) " — $artist" else ""}"
             else -> "Paused: $title"
         }
+    }
+
+    private fun updateLastPlayedHint() {
+        val last = IslamMediaApp.instance.mediaPreferences.getLastPlayed()
+        if (last == null) {
+            binding.lastPlayedHint.text = getString(R.string.empty_continue_listening)
+            binding.btnResumeLast.isEnabled = false
+            return
+        }
+        binding.btnResumeLast.isEnabled = true
+        val type = when (last.category) {
+            MediaCategory.RADIO -> "Live Radio"
+            MediaCategory.QURAN -> "Quran"
+            MediaCategory.PODCAST -> "Podcast"
+            MediaCategory.LECTURE -> "Lecture"
+            else -> "Audio"
+        }
+        val position = IslamMediaApp.instance.mediaPreferences.getPlaybackPosition(last.mediaId)
+        val positionHint = if (position > 0L) {
+            val totalSec = position / 1000
+            val min = totalSec / 60
+            val sec = totalSec % 60
+            " · at %d:%02d".format(min, sec)
+        } else {
+            ""
+        }
+        binding.lastPlayedHint.text = getString(
+            R.string.continue_listening_subtitle
+        ) + ": $type — ${last.title}$positionHint"
     }
 }

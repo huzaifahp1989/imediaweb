@@ -43,14 +43,37 @@
         app:layout_constraintTop_toBottomOf="@id/subtitle" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPlayRadio"
+        android:id="@+id/btnResumeLast"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="@string/btn_play_radio"
+        android:text="@string/btn_resume_last"
+        app:icon="@drawable/ic_auto_tab_continue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/nowPlaying" />
+
+    <TextView
+        android:id="@+id/lastPlayedHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/imc_ink"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnResumeLast" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPlayRadio"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/btn_play_radio"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lastPlayedHint" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPlayQuran"

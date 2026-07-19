@@ -9,7 +9,13 @@ Native Android module (`android/`) adding **AndroidX Media3** playback and **And
 | `MediaLibraryService` (`PlaybackService`) | Done |
 | Manifest `android.media.browse.MediaBrowserService` intent | Done |
 | `automotive_app_desc.xml` + Car App metadata | Done |
-| Root tabs: Live Radio, Quran Reciters, Podcasts, Favorites, Recently Played | Done |
+| Root tabs: **Continue Listening** (first), Live Radio, Quran Reciters, Podcasts, Lectures, Favorites, Recently Played | Done |
+| Continue Listening resumes radio / Quran / podcast / lecture | Done |
+| Resume position for podcasts, Quran tracks, lectures | Done |
+| Live radio reconnects to last station | Done |
+| Last played auto-saved + survives app restart | Done |
+| Phone home **Resume Last Played** button | Done |
+| Auto-resume when Android Auto reconnects after disconnect | Done |
 | `onGetLibraryRoot` / `onGetChildren` / `onSubscribe` | Done |
 | Content style extras for Auto tabs | Done |
 | ExoPlayer playback (no WebView) | Done |
@@ -81,18 +87,25 @@ adb shell am start -n com.imediac.islammediacentral.debug/.ui.MainActivity
 6. **On the phone**, open Android Auto (or tap the Auto notification) and select **Islam Media Central** under media apps.
 
 7. **Verify browse tree**
+   - **Continue Listening** is the first root item — tap it to resume last content.
    - Live Radio → pick a station → streams immediately; Play / Pause / Stop work.
    - Quran Reciters → Alafasy (etc.) → Surah → background playback continues with screen off.
    - Podcasts → category → episode resumes near last position after pause.
+   - Lectures → talk → resume position restored after pause / app restart.
    - Favorites / Recently Played populate after you play or favorite content.
 
-8. **Voice / Assistant** (on device or DHU mic if available):
+8. **Phone app**
+   - Open MainActivity → **Resume Last Played** resumes the same item Android Auto would continue.
+   - Last played is shown under the button (type + title + position).
+
+9. **Voice / Assistant** (on device or DHU mic if available):
    - “Play Islam Media Central”
    - “Play Radio”
    - “Play Quran”
+   - “Continue listening”
 
-9. **Reconnect test**
-   - Stop DHU while playing, restart DHU — playback session should restore via `onPlaybackResumption`.
+10. **Reconnect test**
+   - Stop DHU while playing, restart DHU — playback auto-resumes via `onDisconnected` pending flag + `onPlaybackResumption` / `onConnect`.
 
 ### DHU tips
 
@@ -105,6 +118,18 @@ adb shell am start -n com.imediac.islammediacentral.debug/.ui.MainActivity
 - **Live radio default**: `https://a4.asurahosting.com:7820/radio.mp3` (same as `Layout.jsx` / AdminSettings).
 - **Reciters**: Alafasy, Sudais, Abdul Basit, Husary (`FullQuran.jsx` mp3quran.net bases).
 - **Podcasts**: categories match `AudioNew.jsx` (`story`, `hadith`, `history`, `nasheed`, `tajweed`, `fiqh`, `quran`) with seed episodes; replace via `MediaSyncRepository.applyRemotePodcasts(...)`.
+- **Lectures**: seed talks under `lecture:` media IDs with resume positions; replace via `MediaSyncRepository.applyRemoteLectures(...)`.
+
+## Continue Listening behavior
+
+| Content | On resume |
+|---------|-----------|
+| Live Radio | Reconnects to the **last station** (no seek) |
+| Quran Reciter (surah) | Restores saved playback position |
+| Podcast episode | Restores saved playback position |
+| Lecture | Restores saved playback position |
+
+Last played + positions are stored in SharedPreferences (`imc_media_prefs`) and survive process death / app restarts. Positions are saved on pause, every ~15s while playing, and on service destroy.
 
 ## Syncing favorites / podcasts from the existing app
 

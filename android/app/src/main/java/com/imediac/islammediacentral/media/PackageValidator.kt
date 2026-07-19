@@ -29,6 +29,14 @@ class PackageValidator(private val context: Context) {
         return true
     }
 
+    /** True for Android Auto / AAOS media hosts (used for disconnect → auto-resume). */
+    fun isAndroidAutoPackage(packageName: String): Boolean {
+        if (packageName.startsWith("com.google.android.projection.gearhead")) return true
+        if (packageName.startsWith("com.google.android.autosimulator")) return true
+        if (packageName.contains("android.auto") || packageName.contains("gearhead")) return true
+        return packageName in AUTO_HOST_PACKAGES
+    }
+
     private fun isSystemApp(packageName: String): Boolean =
         try {
             val info = context.packageManager.getApplicationInfo(packageName, 0)
@@ -53,6 +61,15 @@ class PackageValidator(private val context: Context) {
             "com.android.bluetooth",
             "com.android.systemui",
             "com.google.android.gms"
+        )
+
+        private val AUTO_HOST_PACKAGES = setOf(
+            "com.google.android.projection.gearhead",
+            "com.android.car.media",
+            "com.android.car.media.localmediaplayer",
+            "com.google.android.car.media",
+            "com.google.android.automotive.embedded.projection",
+            "com.google.android.carassistant"
         )
     }
 }

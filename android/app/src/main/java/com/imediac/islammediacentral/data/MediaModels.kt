@@ -56,6 +56,7 @@ enum class MediaCategory {
     RADIO,
     QURAN,
     PODCAST,
+    LECTURE,
     FAVORITE,
     RECENT,
     UNKNOWN
@@ -63,9 +64,12 @@ enum class MediaCategory {
 
 object MediaIds {
     const val ROOT = "root"
+    /** Playable shortcut — resumes the last Live Radio / Quran / Podcast / Lecture. */
+    const val CONTINUE_LISTENING = "continue_listening"
     const val LIVE_RADIO = "live_radio"
     const val QURAN_RECITERS = "quran_reciters"
     const val PODCASTS = "podcasts"
+    const val LECTURES = "lectures"
     const val FAVORITES = "favorites"
     const val RECENTLY_PLAYED = "recently_played"
 
@@ -74,9 +78,18 @@ object MediaIds {
     fun surah(reciterId: String, number: Int) = "surah:$reciterId:$number"
     fun podcastCategory(id: String) = "podcast_cat:$id"
     fun podcastEpisode(id: String) = "podcast:$id"
+    fun lecture(id: String) = "lecture:$id"
 
     fun isPlayable(mediaId: String): Boolean =
-        mediaId.startsWith("radio:") ||
+        mediaId == CONTINUE_LISTENING ||
+            mediaId.startsWith("radio:") ||
             mediaId.startsWith("surah:") ||
-            mediaId.startsWith("podcast:")
+            mediaId.startsWith("podcast:") ||
+            mediaId.startsWith("lecture:")
+
+    /** Podcasts, Quran tracks, and lectures restore a saved position; live radio does not. */
+    fun supportsResumePosition(mediaId: String): Boolean =
+        mediaId.startsWith("surah:") ||
+            mediaId.startsWith("podcast:") ||
+            mediaId.startsWith("lecture:")
 }

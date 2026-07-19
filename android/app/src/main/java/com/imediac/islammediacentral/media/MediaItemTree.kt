@@ -19,8 +19,8 @@ import com.imediac.islammediacentral.data.PlayableMedia
 /**
  * Android Auto / Media3 browse tree.
  *
- * Root children (always browsable — required for Auto navigation tabs):
- * Live Radio · Quran Reciters · Podcasts · Favorites · Recently Played
+ * Root children (Continue Listening first):
+ * Continue Listening · Live Radio · Quran Reciters · Podcasts · Lectures · Favorites · Recently Played
  */
 class MediaItemTree(
     private val context: Context,
@@ -40,7 +40,7 @@ class MediaItemTree(
     fun getRecentRootItem(): MediaItem = browsable(
         mediaId = MediaIds.RECENTLY_PLAYED,
         title = context.getString(R.string.category_recently_played),
-        subtitle = "Continue listening",
+        subtitle = context.getString(R.string.continue_listening_subtitle),
         drawableRes = R.drawable.ic_auto_tab_recent,
         folderType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
         isRootTab = true
@@ -48,6 +48,7 @@ class MediaItemTree(
 
     /**
      * Library root extras declaring content styles so Android Auto can render tabs correctly.
+     * Root may include a playable Continue Listening shortcut, so browsable-only is false.
      */
     fun buildRootLibraryParams(requestParams: LibraryParams?): LibraryParams {
         val extras = Bundle(requestParams?.extras ?: Bundle()).apply {
@@ -59,8 +60,7 @@ class MediaItemTree(
                 MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
                 MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM
             )
-            // Root children are browsable tabs only (Live Radio, Quran, Podcasts, Favorites, Recent)
-            putBoolean(MediaConstants.EXTRA_KEY_ROOT_CHILDREN_BROWSABLE_ONLY, true)
+            putBoolean(MediaConstants.EXTRA_KEY_ROOT_CHILDREN_BROWSABLE_ONLY, false)
         }
         return LibraryParams.Builder()
             .setExtras(extras)
@@ -72,9 +72,11 @@ class MediaItemTree(
 
     fun getChildren(parentId: String): List<MediaItem> = when (parentId) {
         MediaIds.ROOT -> rootChildren()
+        MediaIds.CONTINUE_LISTENING -> continueListeningChildren()
         MediaIds.LIVE_RADIO -> radioChildren()
         MediaIds.QURAN_RECITERS -> reciterChildren()
         MediaIds.PODCASTS -> podcastCategoryChildren()
+        MediaIds.LECTURES -> lectureChildren()
         MediaIds.FAVORITES -> favoriteChildren()
         MediaIds.RECENTLY_PLAYED -> recentChildren()
         else -> when {
@@ -87,11 +89,13 @@ class MediaItemTree(
 
     fun getItem(mediaId: String): MediaItem? {
         if (mediaId == MediaIds.ROOT) return getRootItem()
+        if (mediaId == MediaIds.CONTINUE_LISTENING) return buildContinueListeningItem()
         getChildren(MediaIds.ROOT).find { it.mediaId == mediaId }?.let { return it }
         listOf(
             MediaIds.LIVE_RADIO,
             MediaIds.QURAN_RECITERS,
             MediaIds.PODCASTS,
+            MediaIds.LECTURES,
             MediaIds.FAVORITES,
             MediaIds.RECENTLY_PLAYED
         ).forEach { parent ->
@@ -102,8 +106,16 @@ class MediaItemTree(
                 }
             }
         }
-        val playable = MediaCatalog.resolvePlayable(mediaId, preferences.getPodcastEpisodes())
-        return playable?.let { toPlayableMediaItem(it) }
+        val playable = resolvePlayable(mediaId)
+        return playable?.let { toPlayableMediaItem(it, resumePositionFor(it)) }
+    }
+
+    /**
+     * Resolves the Continue Listening shortcut to the real last-played [PlayableMedia],
+     * or null when nothing has been played yet.
+     */
+    fun resolveContinueListening(): PlayableMedia? = preferences.getLastPlayed()?.let { last ->
+        resolvePlayable(last.mediaId) ?: last
     }
 
     fun search(query: String): List<MediaItem> {
@@ -112,6 +124,10 @@ class MediaItemTree(
 
         val results = mutableListOf<MediaItem>()
 
+        if (matches(q, "continue", "resume", "last played", "listen again")) {
+            buildContinueListeningItem().let { results += it }
+            results += continueListeningChildren()
+        }
         if (matches(q, "radio", "live", "islam media", "stream")) {
             results += radioChildren()
         }
@@ -121,6 +137,9 @@ class MediaItemTree(
         }
         if (matches(q, "podcast", "story", "hadith", "nasheed", "tajweed")) {
             results += podcastCategoryChildren()
+        }
+        if (matches(q, "lecture", "khutbah", "talk", "bayaan")) {
+            results += lectureChildren()
         }
         if (matches(q, "favorite", "favourite", "starred")) {
             results += favoriteChildren()
@@ -132,7 +151,7 @@ class MediaItemTree(
         MediaCatalog.radioStations
             .filter { it.name.lowercase().contains(q) || it.description.lowercase().contains(q) }
             .forEach { station ->
-                MediaCatalog.resolvePlayable(MediaIds.radio(station.id))
+                resolvePlayable(MediaIds.radio(station.id))
                     ?.let { results += toPlayableMediaItem(it) }
             }
         MediaCatalog.reciters
@@ -154,10 +173,16 @@ class MediaItemTree(
                     it.categoryId.contains(q)
             }
             .forEach { ep ->
-                MediaCatalog.resolvePlayable(
-                    MediaIds.podcastEpisode(ep.id),
-                    preferences.getPodcastEpisodes()
-                )?.let { results += toPlayableMediaItem(it) }
+                resolvePlayable(MediaIds.podcastEpisode(ep.id))
+                    ?.let { results += toPlayableMediaItem(it, resumePositionFor(it)) }
+            }
+        preferences.getLectures()
+            .filter {
+                it.title.lowercase().contains(q) || it.description.lowercase().contains(q)
+            }
+            .forEach { lecture ->
+                resolvePlayable(MediaIds.lecture(lecture.id))
+                    ?.let { results += toPlayableMediaItem(it, resumePositionFor(it)) }
             }
 
         return results.distinctBy { it.mediaId }
@@ -165,6 +190,10 @@ class MediaItemTree(
 
     fun resolveVoiceQuery(query: String): MediaItem? {
         val q = query.trim().lowercase()
+        if (matches(q, "continue", "resume", "last played", "continue listening")) {
+            return buildContinueListeningItem().takeIf { it.mediaMetadata.isPlayable == true }
+                ?: continueListeningChildren().firstOrNull()
+        }
         if (q.isEmpty() || matches(q, "islam media central", "islam media", "imedia")) {
             return radioChildren().firstOrNull()
         }
@@ -174,11 +203,18 @@ class MediaItemTree(
         if (matches(q, "quran", "koran", "recitation")) {
             return getItem(MediaIds.surah("alafasy", 1))
         }
+        if (matches(q, "lecture", "khutbah")) {
+            return lectureChildren().firstOrNull()
+        }
         return search(q).firstOrNull { it.mediaMetadata.isPlayable == true }
     }
 
-    /** Top-level Auto tabs — all browsable (never playable). */
+    /**
+     * Top-level Auto items — Continue Listening is always first.
+     * When there is a last-played item it is playable; otherwise a browsable empty placeholder.
+     */
     fun rootChildren(): List<MediaItem> = listOf(
+        buildContinueListeningItem(),
         browsable(
             MediaIds.LIVE_RADIO,
             context.getString(R.string.category_live_radio),
@@ -204,6 +240,14 @@ class MediaItemTree(
             isRootTab = true
         ),
         browsable(
+            MediaIds.LECTURES,
+            context.getString(R.string.category_lectures),
+            "Talks · resume supported",
+            R.drawable.ic_auto_tab_lecture,
+            folderType = MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS,
+            isRootTab = true
+        ),
+        browsable(
             MediaIds.FAVORITES,
             context.getString(R.string.category_favorites),
             "Synced with the app",
@@ -214,16 +258,85 @@ class MediaItemTree(
         browsable(
             MediaIds.RECENTLY_PLAYED,
             context.getString(R.string.category_recently_played),
-            "Continue listening",
+            context.getString(R.string.continue_listening_subtitle),
             R.drawable.ic_auto_tab_recent,
             folderType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
             isRootTab = true
         )
     )
 
+    fun buildContinueListeningItem(): MediaItem {
+        val last = resolveContinueListening()
+        if (last == null) {
+            return browsable(
+                mediaId = MediaIds.CONTINUE_LISTENING,
+                title = context.getString(R.string.category_continue_listening),
+                subtitle = context.getString(R.string.empty_continue_listening),
+                drawableRes = R.drawable.ic_auto_tab_continue,
+                folderType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+                isRootTab = true
+            )
+        }
+        val resumeMs = resumePositionFor(last)
+        val typeLabel = when (last.category) {
+            MediaCategory.RADIO -> "Live Radio"
+            MediaCategory.QURAN -> "Quran"
+            MediaCategory.PODCAST -> "Podcast"
+            MediaCategory.LECTURE -> "Lecture"
+            else -> "Resume"
+        }
+        val subtitle = buildString {
+            append(typeLabel)
+            append(" · ")
+            append(last.title)
+            if (resumeMs > 0L) append(" · resume")
+        }
+        val styleExtras = Bundle().apply {
+            putString(EXTRA_CATEGORY, last.category.name)
+            putBoolean(EXTRA_LIVE, last.isLive)
+            putString(EXTRA_RESOLVED_MEDIA_ID, last.mediaId)
+            if (resumeMs > 0L) putLong(EXTRA_RESUME_POSITION, resumeMs)
+            putInt(
+                MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
+                MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM
+            )
+        }
+        val artwork = last.artworkUrl?.let { Uri.parse(it) }
+            ?: Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_auto_tab_continue}")
+        val metadata = MediaMetadata.Builder()
+            .setTitle(context.getString(R.string.category_continue_listening))
+            .setArtist(subtitle)
+            .setAlbumTitle("Islam Media Central")
+            .setIsBrowsable(false)
+            .setIsPlayable(true)
+            .setMediaType(
+                if (last.isLive) MediaMetadata.MEDIA_TYPE_RADIO_STATION
+                else MediaMetadata.MEDIA_TYPE_MUSIC
+            )
+            .setArtworkUri(artwork)
+            .setExtras(styleExtras)
+            .build()
+        return MediaItem.Builder()
+            .setMediaId(MediaIds.CONTINUE_LISTENING)
+            .setUri(last.streamUrl)
+            .setMimeType(if (last.isLive) MimeTypes.AUDIO_UNKNOWN else MimeTypes.AUDIO_MPEG)
+            .setMediaMetadata(metadata)
+            .setRequestMetadata(
+                MediaItem.RequestMetadata.Builder()
+                    .setMediaUri(Uri.parse(last.streamUrl))
+                    .build()
+            )
+            .build()
+    }
+
+    private fun continueListeningChildren(): List<MediaItem> {
+        val last = resolveContinueListening() ?: return emptyList()
+        return listOf(toPlayableMediaItem(last, resumePositionFor(last)))
+    }
+
     private fun radioChildren(): List<MediaItem> =
         MediaCatalog.radioStations.mapNotNull { station ->
-            MediaCatalog.resolvePlayable(MediaIds.radio(station.id))?.let { toPlayableMediaItem(it) }
+            resolvePlayable(MediaIds.radio(station.id))?.let { toPlayableMediaItem(it) }
         }
 
     private fun reciterChildren(): List<MediaItem> =
@@ -243,15 +356,14 @@ class MediaItemTree(
         val ordered = MediaCatalog.featuredSurahs +
             MediaCatalog.allSurahs.filter { s -> MediaCatalog.featuredSurahs.none { it.number == s.number } }
         return ordered.map { surah ->
-            toPlayableMediaItem(
-                PlayableMedia(
-                    mediaId = MediaIds.surah(reciter.id, surah.number),
-                    title = "${surah.number}. ${surah.name}",
-                    subtitle = "${surah.englishName} · ${reciter.name}",
-                    streamUrl = MediaCatalog.surahUrl(reciter, surah.number),
-                    category = MediaCategory.QURAN
-                )
+            val playable = PlayableMedia(
+                mediaId = MediaIds.surah(reciter.id, surah.number),
+                title = "${surah.number}. ${surah.name}",
+                subtitle = "${surah.englishName} · ${reciter.name}",
+                streamUrl = MediaCatalog.surahUrl(reciter, surah.number),
+                category = MediaCategory.QURAN
             )
+            toPlayableMediaItem(playable, resumePositionFor(playable))
         }
     }
 
@@ -270,28 +382,29 @@ class MediaItemTree(
     private fun podcastEpisodeChildren(categoryId: String): List<MediaItem> {
         val episodes = preferences.getPodcastEpisodes().filter { it.categoryId == categoryId }
         return episodes.mapNotNull { ep ->
-            MediaCatalog.resolvePlayable(
-                MediaIds.podcastEpisode(ep.id),
-                preferences.getPodcastEpisodes()
-            )?.let { item ->
-                val position = preferences.getPlaybackPosition(item.mediaId)
-                toPlayableMediaItem(item, resumePositionMs = position)
+            resolvePlayable(MediaIds.podcastEpisode(ep.id))?.let { item ->
+                toPlayableMediaItem(item, resumePositionFor(item))
             }
         }
     }
 
+    private fun lectureChildren(): List<MediaItem> =
+        preferences.getLectures().mapNotNull { lecture ->
+            resolvePlayable(MediaIds.lecture(lecture.id))?.let { item ->
+                toPlayableMediaItem(item, resumePositionFor(item))
+            }
+        }
+
     private fun favoriteChildren(): List<MediaItem> {
-        // Empty list is preferred over fake nodes — Auto handles empty sections cleanly.
         return preferences.getFavoriteIds().mapNotNull { id ->
-            MediaCatalog.resolvePlayable(id, preferences.getPodcastEpisodes())
-                ?.let { toPlayableMediaItem(it) }
+            resolvePlayable(id)?.let { toPlayableMediaItem(it, resumePositionFor(it)) }
                 ?: preferences.getRecentlyPlayed().find { it.mediaId == id }
-                    ?.let { toPlayableMediaItem(it) }
+                    ?.let { toPlayableMediaItem(it, resumePositionFor(it)) }
         }
     }
 
     private fun recentChildren(): List<MediaItem> =
-        preferences.getRecentlyPlayed().map { toPlayableMediaItem(it) }
+        preferences.getRecentlyPlayed().map { toPlayableMediaItem(it, resumePositionFor(it)) }
 
     fun toPlayableMediaItem(
         item: PlayableMedia,
@@ -332,6 +445,23 @@ class MediaItemTree(
             )
             .build()
     }
+
+    fun resumePositionMs(mediaId: String): Long {
+        if (!MediaIds.supportsResumePosition(mediaId)) return 0L
+        return preferences.getPlaybackPosition(mediaId)
+    }
+
+    private fun resumePositionFor(item: PlayableMedia): Long {
+        if (item.isLive) return 0L
+        return resumePositionMs(item.mediaId)
+    }
+
+    private fun resolvePlayable(mediaId: String): PlayableMedia? =
+        MediaCatalog.resolvePlayable(
+            mediaId,
+            preferences.getPodcastEpisodes(),
+            preferences.getLectures()
+        )
 
     private fun browsable(
         mediaId: String,
@@ -375,12 +505,15 @@ class MediaItemTree(
         const val EXTRA_CATEGORY = "imc_category"
         const val EXTRA_LIVE = "imc_live"
         const val EXTRA_RESUME_POSITION = "imc_resume_position"
+        const val EXTRA_RESOLVED_MEDIA_ID = "imc_resolved_media_id"
 
-        /** Stable IDs Android Auto must see under the library root. */
+        /** Stable IDs Android Auto must see under the library root (Continue Listening first). */
         val REQUIRED_ROOT_TAB_IDS = listOf(
+            MediaIds.CONTINUE_LISTENING,
             MediaIds.LIVE_RADIO,
             MediaIds.QURAN_RECITERS,
             MediaIds.PODCASTS,
+            MediaIds.LECTURES,
             MediaIds.FAVORITES,
             MediaIds.RECENTLY_PLAYED
         )

@@ -161,12 +161,44 @@ object MediaCatalog {
         )
     )
 
+    /**
+     * Seed lectures (audio tracks with resume). Distinct from podcast episodes so Continue Listening
+     * can restore lecture position independently.
+     */
+    val seedLectures: List<PodcastEpisode> = listOf(
+        PodcastEpisode(
+            id = "lecture_tawheed",
+            categoryId = "lecture",
+            title = "Introduction to Tawheed",
+            description = "Foundations of Islamic belief",
+            streamUrl = "https://server8.mp3quran.net/afs/001.mp3"
+        ),
+        PodcastEpisode(
+            id = "lecture_seerah",
+            categoryId = "lecture",
+            title = "Seerah · The Prophet's Journey",
+            description = "Life of the Prophet ﷺ",
+            streamUrl = "https://server8.mp3quran.net/afs/018.mp3"
+        ),
+        PodcastEpisode(
+            id = "lecture_akhlaq",
+            categoryId = "lecture",
+            title = "Akhlaq · Good Character",
+            description = "Manners in Islam",
+            streamUrl = "https://server8.mp3quran.net/afs/112.mp3"
+        )
+    )
+
     fun surahUrl(reciter: QuranReciter, surahNumber: Int): String {
         val padded = surahNumber.toString().padStart(3, '0')
         return "${reciter.baseUrl}$padded.mp3"
     }
 
-    fun resolvePlayable(mediaId: String, podcasts: List<PodcastEpisode> = seedPodcasts): PlayableMedia? {
+    fun resolvePlayable(
+        mediaId: String,
+        podcasts: List<PodcastEpisode> = seedPodcasts,
+        lectures: List<PodcastEpisode> = seedLectures
+    ): PlayableMedia? {
         when {
             mediaId.startsWith("radio:") -> {
                 val id = mediaId.removePrefix("radio:")
@@ -209,6 +241,19 @@ object MediaCatalog {
                     artworkUrl = episode.artworkUrl,
                     isLive = false,
                     category = MediaCategory.PODCAST
+                )
+            }
+            mediaId.startsWith("lecture:") -> {
+                val id = mediaId.removePrefix("lecture:")
+                val lecture = lectures.find { it.id == id } ?: return null
+                return PlayableMedia(
+                    mediaId = mediaId,
+                    title = lecture.title,
+                    subtitle = lecture.description,
+                    streamUrl = lecture.streamUrl,
+                    artworkUrl = lecture.artworkUrl,
+                    isLive = false,
+                    category = MediaCategory.LECTURE
                 )
             }
         }

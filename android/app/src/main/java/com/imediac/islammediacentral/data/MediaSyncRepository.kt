@@ -18,6 +18,10 @@ class MediaSyncRepository(
         preferences.importPodcastCatalog(episodes)
     }
 
+    fun applyRemoteLectures(lectures: List<PodcastEpisode>) {
+        preferences.importLectureCatalog(lectures)
+    }
+
     /**
      * Maps a Base44/Supabase AudioContent-like map into [PodcastEpisode].
      * Expected keys: id, title, description, mp3_url / stream_url, category, cover_image, duration
@@ -36,5 +40,11 @@ class MediaSyncRepository(
             artworkUrl = row["cover_image"]?.toString(),
             durationMs = durationSeconds * 1000L
         )
+    }
+
+    /** Maps backend rows tagged as lectures into lecture catalog entries. */
+    fun mapLectureRow(row: Map<String, Any?>): PodcastEpisode? {
+        val mapped = mapAudioContentRow(row) ?: return null
+        return mapped.copy(categoryId = "lecture")
     }
 }

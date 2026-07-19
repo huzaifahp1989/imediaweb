@@ -1,6 +1,7 @@
 package com.imediac.islammediacentral.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -53,5 +54,22 @@ class MediaCatalogTest {
     fun podcastCategoriesCoverAudioLibrary() {
         val ids = MediaCatalog.podcastCategories.map { it.id }
         assertTrue(ids.containsAll(listOf("story", "hadith", "quran", "nasheed")))
+    }
+
+    @Test
+    fun resolvePlayableLecture() {
+        val item = MediaCatalog.resolvePlayable(MediaIds.lecture("lecture_tawheed"))
+        assertNotNull(item)
+        assertEquals(MediaCategory.LECTURE, item!!.category)
+        assertFalse(item.isLive)
+    }
+
+    @Test
+    fun continueListeningIdIsPlayableShortcut() {
+        assertTrue(MediaIds.isPlayable(MediaIds.CONTINUE_LISTENING))
+        assertTrue(MediaIds.supportsResumePosition(MediaIds.surah("alafasy", 1)))
+        assertTrue(MediaIds.supportsResumePosition(MediaIds.podcastEpisode("x")))
+        assertTrue(MediaIds.supportsResumePosition(MediaIds.lecture("y")))
+        assertFalse(MediaIds.supportsResumePosition(MediaIds.radio("imc_live")))
     }
 }
