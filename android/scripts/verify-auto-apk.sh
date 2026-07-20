@@ -57,21 +57,23 @@ check() {
   fi
 }
 
-[[ "$badging" == *"com.imediac.islammediacentral.debug"* ]] && c1=1 || c1=0
+[[ "$badging" == *"com.wnapp.id1761553570260"* ]] && c1=1 || c1=0
 [[ "$badging" == *"Islam Media Central"* ]] && c2=1 || c2=0
 [[ "$manifest" == *"android.media.browse.MediaBrowserService"* ]] && c3=1 || c3=0
 [[ "$manifest" == *"androidx.media3.session.MediaLibraryService"* ]] && c4=1 || c4=0
 [[ "$manifest" == *"com.google.android.gms.car.application"* ]] && c5=1 || c5=0
 [[ "$auto" == *'name="media"'* || "$auto" == *"media"* ]] && c6=1 || c6=0
+[[ "$manifest" != *"android.hardware.type.automotive"* ]] && c7=1 || c7=0
 
 echo
 echo "=== checklist ==="
-check "applicationId .debug" "$c1"
+check "applicationId com.wnapp.id1761553570260" "$c1"
 check "label Islam Media Central" "$c2"
 check "MediaBrowserService" "$c3"
 check "MediaLibraryService" "$c4"
 check "car.application meta-data" "$c5"
 check "automotiveApp media" "$c6"
+check "no automotive hardware feature" "$c7"
 
 if [[ "$fail" -ne 0 ]]; then
   echo "Verification failed." >&2

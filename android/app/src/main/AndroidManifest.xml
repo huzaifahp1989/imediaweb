@@ -8,13 +8,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Declares this package as a media app usable from Android Auto -->
-    <uses-feature
-        android:name="android.hardware.type.automotive"
-        android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="false" />
+    <!--
+      Android Auto (projection) uses com.google.android.gms.car.application metadata below.
+      Do NOT also declare android.hardware.type.automotive — that is for Android Automotive OS
+      and Play Console rejects having both at once.
+    -->
 
     <application
         android:name=".IslamMediaApp"

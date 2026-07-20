@@ -59,14 +59,14 @@ Output (debug-keystore signed):
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Package id: `com.imediac.islammediacentral.debug` · label: **Islam Media Central**
+Package id: `com.wnapp.id1761553570260` (release) / `.debug` suffix for debug · label: **Islam Media Central**
 
 Install on a device/emulator:
 
 ```bash
 ./gradlew :app:installDebug
 # or: adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.imediac.islammediacentral.debug/.ui.MainActivity
+adb shell am start -n com.wnapp.id1761553570260.debug/com.imediac.islammediacentral.ui.MainActivity
 ```
 
 ### Static APK checks (no DHU required)
@@ -154,8 +154,10 @@ Publish the app to **Play Console → Internal testing** (or production). Then u
 
 ### DHU tips
 
-- Prefer the **release** sideload APK (`com.imediac.islammediacentral`, no `.debug` suffix) for car testing.
+- Prefer the **release** sideload APK (`com.wnapp.id1761553570260`, no `.debug` suffix) for car testing.
 - Debug builds (`applicationIdSuffix .debug`) also work after Unknown sources is on.
+- Manifest must include `com.google.android.gms.car.application` + `automotive_app_desc.xml` **without**
+  `android.hardware.type.automotive` (Play rejects both together).
 - For production Play listing you must submit for [Android Auto review](https://developer.android.com/training/cars/media/auto-app-quality).
 - If still missing: force-stop Android Auto, clear its cache, reboot phone, reconnect.
 
