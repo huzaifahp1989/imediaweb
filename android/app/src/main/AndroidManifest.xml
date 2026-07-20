@@ -8,11 +8,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!--
-      Android Auto (projection) uses com.google.android.gms.car.application metadata below.
-      Do NOT also declare android.hardware.type.automotive — that is for Android Automotive OS
-      and Play Console rejects having both at once.
-    -->
+    <!-- Android Auto projection: car.application metadata only (not AAOS hardware feature). -->
 
     <application
         android:name=".IslamMediaApp"
