@@ -25,8 +25,9 @@ android {
         applicationId = "com.wnapp.id1761553570260"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.0.5"
+        // Play Console already consumed lower codes from prior upload attempts
+        versionCode = 100
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
