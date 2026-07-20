@@ -13,3 +13,9 @@
 *.aab
 *.dex
 *.class
+
+# Never commit Play upload signing material
+/keystore.properties
+/keystore/
+*.jks
+*.keystore
