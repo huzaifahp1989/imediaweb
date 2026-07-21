@@ -1,0 +1,23 @@
+[
+  {
+    "id": "imc_live",
+    "name": "Islam Media Central",
+    "description": "Official live stream \u00b7 traet2lhw4m4",
+    "streamUrl": "https://a4.asurahosting.com:7820/radio.mp3",
+    "artworkUrl": null
+  },
+  {
+    "id": "radio_seerah",
+    "name": "Radio Seerah",
+    "description": "Live \u00b7 traet2lhw4m4.vercel.app",
+    "streamUrl": "https://icecast.maxxwave.co.uk/radioseerah",
+    "artworkUrl": null
+  },
+  {
+    "id": "markaz_sahaba",
+    "name": "Markaz Sahaba Radio",
+    "description": "Live talk radio \u00b7 traet2lhw4m4",
+    "streamUrl": "https://zas4.ndx.co.za:9088/stream",
+    "artworkUrl": null
+  }
+]

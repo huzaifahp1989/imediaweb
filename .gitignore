@@ -26,5 +26,10 @@ dist-ssr
 .env
 # Do not commit production secrets
 .env.production
+# Android Play upload signing material
+android/keystore.properties
+android/keystore/
+*.jks
+*.keystore
 # Local Netlify folder
 .netlify

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Islam Media Central</string>
+    <string name="notification_channel_name">Now Playing</string>
+    <string name="notification_channel_description">Playback controls for radio, Quran, and podcasts</string>
+    <string name="browse_root_title">Islam Media Central</string>
+    <string name="category_continue_listening">Continue Listening</string>
+    <string name="continue_listening_subtitle">Resume where you left off</string>
+    <string name="category_live_radio">Live Radio</string>
+    <string name="category_quran_radio">Quran Radio</string>
+    <string name="category_quran_reciters">Quran Reciters</string>
+    <string name="category_podcasts">Podcasts</string>
+    <string name="category_audio_library">Audio Library</string>
+    <string name="category_lectures">Lectures</string>
+    <string name="category_favorites">Favorites</string>
+    <string name="category_recently_played">Recently Played</string>
+    <string name="playing_on_auto">Playing on Android Auto</string>
+    <string name="empty_favorites">No favorites yet. Favorite items in the app to see them here.</string>
+    <string name="empty_recent">Nothing played yet.</string>
+    <string name="empty_continue_listening">Play something to resume it here</string>
+    <string name="assistant_hint">Voice: “Play Radio Seerah”, “Play Quran”, “Play Nasheed”, “Continue listening”. In the car use Next/Prev and ± seek.</string>
+    <string name="phone_subtitle">Phone player · Android Auto ready</string>
+    <string name="btn_resume_last">Resume Last Played</string>
+    <string name="btn_play_radio">Play Live Radio</string>
+    <string name="btn_play_quran">Play Quran (Alafasy · Al-Fatihah)</string>
+    <string name="btn_prev">Prev</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_seek_back">−15s</string>
+    <string name="btn_seek_forward">+30s</string>
+    <string name="btn_voice_search">Voice search</string>
+    <string name="voice_search_prompt">Say what to play, e.g. Radio Seerah, Quran, Nasheed</string>
+    <string name="voice_search_no_match">No match — playing Live Radio</string>
+    <string name="status_idle">Ready — connect Android Auto or tap play</string>
+    <string name="toast_nothing_to_resume">Nothing to resume yet — play radio, Quran, a podcast, or a lecture first</string>
+    <string name="toast_resuming">Resuming last played…</string>
+    <string name="auto_setup_title">App not in Android Auto?</string>
+    <string name="auto_setup_steps">Sideloaded apps are hidden until you allow them:\n\n1. Open Android Auto settings (button below)\n2. Scroll to Version → tap it 10 times\n3. Menu ⋮ → Developer settings\n4. Turn ON “Unknown sources”\n5. Go back → Customize launcher → enable Islam Media Central\n6. Disconnect and reconnect the car\n\nAlso open this app once, then play Live Radio here before connecting.</string>
+    <string name="btn_open_auto_settings">Open Android Auto settings</string>
+    <string name="btn_open_streams_site">Open IMC Live Streams (web)</string>
+    <string name="btn_open_audio_library">Open Islamic Audio Library (web)</string>
+    <string name="toast_auto_settings_missing">Couldn’t open Android Auto settings — search “Android Auto” in phone Settings</string>
+</resources>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Download Islam Media Central — Android Auto</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --text: #f4f7fb;
+      --muted: #9db0c9;
+      --accent: #34d399;
+      --accent-ink: #052e1b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(52, 211, 153, 0.18), transparent 40%),
+        linear-gradient(180deg, #0b1220, #102038 60%, #0b1220);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(520px, 100%);
+      background: rgba(18, 32, 51, 0.92);
+      border: 1px solid rgba(157, 176, 201, 0.18);
+      border-radius: 24px;
+      padding: 28px 24px 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+    h1 { margin: 0 0 10px; font-size: 1.7rem; letter-spacing: -0.03em; }
+    p { margin: 0 0 14px; color: var(--muted); line-height: 1.55; }
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-weight: 800;
+      font-size: 1.05rem;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 12px 0 0;
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(157, 176, 201, 0.35);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    ol {
+      margin: 8px 0 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .note { margin-top: 16px; font-size: 0.9rem; color: var(--muted); }
+    strong { color: var(--text); }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Islam Media Central</h1>
+    <p>Tap download, install, open the app once, then connect your car for Live Radio, Quran Radio, and the Audio Library.</p>
+
+    <!-- Works as soon as this file is on the site; CDN backup works from GitHub immediately -->
+    <a class="btn" href="/downloads/islam-media-central.apk" download="islam-media-central.apk">
+      Download Android App
+    </a>
+    <a class="btn secondary" href="https://cdn.jsdelivr.net/gh/huzaifahp1989/imediaweb@cursor/continue-listening-e5fc/public/downloads/islam-media-central.apk">
+      Backup download link
+    </a>
+
+    <p class="note"><strong>Show it in the car (one-time only):</strong></p>
+    <ol>
+      <li>Install &amp; open the app</li>
+      <li>Android Auto settings → tap <strong>Version</strong> 10 times</li>
+      <li>⋮ → Developer settings → <strong>Unknown sources</strong> ON</li>
+      <li>Reconnect car — done</li>
+    </ol>
+    <p class="note">Google requires Unknown sources for apps not on the Play Store. After it’s on once, you’re finished — no extra steps next time.</p>
+  </main>
+</body>
+</html>

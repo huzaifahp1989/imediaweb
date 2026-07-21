@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Sparkles, Heart, Shield, MessageCircle, ExternalLink, Palette, Mic, Newspaper, Radio, Play, Pause, Volume2, VolumeX, Target, Award, Users, UserPlus } from "lucide-react";
+import { Gamepad2, BookOpen, Headphones, Video, GraduationCap, Trophy, Star, Sparkles, Heart, Shield, MessageCircle, ExternalLink, Palette, Mic, Newspaper, Radio, Play, Pause, Volume2, VolumeX, Target, Award, Users, UserPlus, Car, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // import WordPressFeed from "@/components/WordPressFeed";
 import { useState, useEffect } from "react";
@@ -410,6 +410,78 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Android Auto — public prompt for everyone with the app */}
+      <section className="py-10 md:py-14 px-4 bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900">
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-1.5 text-sm font-semibold text-emerald-200 mb-5">
+              <Car className="w-4 h-4" />
+              Drive with Islam Media Central
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
+              Add Android Auto
+            </h2>
+            <p className="text-base md:text-lg text-white/80 max-w-2xl mx-auto mb-6">
+              Install the app on your phone, open it once, connect the car — then play Live Radio,
+              Quran Radio, and the Audio Library while driving.
+            </p>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mb-6">
+              <a
+                href="https://cdn.jsdelivr.net/gh/huzaifahp1989/imediaweb@cursor/continue-listening-e5fc/public/downloads/islam-media-central.apk"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 transition-colors"
+              >
+                <Download className="w-5 h-5" />
+                Download Android App
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}get-android.html`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 hover:bg-white/10 px-6 py-3 font-semibold transition-colors"
+              >
+                Simple install page
+              </a>
+              <a
+                href="https://traet2lhw4m4.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 hover:bg-white/10 px-6 py-3 font-semibold transition-colors"
+              >
+                <Radio className="w-5 h-5" />
+                IMC Live Streams
+                <ExternalLink className="w-4 h-4 opacity-70" />
+              </a>
+              <a
+                href="https://create-me-a-audio.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 hover:bg-white/10 px-6 py-3 font-semibold transition-colors"
+              >
+                <Headphones className="w-5 h-5" />
+                Islamic Audio Library
+                <ExternalLink className="w-4 h-4 opacity-70" />
+              </a>
+            </div>
+            <details className="text-left max-w-xl mx-auto bg-white/5 rounded-xl px-4 py-3 border border-white/10">
+              <summary className="cursor-pointer text-sm font-semibold text-emerald-200">
+                App installed but not in the car? Tap once (one-time setup)
+              </summary>
+              <ol className="mt-3 text-sm text-white/70 list-decimal list-inside space-y-1.5">
+                <li>Phone Settings → Android Auto → Additional settings</li>
+                <li>Tap <strong className="text-white">Version</strong> 10 times</li>
+                <li>Menu ⋮ → Developer settings → turn on <strong className="text-emerald-300">Unknown sources</strong></li>
+                <li>Reconnect the car — done (you won’t need this again)</li>
+              </ol>
+              <p className="mt-3 text-xs text-white/50">
+                Google requires this for apps not from the Play Store. Publishing to Play Internal Testing removes this step for everyone.
+              </p>
+            </details>
           </motion.div>
         </div>
       </section>
