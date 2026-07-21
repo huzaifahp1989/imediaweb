@@ -26,8 +26,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // Play Console already consumed lower codes from prior upload attempts
-        versionCode = 100
-        versionName = "1.1.0"
+        versionCode = 1001
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
