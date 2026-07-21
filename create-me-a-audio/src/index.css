@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --theme-ink: #0f172a;
+  --theme-muted: #64748b;
+  --theme-surface: #ffffff;
+  --theme-accent: #2563eb;
+  font-family: "Nunito Sans", system-ui, sans-serif;
+  color: var(--theme-ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(56, 189, 248, 0.22), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(37, 99, 235, 0.18), transparent 50%),
+    linear-gradient(180deg, #eef6ff 0%, #f8fbff 40%, #f5f7fb 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+.hero-panel {
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 48%, #0ea5e9 100%);
+}
+
+.app-shell {
+  color: var(--theme-ink);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
